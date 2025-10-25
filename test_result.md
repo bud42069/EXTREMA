@@ -472,8 +472,10 @@ metadata:
 
 test_plan:
   current_focus:
+    - "Live Signals Dashboard V2 (Bloomberg-Class) - Full E2E testing with signal generation"
+    - "Command Palette functionality (⌘K hotkey)"
+    - "Trade Log drawer with multiple signals"
     - "Chart Data API - needs migration to modular structure"
-    - "Full E2E workflow: Upload CSV → Analyze → Backtest"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
