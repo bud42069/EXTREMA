@@ -957,6 +957,10 @@ class BackendTester:
         print("\n🔄 REGRESSION TESTING")
         self.test_health_endpoint()
         
+        # Additional working endpoints
+        print("\n🔧 ADDITIONAL BACKEND VERIFICATION")
+        self.test_mtf_system_data_availability()
+        
         # Summary
         print("\n" + "=" * 80)
         print("📊 PHASE 2 TEST SUMMARY")
