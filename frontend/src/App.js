@@ -11,6 +11,7 @@ import AnalysisPage from "./pages/AnalysisPage";
 import BacktestPage from "./pages/BacktestPage";
 import DashboardPage from "./pages/DashboardPage";
 import LiveSignalsPage from "./pages/LiveSignalsPage";
+import ScalpCardsPage from "./pages/ScalpCardsPage";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
