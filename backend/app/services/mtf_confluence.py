@@ -524,10 +524,21 @@ class MTFConfluenceEngine:
         features_1h: Optional[dict] = None,
         features_4h: Optional[dict] = None,
         features_1d: Optional[dict] = None,
-        micro_snapshot: Optional[dict] = None
+        micro_snapshot: Optional[dict] = None,
+        df_1m: Optional[pd.DataFrame] = None,
+        df_tape: Optional[pd.DataFrame] = None,
+        side: Optional[str] = None,
+        tier: str = 'B',
+        atr_5m: Optional[float] = None
     ) -> dict:
         """
-        Main evaluation method - computes full MTF confluence.
+        Main evaluation method - computes full MTF confluence with Phase 1 integration.
+        
+        Phase 1 Enhancements:
+        - Accepts DataFrames (df_1m, df_tape) for detailed impulse and tape analysis
+        - Uses side parameter for directional checks
+        - Uses tier parameter for volume threshold adjustment
+        - Uses atr_5m for VWAP proximity checks
         
         Returns:
             Dict with complete confluence breakdown
@@ -537,9 +548,10 @@ class MTFConfluenceEngine:
             features_15m, features_1h, features_4h, features_1d
         )
         
-        # Micro confluence
+        # Micro confluence with Phase 1 integration
         micro = self.compute_micro_confluence(
-            features_1s, features_5s, features_1m, features_5m, micro_snapshot
+            features_1s, features_5s, features_1m, features_5m, micro_snapshot,
+            df_1m=df_1m, df_tape=df_tape, side=side, tier=tier, atr_5m=atr_5m
         )
         
         # Final score
