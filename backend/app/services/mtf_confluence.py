@@ -108,57 +108,127 @@ class MTFConfluenceEngine:
         features_15m: dict,
         features_1h: dict,
         features_4h: Optional[dict] = None,
-        features_1d: Optional[dict] = None
+        features_1d: Optional[dict] = None,
+        df_15m: Optional[pd.DataFrame] = None,
+        df_1h: Optional[pd.DataFrame] = None,
+        df_4h: Optional[pd.DataFrame] = None,
+        df_1d: Optional[pd.DataFrame] = None,
+        side: Optional[str] = None
     ) -> dict:
         """
-        Compute context confluence score (15m/1h/4h/1D).
+        Compute context confluence score (15m/1h/4h/1D) with Phase 2 integration.
+        
+        Phase 2 Enhancements:
+        - Uses context_gates for 15m/1h EMA alignment, pivot structure, oscillator
+        - Uses macro_gates for 4h/1D alignment and tier clearance
         
         Returns:
             Dict with score breakdown and total
         """
         scores = {}
+        details = {}
         
-        # EMA Alignment (20%)
-        ema_score = 0.0
-        if features_15m and features_1h:
-            # Average alignment across available TFs
-            alignments = []
+        # Phase 2: Use context_gates if DataFrames available
+        if df_15m is not None and df_1h is not None and side:
+            # Ensure EMAs are computed
+            if 'EMA_5' not in df_15m.columns:
+                df_15m = compute_ema_set(df_15m)
+            if 'EMA_5' not in df_1h.columns:
+                df_1h = compute_ema_set(df_1h)
             
-            if features_15m.get('ema_alignment') is not None:
-                alignments.append(features_15m['ema_alignment'])
-            if features_1h.get('ema_alignment') is not None:
-                alignments.append(features_1h['ema_alignment'])
-            if features_4h and features_4h.get('ema_alignment') is not None:
-                alignments.append(features_4h['ema_alignment'])
+            # Run comprehensive context gate check
+            context_result = check_context_gates(
+                df_15m=df_15m,
+                df_1h=df_1h,
+                side=side,
+                ema_spans=[5, 9, 21, 38],
+                min_ema_aligned=3
+            )
             
-            if alignments:
-                avg_alignment = sum(alignments) / len(alignments)
-                ema_score = avg_alignment * self.context_weights['ema_alignment'] * 100
-        
-        scores['ema_alignment'] = ema_score
-        
-        # Oscillator Agreement (10%)
-        osc_score = 0.0
-        if features_15m and features_1h:
-            # Check if RSI sides agree
-            rsi_15m_side = features_15m.get('rsi_side')
-            rsi_1h_side = features_1h.get('rsi_side')
+            details['context_gates'] = context_result
             
-            if rsi_15m_side and rsi_1h_side and rsi_15m_side == rsi_1h_side:
-                osc_score = self.context_weights['oscillator_agreement'] * 100
+            # Score based on context gate results
+            # EMA alignment (15%)
+            ema_score = context_result['score'] * 0.15 / 100  # Normalize to 15%
+            scores['ema_alignment'] = ema_score * 100
+            
+            # Oscillator agreement (10%)
+            osc_score = (self.context_weights['oscillator_agreement'] * 100 
+                        if context_result['oscillator']['both_ok'] else 0.0)
+            scores['oscillator_agreement'] = osc_score
+            
+            # Pivot structure (10%)
+            pivot_score = (self.context_weights['pivot_structure'] * 100
+                          if context_result['pivot_structure']['structure_ok'] else 0.0)
+            scores['pivot_structure'] = pivot_score
+            
+        else:
+            # Fallback to simplified logic
+            # EMA Alignment (15%)
+            ema_score = 0.0
+            if features_15m and features_1h:
+                alignments = []
+                
+                if features_15m.get('ema_alignment') is not None:
+                    alignments.append(features_15m['ema_alignment'])
+                if features_1h.get('ema_alignment') is not None:
+                    alignments.append(features_1h['ema_alignment'])
+                if features_4h and features_4h.get('ema_alignment') is not None:
+                    alignments.append(features_4h['ema_alignment'])
+                
+                if alignments:
+                    avg_alignment = sum(alignments) / len(alignments)
+                    ema_score = avg_alignment * self.context_weights['ema_alignment'] * 100
+            
+            scores['ema_alignment'] = ema_score
+            
+            # Oscillator Agreement (10%)
+            osc_score = 0.0
+            if features_15m and features_1h:
+                rsi_15m_side = features_15m.get('rsi_side')
+                rsi_1h_side = features_1h.get('rsi_side')
+                
+                if rsi_15m_side and rsi_1h_side and rsi_15m_side == rsi_1h_side:
+                    osc_score = self.context_weights['oscillator_agreement'] * 100
+            
+            scores['oscillator_agreement'] = osc_score
+            
+            # Pivot/VWAP Structure (10%)
+            pivot_score = 0.0
+            scores['pivot_structure'] = pivot_score
+            
+            details['context_gates'] = {'mode': 'fallback'}
         
-        scores['oscillator_agreement'] = osc_score
-        
-        # Pivot/VWAP Structure (10%)
-        # For now, simplified - check if price is on correct side of VWAP
-        pivot_score = 0.0
-        # TODO: Implement full pivot logic when we have pivot data
-        scores['pivot_structure'] = pivot_score
-        
-        # Macro Gate (10%)
+        # Phase 2: Macro Gate (10%) - Use macro_gates
         macro_score = 0.0
-        if features_4h and features_1d and features_15m and features_1h:
-            # Check if 4h/1D agree with 15m/1h direction
+        macro_details = {}
+        
+        if df_4h is not None and df_1d is not None and side:
+            # Ensure EMAs are computed
+            if 'EMA_5' not in df_4h.columns:
+                df_4h = compute_ema_set(df_4h)
+            if 'EMA_5' not in df_1d.columns:
+                df_1d = compute_ema_set(df_1d)
+            
+            # Run macro alignment check
+            macro_result = check_macro_alignment(
+                df_4h=df_4h,
+                df_1d=df_1d,
+                side=side,
+                ema_spans=[5, 9, 21, 38]
+            )
+            
+            macro_details = macro_result
+            
+            # Score based on macro alignment
+            if macro_result['macro_aligned']:
+                macro_score = self.context_weights['macro_gate'] * 100  # Full 10%
+            else:
+                # Partial credit based on score
+                macro_score = macro_result['score'] * self.context_weights['macro_gate']
+        
+        elif features_4h and features_1d and features_15m and features_1h:
+            # Fallback to simplified logic
             bullish_count = sum([
                 1 for f in [features_15m, features_1h, features_4h, features_1d]
                 if f and f.get('ema_bullish')
@@ -168,24 +238,35 @@ class MTFConfluenceEngine:
                 if f and f.get('ema_bearish')
             ])
             
-            # Strong agreement = macro score
             if bullish_count >= 3 or bearish_count >= 3:
                 macro_score = self.context_weights['macro_gate'] * 100
+            macro_details = {'mode': 'fallback'}
         
         scores['macro_gate'] = macro_score
+        details['macro_gates'] = macro_details
         
-        # On-Chain Confluence (5%) - NEW!
+        # On-Chain Confluence (5%)
         onchain_score = 0.0
-        scores['onchain_confluence'] = onchain_score  # Default if not available
+        scores['onchain_confluence'] = onchain_score
+        details['onchain_confluence'] = {'enabled': False}
         
         # Total context score
         total = sum(scores.values())
         
-        return {
+        result = {
             'scores': scores,
             'total': total,
-            'tier': 'A' if total >= 75 else ('B' if total >= 60 else 'C')
+            'tier': 'A' if total >= 75 else ('B' if total >= 60 else 'C'),
+            'details': details
         }
+        
+        logger.info(
+            f"Context confluence: total={total:.1f}, tier={result['tier']}, "
+            f"ema={scores['ema_alignment']:.1f}, osc={scores['oscillator_agreement']:.1f}, "
+            f"pivot={scores['pivot_structure']:.1f}, macro={scores['macro_gate']:.1f}"
+        )
+        
+        return result
     
     async def compute_context_confluence_async(
         self,
