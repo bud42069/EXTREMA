@@ -218,6 +218,141 @@ class BackendTester:
         except Exception as e:
             self.log_result("Live Monitor Stop", False, f"Exception: {str(e)}")
     
+    # ============= NEW MICROSTRUCTURE STREAM TESTS =============
+    
+    def test_stream_start(self):
+        """Test starting MEXC microstructure stream"""
+        try:
+            response = requests.post(f"{API_BASE}/stream/start", timeout=15)
+            if response.status_code == 200:
+                data = response.json()
+                if data.get('success'):
+                    self.log_result("Stream Start", True, f"MEXC stream started: {data.get('message', '')}")
+                else:
+                    self.log_result("Stream Start", False, f"Success=False: {data}")
+            else:
+                self.log_result("Stream Start", False, f"HTTP {response.status_code}: {response.text}")
+        except Exception as e:
+            self.log_result("Stream Start", False, f"Exception: {str(e)}")
+    
+    def test_stream_health(self):
+        """Test microstructure stream health check"""
+        try:
+            response = requests.get(f"{API_BASE}/stream/health", timeout=10)
+            if response.status_code == 200:
+                data = response.json()
+                required_fields = ['running', 'available']
+                if all(field in data for field in required_fields):
+                    status_info = f"Running: {data['running']}, Available: {data['available']}"
+                    if 'age_seconds' in data:
+                        status_info += f", Age: {data['age_seconds']}s"
+                    self.log_result("Stream Health", True, status_info)
+                else:
+                    self.log_result("Stream Health", False, f"Missing fields in response: {data}")
+            else:
+                self.log_result("Stream Health", False, f"HTTP {response.status_code}")
+        except Exception as e:
+            self.log_result("Stream Health", False, f"Exception: {str(e)}")
+    
+    def test_stream_snapshot(self):
+        """Test microstructure snapshot retrieval"""
+        try:
+            response = requests.get(f"{API_BASE}/stream/snapshot", timeout=10)
+            if response.status_code == 200:
+                data = response.json()
+                if 'available' in data:
+                    if data['available']:
+                        # Check for microstructure metrics
+                        metrics = ['spread_bps', 'ladder_imbalance', 'cvd', 'cvd_slope']
+                        available_metrics = [m for m in metrics if m in data]
+                        self.log_result("Stream Snapshot", True, f"Available with {len(available_metrics)} metrics")
+                    else:
+                        self.log_result("Stream Snapshot", True, "No data available (expected if stream not running)")
+                else:
+                    self.log_result("Stream Snapshot", False, f"Missing 'available' field: {data}")
+            else:
+                self.log_result("Stream Snapshot", False, f"HTTP {response.status_code}")
+        except Exception as e:
+            self.log_result("Stream Snapshot", False, f"Exception: {str(e)}")
+    
+    def test_stream_stop(self):
+        """Test stopping MEXC microstructure stream"""
+        try:
+            response = requests.post(f"{API_BASE}/stream/stop", timeout=10)
+            if response.status_code == 200:
+                data = response.json()
+                if data.get('success'):
+                    self.log_result("Stream Stop", True, data.get('message', 'Stream stopped'))
+                else:
+                    self.log_result("Stream Stop", False, f"Success=False: {data}")
+            else:
+                self.log_result("Stream Stop", False, f"HTTP {response.status_code}")
+        except Exception as e:
+            self.log_result("Stream Stop", False, f"Exception: {str(e)}")
+    
+    def test_signals_latest_with_veto(self):
+        """Test latest signals endpoint with microstructure veto dict"""
+        try:
+            # Test with microstructure gate enabled
+            response = requests.get(f"{API_BASE}/signals/latest?enable_micro_gate=true", timeout=10)
+            if response.status_code == 200:
+                data = response.json()
+                # Should return either a signal with veto dict or "no confirmed signal" message
+                if 'side' in data:
+                    # Signal found - check for veto dict
+                    if 'veto' in data:
+                        self.log_result("Signals Latest (Veto)", True, f"Signal with veto transparency: {data['side']}")
+                    else:
+                        self.log_result("Signals Latest (Veto)", False, "Signal missing veto dict")
+                elif 'message' in data:
+                    self.log_result("Signals Latest (Veto)", True, "No signal found (expected)")
+                else:
+                    self.log_result("Signals Latest (Veto)", False, f"Unexpected response: {data}")
+            else:
+                self.log_result("Signals Latest (Veto)", False, f"HTTP {response.status_code}")
+        except Exception as e:
+            self.log_result("Signals Latest (Veto)", False, f"Exception: {str(e)}")
+    
+    # ============= PROMETHEUS METRICS TESTS =============
+    
+    def test_prometheus_metrics(self):
+        """Test Prometheus metrics endpoint"""
+        try:
+            response = requests.get(METRICS_URL, timeout=10)
+            if response.status_code == 200:
+                metrics_text = response.text
+                
+                # Check for app-specific metrics
+                app_metrics = [
+                    'extrema_upload_total',
+                    'signals_confirmed_total', 
+                    'signals_veto_total',
+                    'backtest_runs_total'
+                ]
+                
+                found_metrics = []
+                for metric in app_metrics:
+                    if metric in metrics_text:
+                        found_metrics.append(metric)
+                
+                # Check for Python runtime metrics
+                runtime_metrics = ['python_info', 'process_']
+                found_runtime = []
+                for metric in runtime_metrics:
+                    if metric in metrics_text:
+                        found_runtime.append(metric)
+                
+                if found_metrics and found_runtime:
+                    self.log_result("Prometheus Metrics", True, 
+                                  f"Found {len(found_metrics)} app + {len(found_runtime)} runtime metrics")
+                else:
+                    self.log_result("Prometheus Metrics", False, 
+                                  f"Missing metrics - App: {len(found_metrics)}, Runtime: {len(found_runtime)}")
+            else:
+                self.log_result("Prometheus Metrics", False, f"HTTP {response.status_code}")
+        except Exception as e:
+            self.log_result("Prometheus Metrics", False, f"Exception: {str(e)}")
+    
     async def run_all_tests(self):
         """Run all backend tests"""
         print("🚀 Starting SOLUSDT Backend Testing")
