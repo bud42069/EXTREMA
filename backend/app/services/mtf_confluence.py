@@ -130,6 +130,10 @@ class MTFConfluenceEngine:
         
         scores['macro_gate'] = macro_score
         
+        # On-Chain Confluence (5%) - NEW!
+        onchain_score = 0.0
+        scores['onchain_confluence'] = onchain_score  # Default if not available
+        
         # Total context score
         total = sum(scores.values())
         
@@ -138,6 +142,48 @@ class MTFConfluenceEngine:
             'total': total,
             'tier': 'A' if total >= 75 else ('B' if total >= 60 else 'C')
         }
+    
+    async def compute_context_confluence_async(
+        self,
+        features_15m: dict,
+        features_1h: dict,
+        features_4h: Optional[dict] = None,
+        features_1d: Optional[dict] = None,
+        signal_direction: Optional[str] = None
+    ) -> dict:
+        """
+        Async version with on-chain integration.
+        
+        Returns:
+            Dict with score breakdown and total
+        """
+        # Get base context scores
+        result = self.compute_context_confluence(features_15m, features_1h, features_4h, features_1d)
+        
+        # Add on-chain confluence if available and direction is known
+        if self.onchain_monitor and signal_direction:
+            try:
+                onchain_data = await self.onchain_monitor.get_on_chain_confluence(
+                    direction=signal_direction,
+                    lookback_minutes=60
+                )
+                
+                if onchain_data['aligned']:
+                    # Award up to 5% for on-chain alignment
+                    onchain_score = min(
+                        self.context_weights['onchain_confluence'] * 100,
+                        onchain_data['score'] * 0.05
+                    )
+                    result['scores']['onchain_confluence'] = onchain_score
+                    result['total'] = sum(result['scores'].values())
+                    result['tier'] = 'A' if result['total'] >= 75 else ('B' if result['total'] >= 60 else 'C')
+                    
+                    logger.info(f"On-chain confluence: {onchain_score:.1f} (aligned={onchain_data['aligned']})")
+            
+            except Exception as e:
+                logger.error(f"Error computing on-chain confluence: {e}")
+        
+        return result
     
     def compute_micro_confluence(
         self,
