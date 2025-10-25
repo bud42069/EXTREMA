@@ -89,9 +89,12 @@ async def stream_health():
     Returns:
         Status of stream: running, data age, metrics availability
     """
+    # Check if worker is actually running
+    worker_running = is_worker_running()
+    
     snap = get_snapshot()
     
-    if snap is None:
+    if not worker_running or snap is None:
         return JSONResponse({
             "running": False,
             "available": False,
