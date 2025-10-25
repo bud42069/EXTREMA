@@ -635,60 +635,137 @@ export default function LiveSignalsDashboardV2() {
           )}
 
           {/* Signal Stack */}
-          <div className="bg-gray-900/30 rounded-2xl border border-gray-800/50 overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-800/50 flex items-center justify-between">
+          <div className="bg-gradient-to-br from-gray-900/50 to-gray-950/50 rounded-2xl border border-gray-800/50 overflow-hidden backdrop-blur-xl">
+            <div className="px-6 py-4 border-b border-gray-800/50 flex items-center justify-between bg-black/20">
               <div>
-                <h3 className="text-lg font-semibold text-gray-300">Signal Stack</h3>
-                <p className="text-xs text-gray-500 mt-1">Chronological detection feed</p>
+                <h3 className="text-lg font-bold text-gray-200">Signal Stack</h3>
+                <p className="text-xs text-gray-500 mt-0.5 font-mono">Chronological detection feed • Real-time</p>
               </div>
               <button
                 onClick={() => setTradeLogOpen(prev => !prev)}
-                className="px-3 py-1.5 bg-gray-800/50 hover:bg-gray-700/50 border border-gray-700 rounded-lg text-xs font-medium transition-all flex items-center gap-2"
+                className="px-4 py-2 bg-gray-800/50 hover:bg-gray-700/70 border border-gray-700/50 hover:border-cyan-500/40 rounded-lg text-xs font-semibold transition-all flex items-center gap-2 group"
               >
-                <span>📋</span>
-                <span>Log</span>
-                <kbd className="text-gray-600">L</kbd>
+                <span className="text-base">📋</span>
+                <span className="text-gray-300 group-hover:text-cyan-400 transition-colors">Log</span>
+                <kbd className="px-1.5 py-0.5 bg-gray-900/50 text-gray-600 group-hover:text-cyan-500 rounded text-xs font-mono">L</kbd>
               </button>
             </div>
             
             <div className="p-6">
               {signals.length === 0 ? (
-                <div className="text-center py-12">
-                  <div className="text-4xl mb-3">📡</div>
-                  <div className="text-gray-500 text-sm">Awaiting signals...</div>
-                  <div className="text-gray-600 text-xs mt-1">
-                    {monitorStatus.candles_count} candles • {monitorStatus.running ? 'Scanning' : 'Monitor offline'}
+                <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="text-center py-16"
+                >
+                  <motion.div
+                    animate={{ 
+                      rotate: [0, 10, -10, 0],
+                      scale: [1, 1.1, 1]
+                    }}
+                    transition={{ 
+                      duration: 2,
+                      repeat: Infinity,
+                      repeatDelay: 1
+                    }}
+                    className="text-5xl mb-4"
+                  >
+                    📡
+                  </motion.div>
+                  <div className="text-gray-500 text-sm font-medium">Awaiting signals...</div>
+                  <div className="text-gray-600 text-xs mt-2 font-mono">
+                    <span className="text-cyan-400">{monitorStatus.candles_count}</span> candles processed • {monitorStatus.running ? (
+                      <span className="text-emerald-400">● Active scan</span>
+                    ) : (
+                      <span className="text-gray-600">○ Monitor offline</span>
+                    )}
                   </div>
-                </div>
+                </motion.div>
               ) : (
                 <div className="space-y-3">
-                  {signals.slice(-5).reverse().map((signal, idx) => (
-                    <div
-                      key={idx}
-                      className={`relative rounded-xl p-4 border-2 ${getSideGlow(signal.side)} bg-gradient-to-br from-gray-900/50 to-gray-800/30 transition-all hover:scale-[1.02]`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className={`text-2xl ${signal.side === 'long' ? 'text-cyan-400' : 'text-pink-400'}`}>
-                            {signal.side === 'long' ? '↗' : '↘'}
-                          </div>
-                          <div>
-                            <div className={`text-sm font-bold uppercase ${signal.side === 'long' ? 'text-cyan-300' : 'text-pink-300'}`}>
-                              {signal.side}
-                            </div>
-                            <div className="text-xs text-gray-500 font-mono">
-                              Entry {formatPrice(signal.entry)}
-                            </div>
-                          </div>
-                        </div>
+                  <AnimatePresence mode="popLayout">
+                    {signals.slice(-5).reverse().map((signal, idx) => (
+                      <motion.div
+                        key={idx}
+                        initial={{ opacity: 0, x: -20, scale: 0.95 }}
+                        animate={{ opacity: 1, x: 0, scale: 1 }}
+                        exit={{ opacity: 0, x: 20, scale: 0.95 }}
+                        transition={{ 
+                          type: "spring",
+                          stiffness: 500,
+                          damping: 30,
+                          delay: idx * 0.05
+                        }}
+                        whileHover={{ scale: 1.02, y: -2 }}
+                        className={`relative rounded-xl p-5 border-2 ${getSideGlow(signal.side)} bg-gradient-to-br ${
+                          signal.side === 'long'
+                            ? 'from-cyan-950/30 via-gray-900/30 to-gray-950/30'
+                            : 'from-pink-950/30 via-gray-900/30 to-gray-950/30'
+                        } transition-all cursor-pointer group backdrop-blur-sm`}
+                      >
+                        {/* Absolute positioned glow effect */}
+                        <div className={`absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity blur-xl ${
+                          signal.side === 'long' ? 'bg-cyan-500/10' : 'bg-pink-500/10'
+                        }`}></div>
                         
-                        <div className="text-right">
-                          <div className="text-xs text-gray-500">R:R</div>
-                          <div className="text-sm font-mono text-gray-300">1:{formatNumber((signal.tp1 - signal.entry) / (signal.entry - signal.sl), 1)}</div>
+                        <div className="relative z-10">
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center gap-4">
+                              <motion.div 
+                                initial={{ rotate: -45, scale: 0 }}
+                                animate={{ rotate: 0, scale: 1 }}
+                                transition={{ type: "spring", stiffness: 300 }}
+                                className={`text-3xl ${signal.side === 'long' ? 'text-cyan-400' : 'text-pink-400'}`}
+                              >
+                                {signal.side === 'long' ? '↗️' : '↘️'}
+                              </motion.div>
+                              <div>
+                                <div className={`text-base font-bold uppercase tracking-wide ${
+                                  signal.side === 'long' ? 'text-cyan-300' : 'text-pink-300'
+                                }`}>
+                                  {signal.side} SIGNAL
+                                </div>
+                                <div className="text-xs text-gray-500 font-mono mt-1">
+                                  Entry @ <span className="text-gray-300 font-semibold">{formatPrice(signal.entry)}</span>
+                                </div>
+                              </div>
+                            </div>
+                            
+                            {/* Tier Badge */}
+                            <div className={`px-3 py-1.5 rounded-lg text-xs font-bold border-2 ${
+                              signal.tier === 'A'
+                                ? 'bg-cyan-500/20 border-cyan-500/60 text-cyan-300 shadow-lg shadow-cyan-500/20'
+                                : 'bg-amber-500/20 border-amber-500/60 text-amber-300 shadow-lg shadow-amber-500/20'
+                            }`}>
+                              TIER {signal.tier || 'B'}
+                            </div>
+                          </div>
+                          
+                          {/* Metrics Grid */}
+                          <div className="grid grid-cols-3 gap-2 mt-4">
+                            <div className="bg-black/30 rounded-lg p-2 border border-gray-800/50">
+                              <div className="text-xs text-gray-500 mb-1">R:R</div>
+                              <div className="text-sm font-mono font-bold text-gray-200">
+                                1:{formatNumber((signal.tp1 - signal.entry) / (signal.entry - signal.sl), 1)}
+                              </div>
+                            </div>
+                            <div className="bg-black/30 rounded-lg p-2 border border-gray-800/50">
+                              <div className="text-xs text-gray-500 mb-1">Stop Loss</div>
+                              <div className="text-sm font-mono font-bold text-rose-400">
+                                {formatPrice(signal.sl)}
+                              </div>
+                            </div>
+                            <div className="bg-black/30 rounded-lg p-2 border border-gray-800/50">
+                              <div className="text-xs text-gray-500 mb-1">Target TP1</div>
+                              <div className="text-sm font-mono font-bold text-emerald-400">
+                                {formatPrice(signal.tp1)}
+                              </div>
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    </div>
-                  ))}
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
                 </div>
               )}
             </div>
