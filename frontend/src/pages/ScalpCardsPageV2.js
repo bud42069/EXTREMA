@@ -396,7 +396,6 @@ function ParametersTab({ card, riskPercent, rewardPercent, rrRatio }) {
           value={`1:${rrRatio.toFixed(2)}`}
           color={rrRatio >= 2 ? 'emerald' : rrRatio >= 1.5 ? 'amber' : 'rose'}
           size="md"
-          icon="📊"
         />
         
         <div className="bg-black/30 rounded-lg p-4 border border-gray-800/50 text-xs text-gray-500 space-y-1">
