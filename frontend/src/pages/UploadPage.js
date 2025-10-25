@@ -35,19 +35,24 @@ const UploadPage = () => {
     formData.append('file', file);
 
     try {
-      const response = await axios.post(`${API}/upload-data`, formData, {
+      const response = await axios.post(`${API}/data/upload`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
-        }
+        },
+        timeout: 120000 // 2 minutes timeout for large files
       });
 
-      if (response.data.success) {
-        toast.success('Dataset uploaded successfully!');
-        setUploadResult(response.data);
-      }
+      toast.success(`✅ Uploaded ${response.data.rows} rows successfully!`);
+      setUploadResult(response.data);
+      
+      // Optionally navigate to analysis page
+      setTimeout(() => navigate('/analysis'), 2000);
     } catch (error) {
       console.error('Upload error:', error);
-      toast.error(error.response?.data?.detail || 'Failed to upload dataset');
+      const errorMsg = error.code === 'ECONNABORTED' 
+        ? 'Upload timed out. File might be too large.' 
+        : error.response?.data?.detail || 'Failed to upload dataset';
+      toast.error(errorMsg);
     } finally {
       setUploading(false);
     }
