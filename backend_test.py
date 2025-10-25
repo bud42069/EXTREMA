@@ -2416,85 +2416,48 @@ class BackendTester:
             self.log_result("Edge Cases", False, f"Exception: {str(e)}")
 
     async def run_all_tests(self):
-        """Run Phase 4 Config & Logging tests"""
-        print("🚀 Phase 4: Config & Logging - Backend Testing")
+        """Run KPI API Endpoints Testing"""
+        print("🚀 KPI API Endpoints Testing")
         print(f"📡 Backend URL: {BACKEND_URL}")
         print("=" * 80)
         
-        # Phase 4 - Import and Initialization Testing
-        print("\n📦 PHASE 4: IMPORT AND INITIALIZATION TESTING")
-        print("Testing Phase 4 service imports and default parameters:")
-        print("  • ConfigManager (JSON Configuration)")
-        print("  • TradeLogger (Comprehensive Logging)")
-        print("  • KPITracker (Performance Metrics)")
+        # KPI API Endpoints Testing
+        print("\n📊 KPI API ENDPOINTS TESTING")
+        print("Testing newly created KPI API endpoints:")
+        print("  • GET /api/kpis/summary - KPI Summary for dashboard")
+        print("  • GET /api/kpis/full - Complete KPI report")
+        print("  • POST /api/kpis/calculate - Trigger KPI calculation")
+        print("  • GET /api/kpis/breakdown/tier - A vs B tier performance")
+        print("  • GET /api/kpis/breakdown/regime - Squeeze/Normal/Wide breakdown")
+        print("  • GET /api/kpis/breakdown/side - Long vs Short breakdown")
+        print("  • GET /api/kpis/health - Service health check")
+        print("  • LandingPageV2 Integration - Frontend KPI integration")
         
-        # 1. Import Testing
-        print("\n🔍 IMPORT TESTING")
-        phase4_imports_ok = self.test_phase4_imports()
+        # 1. KPI Summary Endpoint
+        print("\n🎯 KPI SUMMARY ENDPOINT TESTING")
+        self.test_kpi_summary_endpoint()
         
-        if not phase4_imports_ok:
-            print("❌ Phase 4 imports failed - skipping remaining tests")
-            return
+        # 2. Full KPIs Endpoint
+        print("\n📋 FULL KPIs ENDPOINT TESTING")
+        self.test_kpi_full_endpoint()
         
-        # 2. Config Manager Testing
-        print("\n⚙️ CONFIG MANAGER TESTING")
-        self.test_config_manager_initialization()
-        self.test_config_manager_load_save()
-        self.test_config_manager_validation()
+        # 3. KPI Calculation Endpoint
+        print("\n⚙️ KPI CALCULATION ENDPOINT TESTING")
+        self.test_kpi_calculate_endpoint()
         
-        # 3. Trade Logger Testing
-        print("\n📝 TRADE LOGGER TESTING")
-        self.test_trade_logger_initialization()
-        self.test_trade_logger_lifecycle()
+        # 4. Breakdown Endpoints
+        print("\n📊 BREAKDOWN ENDPOINTS TESTING")
+        self.test_kpi_breakdown_tier()
+        self.test_kpi_breakdown_regime()
+        self.test_kpi_breakdown_side()
         
-        # 4. KPI Tracker Testing
-        print("\n📊 KPI TRACKER TESTING")
-        self.test_kpi_tracker_initialization()
-        self.test_kpi_tracker_calculations()
-        self.test_kpi_tracker_edge_cases()
+        # 5. Health Check
+        print("\n🏥 HEALTH CHECK TESTING")
+        self.test_kpi_health_check()
         
-        # 5. Integration Testing
-        print("\n🔗 INTEGRATION TESTING")
-        self.test_phase4_integration()
-        
-        # 6. Phase 3 Tests (if needed)
-        print("\n📦 PHASE 3: ORDER MANAGEMENT & TP/SL TESTING")
-        print("Testing Phase 3 service imports and default parameters:")
-        print("  • OrderManager (Post-only, Unfilled Protocol)")
-        print("  • RiskManager (Liq-gap Guards)")
-        print("  • TPSLManager (3-Tier Ladder, Trailing)")
-        
-        # Phase 3 Import Testing
-        print("\n🔍 PHASE 3 IMPORT TESTING")
-        self.test_phase3_imports()
-        
-        # Phase 3 Initialization Testing
-        print("\n⚙️ PHASE 3 INITIALIZATION TESTING")
-        self.test_order_manager_initialization()
-        self.test_risk_manager_initialization()
-        self.test_tpsl_manager_initialization()
-        
-        # Phase 3 Core Functionality Testing
-        print("\n🧮 PHASE 3 CORE FUNCTIONALITY TESTING")
-        self.test_order_manager_post_only_price()
-        self.test_risk_manager_liquidation_price()
-        self.test_risk_manager_liq_gap()
-        self.test_risk_manager_position_sizing()
-        
-        # Phase 3 TP/SL Logic Testing
-        print("\n🎯 PHASE 3 TP/SL LOGIC TESTING")
-        self.test_tpsl_manager_tp_levels()
-        self.test_tpsl_manager_position_tracking()
-        self.test_tpsl_manager_tp_hits()
-        self.test_tpsl_manager_trailing_stop()
-        
-        # Phase 3 Integration Logic Testing
-        print("\n🔗 PHASE 3 INTEGRATION LOGIC TESTING")
-        self.test_comprehensive_risk_check()
-        
-        # Phase 3 Edge Case Testing
-        print("\n⚠️ PHASE 3 EDGE CASE TESTING")
-        self.test_edge_cases()
+        # 6. Frontend Integration
+        print("\n🌐 FRONTEND INTEGRATION TESTING")
+        self.test_landing_page_kpi_integration()
         
         # Summary
         print("\n" + "=" * 80)
