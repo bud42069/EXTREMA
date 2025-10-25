@@ -42,6 +42,7 @@ def scalp_card(
         vol_mult: Volume confirmation multiplier (default from settings)
         confirm_window: Confirmation window bars (default from settings)
         enable_micro_gate: Enable microstructure gating
+        force: Force card generation even if no confirmation (demo mode)
         symbol: Trading symbol
     
     Returns:
