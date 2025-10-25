@@ -231,6 +231,174 @@ export default function LiveSignalsPage() {
           ))}
         </div>
 
+        {/* MTF Status Panel - NEW */}
+        {mtfStatus && (
+          <div className="mb-6">
+            <div className="relative overflow-hidden rounded-xl">
+              <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/20 to-purple-900/20 backdrop-blur-xl"></div>
+              <div className="absolute inset-0 border border-indigo-500/30 rounded-xl"></div>
+              <div className="relative p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-3">
+                    <div className="text-sm font-semibold text-indigo-300 uppercase tracking-wider">
+                      📊 MTF Confluence Engine
+                    </div>
+                    <div className={`px-2 py-1 rounded text-xs font-mono ${
+                      mtfStatus.running ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-slate-700/50 text-slate-400'
+                    }`}>
+                      {mtfStatus.running ? 'ACTIVE' : 'OFFLINE'}
+                    </div>
+                    {mtfStatus.state_machine && (
+                      <div className="px-2 py-1 rounded text-xs font-mono bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                        STATE: {mtfStatus.state_machine.state.toUpperCase()}
+                      </div>
+                    )}
+                  </div>
+                  
+                  {mtfConfluence && mtfConfluence.confluence && (
+                    <div className="flex items-center gap-3">
+                      <div className="text-right">
+                        <div className="text-xs text-slate-500 font-mono">FINAL SCORE</div>
+                        <div className={`text-2xl font-bold ${
+                          mtfConfluence.confluence.final.tier === 'A' ? 'text-emerald-400' :
+                          mtfConfluence.confluence.final.tier === 'B' ? 'text-yellow-400' :
+                          'text-slate-500'
+                        }`}>
+                          {mtfConfluence.confluence.final.final_score.toFixed(0)}
+                        </div>
+                      </div>
+                      <div className={`px-3 py-2 rounded-lg text-xl font-bold ${
+                        mtfConfluence.confluence.final.tier === 'A' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' :
+                        mtfConfluence.confluence.final.tier === 'B' ? 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/30' :
+                        'bg-slate-700/50 text-slate-400 border border-slate-600/30'
+                      }`}>
+                        TIER {mtfConfluence.confluence.final.tier}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-3 gap-4">
+                  {/* Context Confluence */}
+                  <div className="relative overflow-hidden rounded-lg">
+                    <div className="absolute inset-0 bg-slate-800/60 backdrop-blur-xl"></div>
+                    <div className="absolute inset-0 border border-slate-700/50 rounded-lg"></div>
+                    <div className="relative p-3">
+                      <div className="text-xs text-slate-500 font-mono mb-2 uppercase">Context (15m/1h/4h/1D)</div>
+                      {mtfConfluence?.confluence?.context ? (
+                        <>
+                          <div className="text-2xl font-bold text-blue-400 mb-2">
+                            {mtfConfluence.confluence.context.total.toFixed(0)}
+                          </div>
+                          <div className="space-y-1 text-xs font-mono">
+                            <div className="flex justify-between">
+                              <span className="text-slate-500">EMA Align:</span>
+                              <span className="text-slate-300">{mtfConfluence.confluence.context.scores.ema_alignment.toFixed(0)}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-slate-500">Oscillator:</span>
+                              <span className="text-slate-300">{mtfConfluence.confluence.context.scores.oscillator_agreement.toFixed(0)}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-slate-500">Macro Gate:</span>
+                              <span className="text-slate-300">{mtfConfluence.confluence.context.scores.macro_gate.toFixed(0)}</span>
+                            </div>
+                          </div>
+                        </>
+                      ) : <div className="text-slate-500">--</div>}
+                    </div>
+                  </div>
+
+                  {/* Micro Confluence */}
+                  <div className="relative overflow-hidden rounded-lg">
+                    <div className="absolute inset-0 bg-slate-800/60 backdrop-blur-xl"></div>
+                    <div className="absolute inset-0 border border-slate-700/50 rounded-lg"></div>
+                    <div className="relative p-3">
+                      <div className="text-xs text-slate-500 font-mono mb-2 uppercase">Micro (1s→1m→5m)</div>
+                      {mtfConfluence?.confluence?.micro ? (
+                        <>
+                          <div className="text-2xl font-bold text-purple-400 mb-2">
+                            {mtfConfluence.confluence.micro.total.toFixed(0)}
+                          </div>
+                          <div className="space-y-1 text-xs font-mono">
+                            <div className="flex justify-between">
+                              <span className="text-slate-500">5m Trigger:</span>
+                              <span className="text-slate-300">{mtfConfluence.confluence.micro.scores.trigger_5m.toFixed(0)}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-slate-500">1m Impulse:</span>
+                              <span className="text-slate-300">{mtfConfluence.confluence.micro.scores.impulse_1m.toFixed(0)}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-slate-500">Tape (1s/5s):</span>
+                              <span className="text-slate-300">{mtfConfluence.confluence.micro.scores.tape_micro.toFixed(0)}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-slate-500">Veto Check:</span>
+                              <span className="text-emerald-300">{mtfConfluence.confluence.micro.scores.veto_hygiene.toFixed(0)}</span>
+                            </div>
+                          </div>
+                        </>
+                      ) : <div className="text-slate-500">--</div>}
+                    </div>
+                  </div>
+
+                  {/* Data Stores */}
+                  <div className="relative overflow-hidden rounded-lg">
+                    <div className="absolute inset-0 bg-slate-800/60 backdrop-blur-xl"></div>
+                    <div className="absolute inset-0 border border-slate-700/50 rounded-lg"></div>
+                    <div className="relative p-3">
+                      <div className="text-xs text-slate-500 font-mono mb-2 uppercase">Timeframe Stores</div>
+                      {mtfStatus.stores ? (
+                        <div className="space-y-1 text-xs font-mono">
+                          {Object.entries(mtfStatus.stores).filter(([tf, count]) => count > 0).map(([tf, count]) => (
+                            <div key={tf} className="flex justify-between">
+                              <span className="text-slate-500">{tf}:</span>
+                              <span className="text-emerald-400">{count}</span>
+                            </div>
+                          ))}
+                        </div>
+                      ) : <div className="text-slate-500">--</div>}
+                    </div>
+                  </div>
+                </div>
+
+                {/* State Machine Stats */}
+                {mtfStatus.state_machine && (
+                  <div className="mt-3 pt-3 border-t border-slate-700/50">
+                    <div className="grid grid-cols-6 gap-2 text-xs font-mono">
+                      <div className="text-center">
+                        <div className="text-slate-500">Candidates</div>
+                        <div className="text-white font-bold">{mtfStatus.state_machine.stats.candidates_detected}</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-slate-500">Expired</div>
+                        <div className="text-orange-400 font-bold">{mtfStatus.state_machine.stats.candidates_expired}</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-slate-500">Confirms</div>
+                        <div className="text-emerald-400 font-bold">{mtfStatus.state_machine.stats.micro_confirms}</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-slate-500">Rejects</div>
+                        <div className="text-red-400 font-bold">{mtfStatus.state_machine.stats.micro_rejects}</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-slate-500">Executions</div>
+                        <div className="text-cyan-400 font-bold">{mtfStatus.state_machine.stats.executions}</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-slate-500">Vetoes</div>
+                        <div className="text-yellow-400 font-bold">{mtfStatus.state_machine.stats.vetoes}</div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Signals Table - Data Dense */}
         <div className="relative overflow-hidden rounded-xl">
           <div className="absolute inset-0 bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-xl"></div>
