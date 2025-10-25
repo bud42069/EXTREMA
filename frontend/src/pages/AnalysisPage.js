@@ -283,7 +283,9 @@ const AnalysisPage = () => {
             </div>
           </div>
         </div>
+        </div>
       )}
+      </div>
     </div>
   );
 };
