@@ -1717,6 +1717,117 @@ agent_communication:
       
       **Status**: ✅ Phase 3 implementation complete. Ready for backend testing and integration.
 
+  - agent: "main"
+    message: |
+      **🚀 PHASE 4: CONFIG & LOGGING - IMPLEMENTATION COMPLETE**
+      
+      **Implementation Summary**:
+      Successfully implemented Phase 4 components - the final phase of the SOLUSDT Swing-Capture Playbook v1.0. Phase 4 provides configuration management, comprehensive trade logging, and KPI tracking for the complete trading system.
+      
+      **Phase 4 Services Created:**
+      
+      1. **config_manager.py (JSON Configuration System)**:
+         - ✅ ConfigManager class with full lifecycle management
+         - ✅ DEFAULT_CONFIG with 8 sections: detection, risk, execution, tp_sl, regime, confluence, veto, system
+         - ✅ load_config(): Load from JSON with default merging for missing keys
+         - ✅ save_config(): Save with automatic directory creation
+         - ✅ _apply_env_overrides(): Environment variable overrides (TRADING_<SECTION>_<KEY> format)
+         - ✅ get()/get_section(): Retrieve individual or section configs
+         - ✅ set()/update_section(): Update with optional immediate save
+         - ✅ validate_config(): Comprehensive validation (atr_min > 0, leverage 1-20, TP ordering, etc.)
+         - ✅ export_config(): Export to timestamped file
+         - ✅ reset_to_defaults(): Reset to DEFAULT_CONFIG
+         - ✅ Config path: ./config/trading_config.json
+         - ✅ Hot reload support
+      
+      2. **trade_logger.py (Comprehensive Trade Logging)**:
+         - ✅ TradeLogger class with complete trade lifecycle tracking
+         - ✅ create_trade(): Initialize with signal, confluence, regime, tier
+         - ✅ log_risk_check(): Pre-entry risk assessment (liq-gap, position sizing)
+         - ✅ log_entry(): Fill details (price, quantity, slippage, fees)
+         - ✅ log_tp_hit(): TP level hits (TP1/TP2/TP3) with reduction quantities
+         - ✅ log_trailing_activation(): Trailing stop activation timestamp
+         - ✅ log_exit(): Exit with P&L, R-multiple, hold time, exit reason
+         - ✅ Trade event tracking with detailed timestamps
+         - ✅ export_to_csv(): Export all trades to CSV with key metrics
+         - ✅ MongoDB integration (optional, db_collection parameter)
+         - ✅ File storage: ./logs/trades/{trade_id}.json per trade
+         - ✅ Trade data structure: signal, context, execution, risk, tp_sl, exit, performance
+      
+      3. **kpi_tracker.py (Performance Metrics & Analytics)**:
+         - ✅ KPITracker class with comprehensive performance analysis
+         - ✅ calculate_kpis(): Full KPI calculation from trade list
+         - ✅ Summary KPIs: Total trades, wins/losses, win rate, total/avg P&L
+         - ✅ Return KPIs: Profit factor, avg R-multiple, expectancy, gross profit/loss, best/worst trades
+         - ✅ Risk KPIs: Max drawdown (USD/%), Sharpe ratio, recovery factor, max consecutive wins/losses
+         - ✅ Efficiency KPIs: Avg/median hold time, TP hit rates (TP1/TP2/TP3), time stop/early reduce rates, exit reasons
+         - ✅ Tier breakdown: Performance by A-tier vs B-tier
+         - ✅ Regime breakdown: Performance by squeeze/normal/wide
+         - ✅ Side breakdown: Performance by long vs short
+         - ✅ export_report(): Export to JSON with timestamp
+         - ✅ get_summary_stats(): Dashboard-ready summary (7 key metrics)
+         - ✅ Output: ./logs/kpis/kpi_report_{timestamp}.json
+      
+      **Key Features Implemented:**
+      
+      **Configuration Management:**
+      - JSON-based config for all 50+ parameters across all phases
+      - Environment variable overrides for deployment flexibility
+      - Validation ensures no invalid parameters (leverage limits, TP ordering, etc.)
+      - Hot reload support for parameter tuning
+      - Export/import for config versioning
+      
+      **Trade Logging:**
+      - Complete trade lifecycle: signal → risk check → entry → TP hits → trailing → exit
+      - Execution details: Fill price, slippage, fees
+      - Decision rationale: Confluence scores, regime, tier
+      - Risk metrics: Liq price, liq-gap, risk amount
+      - Performance metrics: P&L (USD/%), R-multiple, win/loss
+      - CSV export for analysis in Excel/Python
+      - JSON export for programmatic access
+      
+      **KPI Tracking:**
+      - **Win Rate**: Winning trades / total trades
+      - **Profit Factor**: Gross profit / gross loss
+      - **Sharpe Ratio**: Risk-adjusted returns (annualized)
+      - **Expectancy**: (Win% × Avg Win) - (Loss% × Avg Loss)
+      - **Max Drawdown**: Peak-to-trough decline
+      - **Recovery Factor**: Total P&L / Max Drawdown
+      - **R-Multiple**: Average risk-reward ratio achieved
+      - **TP Hit Rates**: % of trades hitting TP1/TP2/TP3
+      - **Time Stop Rate**: % using time-based exits
+      - **Tier Performance**: A-tier vs B-tier comparison
+      - **Regime Performance**: Squeeze/normal/wide comparison
+      
+      **Integration with Phases 1-3:**
+      - Config Manager provides parameters for all Phase 1-3 services
+      - Trade Logger captures all events from detection through exit
+      - KPI Tracker analyzes logged trades for performance insights
+      - Complete system observability and tuneability
+      
+      **Files Created (Phase 4)**:
+      1. backend/app/services/config_manager.py (469 lines)
+      2. backend/app/services/trade_logger.py (536 lines)
+      3. backend/app/services/kpi_tracker.py (459 lines)
+      
+      **Testing Requirements**:
+      - Config loading and saving
+      - Environment variable overrides
+      - Config validation (detect invalid parameters)
+      - Trade lifecycle logging (create → entry → TP hits → exit)
+      - CSV/JSON export functionality
+      - KPI calculations (win rate, profit factor, Sharpe, etc.)
+      - Breakdown analysis (tier, regime, side)
+      - Report generation
+      
+      **Next Steps:**
+      - E2E Integration: Connect all phases (signal → risk → order → TP/SL → logging → KPIs)
+      - API Endpoints: Expose config, trade logs, and KPIs via REST API
+      - Dashboard: Real-time KPI display
+      - Backtesting: Apply full playbook to historical data
+      
+      **Status**: ✅ Phase 4 implementation complete. All 4 phases of the playbook implemented. Ready for backend testing, integration, and production deployment.
+
   - agent: "testing"
     message: |
       **🚀 PHASE 1: ENHANCED DETECTION ENGINE - COMPREHENSIVE BACKEND TESTING COMPLETE**
