@@ -431,12 +431,16 @@ async def start_live_monitor():
         if live_monitor and live_monitor.running:
             return JSONResponse({'success': True, 'message': 'Monitor already running'})
         
-        # Create monitor instance
+        # Get Helius API key from environment
+        helius_api_key = os.environ.get('HELIUS_API_KEY')
+        
+        # Create monitor instance with enhancements
         live_monitor = LiveMonitor(
             candle_window=500,
             atr_threshold=0.6,
             vol_z_threshold=0.5,
-            bb_width_threshold=0.005
+            bb_width_threshold=0.005,
+            helius_api_key=helius_api_key
         )
         
         # Register signal callback
@@ -447,7 +451,7 @@ async def start_live_monitor():
         
         return JSONResponse({
             'success': True,
-            'message': 'Live monitor started'
+            'message': 'Live monitor started with MTF + On-chain enhancements'
         })
     
     except Exception as e:
