@@ -311,7 +311,13 @@ class BacktestEngine:
         trade.exit_reason = exit_reason
         
         # Calculate bars held
-        trade.bars_held = df.index.get_loc(trade.exit_idx) - df.index.get_loc(trade.entry_idx) if hasattr(self, 'df') else 0
+        if hasattr(self, 'df') and trade.exit_idx is not None:
+            try:
+                trade.bars_held = self.df.index.get_loc(trade.exit_idx) - self.df.index.get_loc(trade.entry_idx)
+            except:
+                trade.bars_held = 0
+        else:
+            trade.bars_held = 0
         
         # Calculate PnL
         if trade.direction == 'long':
