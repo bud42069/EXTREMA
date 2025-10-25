@@ -245,15 +245,15 @@ class MTFConfluenceEngine:
         
         # Tape Micro (10%)
         tape_score = 0.0
-        if micro_snapshot and micro_snapshot.get('ok'):
+        if micro_snapshot and micro_snapshot.ok:
             # CVD check - assume positive CVD for longs, negative for shorts
             # For now, give points if CVD magnitude is significant
-            cvd = micro_snapshot.get('cvd', 0)
+            cvd = micro_snapshot.cvd or 0
             if abs(cvd) > 10:  # Threshold for significant CVD
                 tape_score += self.micro_weights['tape_micro'] * 50  # 5%
             
             # Ladder imbalance check
-            ladder_imb = micro_snapshot.get('ladder_imbalance', 0)
+            ladder_imb = micro_snapshot.ladder_imbalance or 0
             if abs(ladder_imb) > 0.15:  # Threshold for imbalance
                 tape_score += self.micro_weights['tape_micro'] * 50  # 5%
         
@@ -263,14 +263,14 @@ class MTFConfluenceEngine:
         veto_score = self.micro_weights['veto_hygiene'] * 100  # Default full points
         
         # Check for vetoes
-        if micro_snapshot and micro_snapshot.get('ok'):
+        if micro_snapshot and micro_snapshot.ok:
             # OBV cliff veto (large negative CVD slope)
-            cvd_slope = micro_snapshot.get('cvd_slope', 0)
+            cvd_slope = micro_snapshot.cvd_slope or 0
             if abs(cvd_slope) > 2.0:  # Threshold for cliff
                 veto_score = 0.0  # Veto triggered
             
             # Spread veto (too wide)
-            spread = micro_snapshot.get('spread_bps', 0)
+            spread = micro_snapshot.spread_bps or 0
             if spread > 10.0:  # 10 bps threshold
                 veto_score = 0.0  # Veto triggered
         
