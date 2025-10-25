@@ -101,7 +101,9 @@ export default function LandingPageV2() {
             <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ 
               background: `linear-gradient(135deg, ${theme.colors.accent.cyan}, ${theme.colors.accent.emerald})`
             }}>
-              <span className="text-3xl">⚡</span>
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
             </div>
             <div>
               <div className="text-2xl font-black text-gray-200">SWING MATRIX</div>
