@@ -763,6 +763,84 @@ backend:
           
           **CONCLUSION**: TPSLManager is production-ready. All TP/SL calculations accurate, 3-tier ladder working, trailing stop logic operational, regime adjustments functional. Ready for live trading integration.
 
+  - task: "Phase 4: Config Manager (JSON Configuration)"
+    implemented: true
+    working: "NA"
+    file: "app/services/config_manager.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: |
+          NEW: Phase 4 implementation complete. Created ConfigManager class with:
+          - JSON-based configuration system for all playbook parameters
+          - DEFAULT_CONFIG with sections: detection, risk, execution, tp_sl, regime, confluence, veto, system
+          - load_config(): Load from JSON file with default merging
+          - save_config(): Save to JSON file with directory creation
+          - _apply_env_overrides(): Environment variable overrides (TRADING_<SECTION>_<KEY>)
+          - get()/get_section(): Retrieve config values
+          - set()/update_section(): Update config with optional save
+          - validate_config(): Comprehensive validation with error reporting
+          - export_config(): Export config to file
+          - reset_to_defaults(): Reset to default configuration
+          Config path: ./config/trading_config.json
+          Supports hot reload and environment-based overrides.
+          Needs backend testing with config load/save/validation.
+
+  - task: "Phase 4: Trade Logger (Comprehensive Logging)"
+    implemented: true
+    working: "NA"
+    file: "app/services/trade_logger.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: |
+          NEW: Phase 4 implementation complete. Created TradeLogger class with:
+          - Trade lifecycle tracking (signal → risk → entry → TP hits → exit)
+          - create_trade(): Initialize trade with signal, confluence, regime, tier
+          - log_risk_check(): Log pre-entry risk assessment
+          - log_entry(): Log fill details (price, quantity, slippage, fees)
+          - log_tp_hit(): Log TP level hits (TP1/TP2/TP3) with reductions
+          - log_trailing_activation(): Log trailing stop activation
+          - log_exit(): Log exit with P&L, R-multiple, exit reason
+          - Trade event tracking with timestamps
+          - Export to CSV and JSON
+          - MongoDB integration (optional)
+          - File storage: ./logs/trades/{trade_id}.json
+          Comprehensive trade data structure with execution, risk, TP/SL, performance metrics.
+          Needs backend testing with trade lifecycle simulation.
+
+  - task: "Phase 4: KPI Tracker (Performance Metrics)"
+    implemented: true
+    working: "NA"
+    file: "app/services/kpi_tracker.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: |
+          NEW: Phase 4 implementation complete. Created KPITracker class with:
+          - calculate_kpis(): Comprehensive KPI calculation from trade list
+          - Summary KPIs: Total trades, win/loss counts, win rate, total/avg P&L
+          - Return KPIs: Profit factor, avg R-multiple, expectancy, best/worst trades
+          - Risk KPIs: Max drawdown, Sharpe ratio, recovery factor, consecutive wins/losses
+          - Efficiency KPIs: Hold time, TP hit rates, time stop/early reduce usage, exit reasons
+          - Breakdown by tier (A vs B)
+          - Breakdown by regime (squeeze/normal/wide)
+          - Breakdown by side (long/short)
+          - export_report(): Export KPIs to JSON with timestamp
+          - get_summary_stats(): Dashboard-ready summary stats
+          Output: ./logs/kpis/kpi_report_{timestamp}.json
+          All metrics use proper statistical calculations (Sharpe, profit factor, expectancy).
+          Needs backend testing with sample trade data.
+
   - task: "MEXC WebSocket Worker"
     implemented: true
     working: true
