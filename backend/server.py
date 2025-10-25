@@ -1,4 +1,5 @@
-from fastapi import FastAPI, APIRouter
+from fastapi import FastAPI, APIRouter, UploadFile, File, HTTPException
+from fastapi.responses import JSONResponse
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -6,9 +7,19 @@ import os
 import logging
 from pathlib import Path
 from pydantic import BaseModel, Field, ConfigDict
-from typing import List
+from typing import List, Dict, Optional, Any
 import uuid
 from datetime import datetime, timezone
+import pandas as pd
+import numpy as np
+import json
+import io
+
+# Import our trading modules
+from indicators import add_all_indicators
+from extrema_detection import detect_local_extrema, label_extrema_with_swings
+from signal_detection import TwoStageDetector
+from backtesting import BacktestEngine
 
 
 ROOT_DIR = Path(__file__).parent
