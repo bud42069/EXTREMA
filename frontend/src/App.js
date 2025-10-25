@@ -4,31 +4,57 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 // Import pages
-import LandingPage from './pages/LandingPage';
 import LandingPageV2 from './pages/LandingPageV2';
-import OverviewPage from './pages/OverviewPage';
 import OverviewPageV2 from './pages/OverviewPageV2';
-import LiveSignalsPageNew from './pages/LiveSignalsPageNew';
 import LiveSignalsDashboardV2 from './pages/LiveSignalsDashboardV2';
-import ScalpCardsPage from './pages/ScalpCardsPage';
 import ScalpCardsPageV2 from './pages/ScalpCardsPageV2';
-import UploadPage from './pages/UploadPage';
-import AnalysisPage from './pages/AnalysisPage';
-import AnalysisPageV2 from './pages/AnalysisPageV2';
-import BacktestPage from './pages/BacktestPage';
-import BacktestPageV2 from './pages/BacktestPageV2';
+import DataAnalysisPage from './pages/DataAnalysisPage';
 
 // Modern Sidebar Component
 const Sidebar = () => {
   const location = useLocation();
   
   const navItems = [
-    { path: '/dashboard', icon: '📊', label: 'Overview', badge: null },
-    { path: '/live', icon: '📡', label: 'Live Signals', badge: 'LIVE' },
-    { path: '/scalp-cards', icon: '🎯', label: 'Scalp Cards', badge: null },
-    { path: '/upload', icon: '📁', label: 'Upload Data', badge: null },
-    { path: '/analysis', icon: '🔬', label: 'Analysis', badge: null },
-    { path: '/backtest', icon: '📈', label: 'Backtest', badge: null }
+    { 
+      path: '/dashboard', 
+      icon: (
+        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+        </svg>
+      ),
+      label: 'Overview',
+      badge: null
+    },
+    { 
+      path: '/live', 
+      icon: (
+        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+        </svg>
+      ),
+      label: 'Live Signals',
+      badge: 'LIVE'
+    },
+    { 
+      path: '/scalp-cards', 
+      icon: (
+        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+        </svg>
+      ),
+      label: 'Scalp Cards',
+      badge: null
+    },
+    { 
+      path: '/data-analysis', 
+      icon: (
+        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+      ),
+      label: 'Data Analysis',
+      badge: null
+    }
   ];
 
   return (
@@ -36,7 +62,9 @@ const Sidebar = () => {
       {/* Logo */}
       <Link to="/" className="flex items-center space-x-3 mb-12 group">
         <div className="w-12 h-12 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg shadow-emerald-500/25">
-          <span className="text-2xl">⚡</span>
+          <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+          </svg>
         </div>
         <div>
           <h1 className="text-xl font-bold bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">
@@ -61,7 +89,9 @@ const Sidebar = () => {
               }`}
             >
               <div className="flex items-center space-x-3">
-                <span className="text-2xl">{item.icon}</span>
+                <div className={isActive ? 'text-emerald-400' : 'text-slate-400 group-hover:text-white'}>
+                  {item.icon}
+                </div>
                 <span className={`font-medium ${
                   isActive ? 'text-emerald-400' : 'text-slate-400 group-hover:text-white'
                 }`}>
@@ -140,11 +170,8 @@ function App() {
             <Route path="/" element={<LandingPageV2 />} />
             <Route path="/dashboard" element={<OverviewPageV2 />} />
             <Route path="/live" element={<LiveSignalsDashboardV2 />} />
-            <Route path="/live-old" element={<LiveSignalsPageNew />} />
             <Route path="/scalp-cards" element={<ScalpCardsPageV2 />} />
-            <Route path="/upload" element={<UploadPage />} />
-            <Route path="/analysis" element={<AnalysisPageV2 />} />
-            <Route path="/backtest" element={<BacktestPageV2 />} />
+            <Route path="/data-analysis" element={<DataAnalysisPage />} />
           </Routes>
         </Layout>
       </BrowserRouter>
