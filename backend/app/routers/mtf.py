@@ -7,7 +7,7 @@ from typing import Optional
 
 from ..services.mtf_state_machine import mtf_state_machine, MTFState
 from ..workers.binance_klines import BinanceKlineWorker
-from ..services.binance_rest import binance_rest_client
+from ..services.binance_rest import multi_source_rest_client
 from ..utils.logging import get_logger
 from ..utils.mtf_store import get_store_stats, get_klines
 from ..services.mtf_features import extract_mtf_features
