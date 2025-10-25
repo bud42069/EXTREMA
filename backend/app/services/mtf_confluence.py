@@ -53,11 +53,14 @@ class MTFConfluenceEngine:
         
         # Helius integration
         self.onchain_monitor = None
-        if helius_api_key:
+        if helius_api_key and HELIUS_AVAILABLE:
             self.onchain_monitor = HeliusOnChainMonitor(helius_api_key)
-            logger.info("Helius on-chain monitoring enabled")
+            logger.info("✅ Helius on-chain monitoring ENABLED")
         else:
-            logger.info("Helius on-chain monitoring disabled (no API key)")
+            if not helius_api_key:
+                logger.info("⚠️ Helius on-chain monitoring disabled (no API key)")
+            else:
+                logger.info("⚠️ Helius on-chain monitoring disabled (module not available)")
         
         # Feature cache
         self.features_cache = {}
