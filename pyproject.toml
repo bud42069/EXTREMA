@@ -1,8 +1,10 @@
 [tool.ruff]
 line-length = 100
 target-version = "py311"
-select = ["E","F","I","UP","N","B"]
 exclude = ["frontend", ".venv", "dist", "build"]
+
+[tool.ruff.lint]
+select = ["E","F","I","UP","N","B"]
 
 [tool.pytest.ini_options]
 pythonpath = ["backend"]
