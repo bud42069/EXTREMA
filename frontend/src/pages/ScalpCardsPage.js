@@ -1,29 +1,49 @@
 import { useEffect, useMemo, useState } from "react";
+import { useWebSocket } from "../hooks/useWebSocket";
 
 const api = (path, init) =>
   fetch(`${process.env.REACT_APP_BACKEND_URL}${path}`, init)
     .then(r => r.json());
 
-function useSnapshot(pollMs = 1500) {
+function useSnapshot(pollMs = 1500, useWs = true) {
   const [snap, setSnap] = useState(null);
+  
+  // Try WebSocket first
+  const wsUrl = process.env.REACT_APP_BACKEND_URL
+    ? process.env.REACT_APP_BACKEND_URL.replace('https://', 'wss://').replace('http://', 'ws://') + '/api/signals/stream'
+    : null;
+  
+  const { data: wsData, connected } = useWebSocket(wsUrl, { enabled: useWs });
+  
+  // Fallback to polling if WebSocket not connected
   useEffect(() => {
-    let id = setInterval(async () => {
-      try {
-        const js = await api("/api/stream/snapshot");
-        setSnap(js);
-      } catch (e) {
-        console.error("Snapshot fetch error:", e);
+    if (connected && wsData) {
+      // WebSocket provides data
+      if (wsData.type === 'snapshot' && wsData.data) {
+        setSnap(wsData.data);
       }
-    }, pollMs);
-    return () => clearInterval(id);
-  }, [pollMs]);
-  return snap;
+    } else {
+      // Fallback to polling
+      let id = setInterval(async () => {
+        try {
+          const js = await api("/api/stream/snapshot");
+          setSnap(js);
+        } catch (e) {
+          console.error("Snapshot fetch error:", e);
+        }
+      }, pollMs);
+      return () => clearInterval(id);
+    }
+  }, [pollMs, connected, wsData]);
+  
+  return { snap, connected };
 }
 
 export default function ScalpCardsPage() {
   const [resp, setResp] = useState(null);
   const [loading, setLoading] = useState(false);
-  const snap = useSnapshot(1500);
+  const [demoMode, setDemoMode] = useState(false);
+  const { snap, connected: wsConnected } = useSnapshot(1500, true);
 
   const vetoBadges = useMemo(() => {
     if (!resp || resp.message || !resp.card?.checks?.micro_veto) return null;
