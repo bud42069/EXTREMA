@@ -502,11 +502,11 @@ class BackendTester:
                     size_multiplier = final.get('size_multiplier', 0)
                     
                     params = data.get('parameters', {})
-                    side = params.get('side')
-                    tier = params.get('tier')
+                    side = params.get('side', 'baseline')
+                    tier = params.get('tier', 'baseline')
                     
                     self.log_result("MTF Confluence Short A-tier (Phase 2)", True, 
-                                  f"Side: {side}, Tier: {tier} -> Final: {final_tier} (x{size_multiplier}) | {regime_info} | {context_info} | {macro_info}")
+                                  f"Mode: {side}/{tier} -> Final: {final_tier} (x{size_multiplier}) | {regime_info} | {context_info} | {macro_info}")
                 else:
                     self.log_result("MTF Confluence Short A-tier (Phase 2)", False, "Missing confluence structure")
             else:
