@@ -226,8 +226,10 @@ const TradeLog = ({ signals, isOpen, onToggle }) => {
                   </div>
                   
                   <div className="flex items-start gap-3 mb-3">
-                    <div className={`text-3xl ${signal.side === 'long' ? 'text-cyan-400' : 'text-pink-400'}`}>
-                      {signal.side === 'long' ? '📈' : '📉'}
+                    <div className={`${signal.side === 'long' ? 'text-cyan-400' : 'text-pink-400'}`}>
+                      <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={signal.side === 'long' ? "M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" : "M13 17h8m0 0v-8m0 8l-8-8-4 4-6-6"} />
+                      </svg>
                     </div>
                     <div className="flex-1">
                       <div className={`text-lg font-bold uppercase mb-1 ${
