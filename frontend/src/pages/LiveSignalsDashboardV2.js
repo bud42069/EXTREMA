@@ -524,48 +524,84 @@ export default function LiveSignalsDashboardV2() {
       </div>
 
       {/* Top Status Strip */}
-      <div className="sticky top-0 z-50 bg-black/60 backdrop-blur-xl border-b border-gray-800/50">
-        <div className="px-6 py-3 flex items-center justify-between">
+      <div className="sticky top-0 z-50 bg-black/80 backdrop-blur-2xl border-b border-cyan-500/10 shadow-lg shadow-cyan-500/5">
+        <div className="px-8 py-3.5 flex items-center justify-between">
           <div className="flex items-center gap-6 text-sm font-mono">
-            <span className="text-gray-500">SOL/USD</span>
-            <span className="text-white font-semibold text-lg">{formatPrice(monitorStatus.last_price)}</span>
-            <span className="text-gray-600">|</span>
-            <span className="text-gray-500">CVD</span>
-            <span className={`${microSnap?.cvd ? (microSnap.cvd > 0 ? 'text-emerald-400' : 'text-rose-400') : 'text-gray-500'}`}>
-              {microSnap?.cvd ? formatNumber(microSnap.cvd, 0) : '--'}
-            </span>
-            <span className="text-gray-600">|</span>
-            <span className="text-gray-500">Spread</span>
-            <span className="text-gray-300">{microSnap?.spread_bps ? `${formatNumber(microSnap.spread_bps, 1)}bps` : '--'}</span>
-            <span className="text-gray-600">|</span>
-            <span className="text-gray-500">Imb</span>
-            <span className="text-gray-300">{microSnap?.ladder_imbalance ? formatNumber(microSnap.ladder_imbalance, 3) : '--'}</span>
-            <span className="text-gray-600">|</span>
-            <span className="text-gray-500">Depth</span>
-            <span className="text-blue-400">{microSnap?.bid_depth ? formatNumber(microSnap.bid_depth / 1000, 0) : '--'}k</span>
-            <span className="text-gray-600">/</span>
-            <span className="text-rose-400">{microSnap?.ask_depth ? formatNumber(microSnap.ask_depth / 1000, 0) : '--'}k</span>
+            <div className="flex items-center gap-2">
+              <span className="text-gray-500 font-semibold">SOL/USD</span>
+              <motion.span 
+                key={monitorStatus.last_price}
+                initial={{ scale: 1.1, color: '#00F6FF' }}
+                animate={{ scale: 1, color: '#ffffff' }}
+                transition={{ duration: 0.3 }}
+                className="text-white font-black text-xl"
+              >
+                {formatPrice(monitorStatus.last_price)}
+              </motion.span>
+            </div>
+            <span className="text-gray-700">|</span>
+            <div className="flex items-center gap-2">
+              <span className="text-gray-500">CVD</span>
+              <motion.span
+                key={microSnap?.cvd}
+                initial={{ scale: 1.1 }}
+                animate={{ scale: 1 }}
+                className={`font-bold ${microSnap?.cvd ? (microSnap.cvd > 0 ? 'text-emerald-400' : 'text-rose-400') : 'text-gray-600'}`}
+              >
+                {microSnap?.cvd ? formatNumber(microSnap.cvd, 0) : '--'}
+              </motion.span>
+            </div>
+            <span className="text-gray-700">|</span>
+            <div className="flex items-center gap-2">
+              <span className="text-gray-500">Spread</span>
+              <span className={`font-bold ${microSnap?.spread_bps ? (microSnap.spread_bps < 1 ? 'text-emerald-400' : 'text-amber-400') : 'text-gray-600'}`}>
+                {microSnap?.spread_bps ? `${formatNumber(microSnap.spread_bps, 1)}bps` : '--'}
+              </span>
+            </div>
+            <span className="text-gray-700">|</span>
+            <div className="flex items-center gap-2">
+              <span className="text-gray-500">Imb</span>
+              <span className="text-gray-300 font-bold">{microSnap?.ladder_imbalance ? formatNumber(microSnap.ladder_imbalance, 3) : '--'}</span>
+            </div>
+            <span className="text-gray-700">|</span>
+            <div className="flex items-center gap-2">
+              <span className="text-gray-500">Depth</span>
+              <span className="text-blue-400 font-bold">{microSnap?.bid_depth ? formatNumber(microSnap.bid_depth / 1000, 0) : '--'}k</span>
+              <span className="text-gray-700">/</span>
+              <span className="text-rose-400 font-bold">{microSnap?.ask_depth ? formatNumber(microSnap.ask_depth / 1000, 0) : '--'}k</span>
+            </div>
           </div>
 
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <div className={`w-2 h-2 rounded-full ${monitorStatus.running ? 'bg-emerald-500 animate-pulse' : 'bg-gray-600'}`}></div>
-              <span className="text-xs font-mono text-gray-400">{monitorStatus.running ? 'ACTIVE' : 'OFFLINE'}</span>
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-900/50 rounded-lg border border-gray-800/50">
+              <motion.div 
+                animate={{ 
+                  scale: monitorStatus.running ? [1, 1.2, 1] : 1,
+                  opacity: monitorStatus.running ? [1, 0.5, 1] : 1
+                }}
+                transition={{ duration: 2, repeat: Infinity }}
+                className={`w-2 h-2 rounded-full ${monitorStatus.running ? 'bg-emerald-500' : 'bg-gray-600'}`}
+              />
+              <span className="text-xs font-mono font-bold text-gray-400">
+                {monitorStatus.running ? 'ACTIVE' : 'OFFLINE'}
+              </span>
             </div>
             
             {monitorStatus.running ? (
               <button
                 onClick={handleStopMonitor}
-                className="px-4 py-1.5 bg-gray-800/50 hover:bg-gray-700/50 border border-gray-700/50 rounded-lg text-xs font-medium transition-all"
+                className="px-5 py-2 bg-gray-800/70 hover:bg-gray-700/70 border border-gray-700/70 hover:border-rose-500/40 rounded-lg text-xs font-bold transition-all flex items-center gap-2 group"
               >
-                STOP <kbd className="ml-1 text-gray-600">X</kbd>
+                <span className="text-gray-300 group-hover:text-rose-400 transition-colors">STOP</span>
+                <kbd className="px-1.5 py-0.5 bg-gray-900/50 text-gray-600 group-hover:text-rose-500 rounded text-xs font-mono">X</kbd>
               </button>
             ) : (
               <button
                 onClick={handleStartMonitor}
-                className="px-4 py-1.5 bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-500/40 text-emerald-300 rounded-lg text-xs font-semibold transition-all"
+                className="px-5 py-2 bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-500/40 hover:border-emerald-500/60 text-emerald-300 hover:text-emerald-200 rounded-lg text-xs font-bold transition-all flex items-center gap-2 shadow-lg shadow-emerald-500/10"
               >
-                START <kbd className="ml-1 text-emerald-600">S</kbd>
+                <span>START</span>
+                <kbd className="px-1.5 py-0.5 bg-emerald-900/30 text-emerald-600 rounded text-xs font-mono">S</kbd>
               </button>
             )}
           </div>
