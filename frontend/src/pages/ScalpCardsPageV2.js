@@ -96,7 +96,7 @@ SL: ${card.sl.toFixed(4)}
 SIZE: ${card.size}
     `;
     navigator.clipboard.writeText(orderText);
-    toast.success('📋 Copied to clipboard', { position: 'top-right', autoClose: 1500 });
+    toast.success('Copied to clipboard', { position: 'top-right', autoClose: 1500 });
   };
 
   return (
