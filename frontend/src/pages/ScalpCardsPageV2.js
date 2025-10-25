@@ -106,7 +106,9 @@ SIZE: ${card.size}
         <div className="px-8 py-4 flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-black text-gray-200 flex items-center gap-3">
-              <span className="text-3xl">🎯</span>
+              <svg className="w-10 h-10 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
               SCALP CARD — MANUAL EXECUTION
             </h1>
             <p className="text-sm text-gray-500 mt-1 font-mono">Real-time execution sheet with microstructure validation</p>
