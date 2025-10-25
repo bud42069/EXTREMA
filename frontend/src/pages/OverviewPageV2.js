@@ -96,7 +96,6 @@ export default function OverviewPageV2() {
               variant={stats.monitor.running ? 'ghost' : 'success'}
               size="lg"
               onClick={() => navigate('/live')}
-              leftIcon={stats.monitor.running ? '📡' : '▶️'}
             >
               {stats.monitor.running ? 'MONITOR ACTIVE' : 'START MONITOR'}
             </Button>
