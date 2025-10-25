@@ -186,6 +186,9 @@ class LiveMonitor:
             if price is None:
                 return None
             
+            # Update last price
+            self.last_price = price
+            
             # Get current 5-min timestamp (round down to nearest 5 min)
             now = datetime.now(timezone.utc)
             timestamp = int(now.timestamp())
