@@ -916,10 +916,9 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Phase 2: Regime Detection (Squeeze/Normal/Wide)"
-    - "Phase 2: Context Gates (15m/1h EMA Alignment)"
-    - "Phase 2: Macro Gates (4h/1D A/B Tiering)"
-    - "Phase 2: MTF Confluence Enhancement (Context & Macro)"
+    - "Phase 3: Order Manager (Post-only, Unfilled Protocol)"
+    - "Phase 3: Risk Manager (Liq-gap Guards)"
+    - "Phase 3: TP/SL Manager (3-Tier Ladder, Trailing)"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
