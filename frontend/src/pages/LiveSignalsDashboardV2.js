@@ -620,17 +620,16 @@ export default function LiveSignalsDashboardV2() {
         <div className="lg:col-span-2 space-y-4">
           
           {/* MTF Confluence Engine */}
-          {mtfStatus && mtfConfluence && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className={`relative rounded-2xl p-6 border-2 transition-all backdrop-blur-xl ${
-                mtfStatus.running 
-                  ? 'bg-gradient-to-br ' + getConfluenceTierColor(mtfConfluence.confluence?.final?.tier || 'SKIP')
-                  : 'bg-gray-900/40 border-gray-800/60'
-              }`}
-            >
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className={`relative rounded-2xl p-6 border-2 transition-all backdrop-blur-xl ${
+              mtfStatus?.running && mtfConfluence?.confluence
+                ? 'bg-gradient-to-br ' + getConfluenceTierColor(mtfConfluence.confluence?.final?.tier || 'SKIP')
+                : 'bg-gray-900/40 border-gray-800/60'
+            }`}
+          >
               {/* Animated pulse ring for active state */}
               {mtfStatus.running && mtfConfluence.confluence?.final?.tier === 'A' && (
                 <motion.div
