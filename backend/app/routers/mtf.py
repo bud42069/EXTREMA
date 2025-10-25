@@ -59,7 +59,7 @@ async def start_mtf(symbol: str = "SOLUSDT"):
         
         # Start higher timeframe data fetching
         if not higher_tf_started:
-            asyncio.create_task(binance_rest_client.start_all(symbol))
+            asyncio.create_task(multi_source_rest_client.start_all(symbol))
             higher_tf_started = True
         
         return {
