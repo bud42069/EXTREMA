@@ -527,7 +527,6 @@ function ExecutionTab({ card, notionalValue, riskAmount, side }) {
           variant={side === 'long' ? 'success' : 'danger'}
           size="lg"
           fullWidth
-          leftIcon={side === 'long' ? '📈' : '📉'}
         >
           EXECUTE {side.toUpperCase()} @ {card.entry.toFixed(4)}
         </Button>
