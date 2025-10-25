@@ -580,58 +580,114 @@ export default function LiveSignalsDashboardV2() {
           
           {/* MTF Confluence Engine */}
           {mtfStatus && mtfConfluence && (
-            <div className={`relative rounded-2xl p-6 border transition-all ${
-              mtfStatus.running 
-                ? 'bg-gradient-to-br ' + getConfluenceTierColor(mtfConfluence.confluence?.final?.tier || 'SKIP')
-                : 'bg-gray-900/30 border-gray-800/50'
-            }`}>
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <div className="text-2xl">🧠</div>
-                  <div>
-                    <h3 className="text-sm font-semibold text-gray-300">MTF Confluence Engine</h3>
-                    <p className="text-xs text-gray-500 font-mono">
-                      {mtfStatus.state_machine?.state?.toUpperCase() || 'IDLE'}
-                    </p>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className={`relative rounded-2xl p-6 border-2 transition-all backdrop-blur-xl ${
+                mtfStatus.running 
+                  ? 'bg-gradient-to-br ' + getConfluenceTierColor(mtfConfluence.confluence?.final?.tier || 'SKIP')
+                  : 'bg-gray-900/40 border-gray-800/60'
+              }`}
+            >
+              {/* Animated pulse ring for active state */}
+              {mtfStatus.running && mtfConfluence.confluence?.final?.tier === 'A' && (
+                <motion.div
+                  className="absolute inset-0 rounded-2xl border-2 border-cyan-500/40"
+                  animate={{
+                    scale: [1, 1.02, 1],
+                    opacity: [0.5, 0.8, 0.5]
+                  }}
+                  transition={{
+                    duration: 2,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  }}
+                />
+              )}
+              
+              <div className="relative z-10">
+                <div className="flex items-center justify-between mb-5">
+                  <div className="flex items-center gap-3">
+                    <motion.div 
+                      animate={{ rotate: [0, 360] }}
+                      transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                      className="text-3xl"
+                    >
+                      🧠
+                    </motion.div>
+                    <div>
+                      <h3 className="text-sm font-bold text-gray-200 uppercase tracking-wider">MTF Confluence Engine</h3>
+                      <p className="text-xs text-gray-500 font-mono mt-0.5">
+                        <span className={`inline-block w-2 h-2 rounded-full mr-1.5 ${
+                          mtfStatus.running ? 'bg-emerald-400 animate-pulse' : 'bg-gray-600'
+                        }`}></span>
+                        {mtfStatus.state_machine?.state?.toUpperCase() || 'IDLE'}
+                      </p>
+                    </div>
                   </div>
-                </div>
-                
-                {mtfConfluence.confluence && (
-                  <div className="flex items-center gap-4">
-                    <div className="text-right">
-                      <div className="text-3xl font-bold">
-                        {formatNumber(mtfConfluence.confluence.final.final_score, 0)}
+                  
+                  {mtfConfluence.confluence && (
+                    <div className="flex items-center gap-4">
+                      <div className="text-right">
+                        <motion.div 
+                          key={mtfConfluence.confluence.final.final_score}
+                          initial={{ scale: 1.3, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          transition={{ type: "spring", stiffness: 300 }}
+                          className="text-4xl font-black"
+                        >
+                          {formatNumber(mtfConfluence.confluence.final.final_score, 0)}
+                        </motion.div>
+                        <div className="text-xs text-gray-500 uppercase tracking-wider font-semibold">Score</div>
                       </div>
-                      <div className="text-xs text-gray-500">SCORE</div>
+                      <motion.div
+                        initial={{ scale: 0.8, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        transition={{ type: "spring", stiffness: 300 }}
+                        className={`px-5 py-2.5 rounded-xl border-2 text-xl font-black shadow-lg ${
+                          mtfConfluence.confluence.final.tier === 'A' ? 'border-cyan-500/70 text-cyan-300 bg-cyan-500/20 shadow-cyan-500/30' :
+                          mtfConfluence.confluence.final.tier === 'B' ? 'border-amber-500/70 text-amber-300 bg-amber-500/20 shadow-amber-500/30' :
+                          'border-gray-600/70 text-gray-500 bg-gray-800/20 shadow-gray-500/20'
+                        }`}
+                      >
+                        TIER {mtfConfluence.confluence.final.tier}
+                      </motion.div>
                     </div>
-                    <div className={`px-4 py-2 rounded-xl border-2 text-lg font-bold ${
-                      mtfConfluence.confluence.final.tier === 'A' ? 'border-cyan-500/60 text-cyan-300 bg-cyan-500/10' :
-                      mtfConfluence.confluence.final.tier === 'B' ? 'border-amber-500/60 text-amber-300 bg-amber-500/10' :
-                      'border-gray-600/60 text-gray-500 bg-gray-800/10'
-                    }`}>
-                      TIER {mtfConfluence.confluence.final.tier}
-                    </div>
-                  </div>
-                )}
-              </div>
+                  )}
+                </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-black/20 rounded-xl p-4 border border-gray-800/50">
-                  <div className="text-xs text-gray-500 mb-2 uppercase tracking-wider">Context</div>
-                  <div className="text-2xl font-bold text-blue-400">
-                    {mtfConfluence.confluence ? formatNumber(mtfConfluence.confluence.context.total, 0) : '--'}
-                  </div>
-                  <div className="text-xs text-gray-600 mt-1">15m/1h/4h/1D</div>
-                </div>
-                <div className="bg-black/20 rounded-xl p-4 border border-gray-800/50">
-                  <div className="text-xs text-gray-500 mb-2 uppercase tracking-wider">Micro</div>
-                  <div className="text-2xl font-bold text-purple-400">
-                    {mtfConfluence.confluence ? formatNumber(mtfConfluence.confluence.micro.total, 0) : '--'}
-                  </div>
-                  <div className="text-xs text-gray-600 mt-1">1s→1m→5m</div>
+                <div className="grid grid-cols-2 gap-4">
+                  <motion.div
+                    whileHover={{ scale: 1.02 }}
+                    className="bg-black/30 rounded-xl p-4 border border-gray-800/50 backdrop-blur-sm"
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="text-xs text-gray-500 uppercase tracking-wider font-semibold">Context</div>
+                      <span className="text-xs text-gray-600 font-mono">HTF</span>
+                    </div>
+                    <div className="text-3xl font-black text-blue-400 mb-1">
+                      {mtfConfluence.confluence ? formatNumber(mtfConfluence.confluence.context.total, 0) : '--'}
+                    </div>
+                    <div className="text-xs text-gray-600 font-mono">15m • 1h • 4h • 1D</div>
+                  </motion.div>
+                  
+                  <motion.div
+                    whileHover={{ scale: 1.02 }}
+                    className="bg-black/30 rounded-xl p-4 border border-gray-800/50 backdrop-blur-sm"
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="text-xs text-gray-500 uppercase tracking-wider font-semibold">Micro</div>
+                      <span className="text-xs text-gray-600 font-mono">LTF</span>
+                    </div>
+                    <div className="text-3xl font-black text-purple-400 mb-1">
+                      {mtfConfluence.confluence ? formatNumber(mtfConfluence.confluence.micro.total, 0) : '--'}
+                    </div>
+                    <div className="text-xs text-gray-600 font-mono">1s → 1m → 5m</div>
+                  </motion.div>
                 </div>
               </div>
-            </div>
+            </motion.div>
           )}
 
           {/* Signal Stack */}
