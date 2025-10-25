@@ -120,7 +120,7 @@ def check_macro_alignment(
             result['1d_trend'] = 'neutral'
         
         # Overall macro alignment
-        result['macro_aligned'] = result['4h_aligned'] and result['1d_aligned']
+        result['macro_aligned'] = bool(result['4h_aligned'] and result['1d_aligned'])
         
         # Tier clearance
         if result['macro_aligned']:
