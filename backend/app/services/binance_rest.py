@@ -19,7 +19,7 @@ class BinanceRestClient:
     """
     
     def __init__(self):
-        self.base_url = "https://data-stream.binance.vision/api/v3"
+        self.base_url = "https://api.binance.com/api/v3"
         self.client = httpx.AsyncClient(timeout=30.0)
         
         # Timeframe mapping (internal -> Binance API)
