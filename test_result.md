@@ -450,6 +450,97 @@ backend:
           
           **CONCLUSION**: Phase 1 Enhanced Detection Engine is production-ready and working excellently. All backend APIs respond correctly, Phase 1 feature integration is successful, and the system gracefully handles data unavailability in test environment.
 
+  - task: "Phase 2: Regime Detection (Squeeze/Normal/Wide)"
+    implemented: true
+    working: "NA"
+    file: "app/services/regime_detector.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: |
+          NEW: Phase 2 implementation complete. Created RegimeDetector class with:
+          - compute_bbwidth(): Bollinger Band Width computation (BBupper - BBlower) / BBupper
+          - compute_percentile(): Rolling percentile rank over 90-bar window
+          - detect_regime(): Classification (squeeze ≤30%, normal 30-70%, wide ≥70%)
+          - get_regime_params(): Regime-specific parameters (TP/SL adjustments, trigger multipliers)
+          - analyze_regime(): Comprehensive regime analysis with all features
+          - compute_regime_features(): Full DataFrame feature computation
+          Integrated into mtf_confluence.py via compute_regime_features() method.
+          Returns regime with BBWidth percentile and regime-specific parameters.
+          Needs backend testing with 5m data.
+
+  - task: "Phase 2: Context Gates (15m/1h EMA Alignment)"
+    implemented: true
+    working: "NA"
+    file: "app/services/context_gates.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: |
+          NEW: Phase 2 implementation complete. Created context gate functions:
+          - compute_ema_set(): Computes EMAs (5/9/21/38) for alignment checks
+          - check_ema_alignment(): EMA alignment check (≥3/4 aligned in trade direction)
+          - compute_pivot_points(): Classic daily pivot point calculation (R1, S1)
+          - check_pivot_structure(): Price position relative to pivot/VWAP
+          - check_oscillator_agreement(): RSI-12 not extreme against direction
+          - check_context_gates(): Comprehensive 15m/1h context analysis
+          Integrated into mtf_confluence.py compute_context_confluence() method.
+          Determines continuation (A-tier eligible) vs deviation (B-tier only) play types.
+          Returns context score (0-100) with detailed breakdown.
+          Needs backend testing with 15m/1h data.
+
+  - task: "Phase 2: Macro Gates (4h/1D A/B Tiering)"
+    implemented: true
+    working: "NA"
+    file: "app/services/macro_gates.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: |
+          NEW: Phase 2 implementation complete. Created macro gate functions:
+          - check_macro_alignment(): 4h/1D EMA alignment for A-tier clearance
+          - check_macro_conflict(): Conflict detection between macro and context timeframes
+          - compute_macro_score(): Comprehensive macro scoring (0-100)
+          - determine_final_tier(): A/B/SKIP tier determination with thresholds
+          Integrated into mtf_confluence.py:
+          - compute_context_confluence() uses check_macro_alignment() for macro_gate score (10%)
+          - compute_final_confluence() uses determine_final_tier() for tier classification
+          A-tier: Context ≥75 AND Micro ≥80 with macro aligned
+          B-tier: Context ≥60 AND Micro ≥70 with macro neutral/mixed
+          Needs backend testing with 4h/1D data.
+
+  - task: "Phase 2: MTF Confluence Enhancement (Context & Macro)"
+    implemented: true
+    working: "NA"
+    file: "app/services/mtf_confluence.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: |
+          NEW: Phase 2 MTF confluence engine enhanced:
+          - Added RegimeDetector initialization in __init__
+          - Created compute_regime_features() for 5m BBWidth regime detection
+          - Enhanced compute_context_confluence() to accept DataFrames (df_15m, df_1h, df_4h, df_1d)
+          - Integrated check_context_gates() for 15m/1h EMA alignment (15% weight)
+          - Integrated check_macro_alignment() for 4h/1D alignment (10% weight)
+          - Enhanced compute_final_confluence() with determine_final_tier() and check_macro_conflict()
+          - Updated evaluate() method to accept all Phase 2 DataFrames
+          - Returns regime, phase2_enabled status, bottleneck identification
+          - Enhanced /api/mtf/confluence endpoint with Phase 2 DataFrame passing
+          Needs comprehensive backend testing.
+
   - task: "MEXC WebSocket Worker"
     implemented: true
     working: true
