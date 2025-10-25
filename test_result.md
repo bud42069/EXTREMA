@@ -379,6 +379,91 @@ frontend:
         agent: "main"
         comment: "Implemented backtest config form, TP/SL parameters, results display with trade table. Needs E2E testing."
 
+  - task: "Live Signals Dashboard V2 (Bloomberg-Class Redesign)"
+    implemented: true
+    working: true
+    file: "pages/LiveSignalsDashboardV2.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: |
+          ✅ BLOOMBERG-CLASS REDESIGN IMPLEMENTED - PHASE 3 COMPLETE
+          
+          **Enhanced Visual Design**:
+          - Installed framer-motion and recharts for smooth animations
+          - Dark luxury aesthetic with gradient backgrounds (#0B0E14 → #141921)
+          - Enhanced typography (bold titles, better spacing, professional font hierarchy)
+          - Backdrop blur effects on all cards for depth
+          - Animated transitions on all data updates
+          
+          **Top Status Strip**:
+          - Enhanced with better contrast and spacing
+          - Live price updates with scale animation
+          - Color-coded metrics (CVD: emerald/rose, Spread: emerald/amber)
+          - Improved START/STOP buttons with hover effects
+          - Active status indicator with pulse animation
+          
+          **MTF Confluence Engine**:
+          - Animated pulse ring for Tier A signals
+          - Rotating brain icon (20s loop)
+          - Score and Tier badge with spring animations
+          - Context and Micro cards with hover scale effect
+          - Enhanced color coding (cyan for A-tier, amber for B-tier)
+          
+          **Signal Stack**:
+          - AnimatePresence for smooth signal entry/exit
+          - Animated radar icon for empty state
+          - Enhanced signal cards with:
+            * Gradient backgrounds (cyan for long, pink for short)
+            * Animated arrow icons with spring entrance
+            * Glow effect on hover
+            * Metrics grid (R:R, Stop Loss, Target TP1)
+            * Tier badges with shadows
+          - Staggered animation for multiple signals
+          
+          **Microstructure Grid (Right Panel)**:
+          - CVD Slope Chart: Recharts with gradient fill, smooth area animation
+          - CVD Gauge: Scale animation on value change, enhanced typography
+          - Spread Dial: Spring animation on bar width, color-coded thresholds
+          - Depth Imbalance: Animated bid/ask bars with gradients
+          - System Health: Enhanced cards with pulse indicators
+          
+          **Trade Log Drawer**:
+          - Animated slide-up transition
+          - Enhanced FAB button with badge count
+          - Grid layout for signals (responsive 1-3 columns)
+          - Enhanced signal cards with tier badges, R:R ratio, confluence score
+          - AnimatePresence for smooth card transitions
+          
+          **Command Palette**:
+          - Enhanced hint visibility (top-right)
+          - Better backdrop blur
+          - Improved command list styling
+          
+          **Technical Implementation**:
+          - Framer Motion for all animations (scale, opacity, rotate, y transitions)
+          - Recharts for CVD slope chart (better performance than canvas)
+          - Motion components for Spring physics (stiffness: 300-500, damping: 20-30)
+          - Hover states with scale transforms
+          - Color transitions on data updates
+          
+          **Verified Working**:
+          - ✅ System starts successfully with START button
+          - ✅ Live data streaming (SOL/USD, CVD, Spread, Depth)
+          - ✅ MTF Confluence Engine displays correctly
+          - ✅ All microstructure metrics updating
+          - ✅ System Health panel showing all services
+          - ✅ Animations smooth and performant
+          
+          **Next Steps**:
+          - Full E2E testing with signals generation
+          - Test Command Palette (⌘K)
+          - Test Trade Log drawer functionality
+          - Verify performance with multiple signals
+
 metadata:
   created_by: "main_agent"
   version: "1.0"
