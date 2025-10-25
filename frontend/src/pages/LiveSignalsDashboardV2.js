@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { motion, AnimatePresence } from 'framer-motion';
-import { AreaChart, Area, ResponsiveContainer, YAxis } from 'recharts';
+import { AreaChart, Area, ResponsiveContainer, XAxis, YAxis } from 'recharts';
 
 const API = process.env.REACT_APP_BACKEND_URL || '';
 
