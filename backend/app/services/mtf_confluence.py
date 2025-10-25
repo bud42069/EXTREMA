@@ -1,5 +1,5 @@
 """
-Multi-Timeframe Confluence Engine (Enhanced with Phase 1 Integration).
+Multi-Timeframe Confluence Engine (Enhanced with Phase 1 & Phase 2 Integration).
 Computes context and micro confluence scores based on TF alignment.
 Includes Helius on-chain data integration.
 
@@ -7,6 +7,12 @@ Phase 1 Enhancements:
 - 1m impulse detection (RSI-12, BOS, volume) via impulse_detector
 - 1s/5s tape filters (CVD z-score, OBI, VWAP proximity) via tape_filters
 - Comprehensive veto system (OBV cliff, spread, depth, mark-last, funding, ADL, liq shock) via veto_system
+
+Phase 2 Enhancements:
+- Regime detection (Squeeze/Normal/Wide) via regime_detector
+- Context gates (15m/1h EMA alignment, pivot structure, oscillator) via context_gates
+- Macro gates (4h/1D alignment for A/B tiering) via macro_gates
+- Enhanced confluence bottleneck logic with tier determination
 """
 from typing import Optional, Dict
 import pandas as pd
@@ -22,6 +28,11 @@ from ..utils.micro_store import get_snapshot
 from .impulse_detector import check_1m_impulse
 from .tape_filters import check_tape_filters
 from .veto_system import run_comprehensive_veto_checks
+
+# Import Phase 2 services
+from .regime_detector import RegimeDetector
+from .context_gates import check_context_gates, compute_ema_set
+from .macro_gates import check_macro_alignment, determine_final_tier, check_macro_conflict
 
 # Import Helius monitor
 try:
