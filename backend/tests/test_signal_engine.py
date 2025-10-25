@@ -24,8 +24,12 @@ def test_latest_signal_endpoint_ok():
     c = TestClient(app)
     df = make_series()
     buf = io.BytesIO(df.to_csv(index=False).encode())
-    assert c.post("/data/upload", files={"file": ("s.csv", buf, "text/csv")}).status_code == 200
-    r = c.get("/signals/latest")
+    upload_response = c.post(
+        "/api/data/upload",
+        files={"file": ("s.csv", buf, "text/csv")}
+    )
+    assert upload_response.status_code == 200
+    r = c.get("/api/signals/latest")
     assert r.status_code == 200
     # either a signal dict or a message
     js = r.json()
