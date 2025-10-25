@@ -1,17 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
 const AnalysisPage = () => {
-  const location = useLocation();
   const navigate = useNavigate();
   
-  const [datasets, setDatasets] = useState([]);
-  const [selectedDataset, setSelectedDataset] = useState(location.state?.datasetId || '');
+  const [dataLoaded, setDataLoaded] = useState(false);
+  const [dataInfo, setDataInfo] = useState(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState(null);
   
@@ -25,33 +24,47 @@ const AnalysisPage = () => {
   });
 
   useEffect(() => {
-    fetchDatasets();
+    checkDataAvailability();
   }, []);
 
-  const fetchDatasets = async () => {
+  const checkDataAvailability = async () => {
     try {
-      const response = await axios.get(`${API}/datasets`);
-      setDatasets(response.data.datasets || []);
+      const response = await axios.get(`${API}/swings/`);
+      if (response.data.rows > 0) {
+        setDataLoaded(true);
+        setDataInfo(response.data);
+      } else {
+        setDataLoaded(false);
+      }
     } catch (error) {
-      console.error('Error fetching datasets:', error);
-      toast.error('Failed to load datasets');
+      console.error('Error checking data:', error);
+      setDataLoaded(false);
     }
   };
 
   const handleAnalyze = async () => {
-    if (!selectedDataset) {
-      toast.error('Please select a dataset');
+    if (!dataLoaded) {
+      toast.error('Please upload data first');
+      navigate('/upload');
       return;
     }
 
     setAnalyzing(true);
     try {
-      const response = await axios.post(`${API}/analyze?dataset_id=${selectedDataset}`, config);
+      const response = await axios.get(`${API}/signals/latest`, {
+        params: {
+          atr_min: config.atr_threshold,
+          volz_min: config.vol_z_threshold,
+          bbw_min: config.bb_width_threshold,
+          confirm_window: config.confirmation_window,
+          breakout_atr_mult: config.atr_multiplier,
+          vol_mult: config.volume_multiplier,
+          enable_micro_gate: false
+        }
+      });
       
-      if (response.data.success) {
-        toast.success('Analysis completed!');
-        setAnalysisResult(response.data);
-      }
+      toast.success('✅ Analysis completed!');
+      setAnalysisResult(response.data);
     } catch (error) {
       console.error('Analysis error:', error);
       toast.error(error.response?.data?.detail || 'Analysis failed');
