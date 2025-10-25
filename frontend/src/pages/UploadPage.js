@@ -15,10 +15,19 @@ const UploadPage = () => {
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
     if (selectedFile) {
-      if (!selectedFile.name.endsWith('.csv')) {
+      if (!selectedFile.name.endswith('.csv')) {
         toast.error('Please select a CSV file');
         return;
       }
+      
+      // Check file size and warn if large
+      const fileSizeMB = selectedFile.size / (1024 * 1024);
+      if (fileSizeMB > 2) {
+        toast.info(`📊 Large file detected (${fileSizeMB.toFixed(1)}MB). Processing may take 1-3 minutes.`, {
+          autoClose: 5000
+        });
+      }
+      
       setFile(selectedFile);
       setUploadResult(null);
     }
