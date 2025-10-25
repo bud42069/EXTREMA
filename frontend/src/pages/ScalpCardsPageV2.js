@@ -85,10 +85,10 @@ export default function ScalpCardsPageV2() {
     if (!resp?.card) return;
     const card = resp.card;
     const orderText = `
-🎯 SCALP CARD - ${card.symbol}
-📊 PLAY: ${card.play}
-💰 ENTRY: ${card.entry.toFixed(4)}
-🛡️ SL: ${card.sl.toFixed(4)}
+SCALP CARD - ${card.symbol}
+PLAY: ${card.play}
+ENTRY: ${card.entry.toFixed(4)}
+SL: ${card.sl.toFixed(4)}
 🎁 TP1: ${card.tp1.toFixed(4)} (50%)
 🎁 TP2: ${card.tp2.toFixed(4)} (30%)
 🎁 TP3: ${card.tp3.toFixed(4)} (20%)
