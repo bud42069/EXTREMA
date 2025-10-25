@@ -1,5 +1,5 @@
 """
-MEXC Perpetual Futures WebSocket stream worker.
+Binance Futures WebSocket stream worker.
 Maintains real-time orderbook depth, trades, CVD, and imbalance metrics.
 """
 import asyncio
@@ -19,7 +19,7 @@ logger = get_logger(__name__)
 
 class MexcStreamWorker:
     """
-    WebSocket worker for MEXC perpetual futures data.
+    WebSocket worker for Binance perpetual futures data.
     Streams depth (L2, top 20) and trades for a symbol.
     Computes real-time CVD, imbalance, and spread metrics.
     """
@@ -31,13 +31,15 @@ class MexcStreamWorker:
         cvd_window: int = 100,
         update_interval: float = 0.5
     ):
-        self.symbol = symbol
+        self.symbol = symbol.lower()  # Binance uses lowercase symbols
         self.depth_levels = depth_levels
         self.cvd_window = cvd_window
         self.update_interval = update_interval
         
-        # WebSocket URLs
-        self.ws_url = "wss://contract.mexc.com/ws"
+        # Binance WebSocket URLs - Using combined streams
+        depth_stream = f"{self.symbol}@depth@100ms"
+        trade_stream = f"{self.symbol}@trade"
+        self.ws_url = f"wss://stream.binance.com:9443/stream?streams={depth_stream}/{trade_stream}"
         
         # State
         self.running = False
