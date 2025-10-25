@@ -354,10 +354,10 @@ class BackendTester:
         except Exception as e:
             self.log_result("Prometheus Metrics", False, f"Exception: {str(e)}")
     
-    # ============= PHASE 1: MTF CONFLUENCE TESTS =============
+    # ============= PHASE 2: MTF CONFLUENCE TESTS =============
     
-    def test_mtf_confluence_general(self):
-        """Test MTF confluence endpoint without parameters (general evaluation)"""
+    def test_mtf_confluence_baseline(self):
+        """Test MTF confluence endpoint without parameters (baseline)"""
         try:
             response = requests.get(f"{API_BASE}/mtf/confluence", timeout=15)
             if response.status_code == 200:
@@ -374,94 +374,143 @@ class BackendTester:
                         micro_score = confluence['micro'].get('total', 0)
                         final_tier = confluence['final'].get('tier', 'UNKNOWN')
                         
-                        self.log_result("MTF Confluence General", True, 
-                                      f"Context: {context_score:.1f}, Micro: {micro_score:.1f}, Tier: {final_tier}")
+                        # Check for Phase 2 fields
+                        regime = confluence.get('regime')
+                        phase2_enabled = data.get('phase2_enabled', {})
+                        
+                        regime_info = f"Regime: {regime['regime'] if regime else 'unknown'}"
+                        phase2_info = f"Phase2: {phase2_enabled}"
+                        
+                        self.log_result("MTF Confluence Baseline", True, 
+                                      f"Context: {context_score:.1f}, Micro: {micro_score:.1f}, Tier: {final_tier} | {regime_info} | {phase2_info}")
                     else:
-                        self.log_result("MTF Confluence General", False, "Missing confluence structure")
+                        self.log_result("MTF Confluence Baseline", False, "Missing confluence structure")
                 else:
-                    self.log_result("MTF Confluence General", False, f"Missing required fields: {data}")
+                    self.log_result("MTF Confluence Baseline", False, f"Missing required fields: {data}")
             else:
-                self.log_result("MTF Confluence General", False, f"HTTP {response.status_code}: {response.text}")
+                self.log_result("MTF Confluence Baseline", False, f"HTTP {response.status_code}: {response.text}")
         except Exception as e:
-            self.log_result("MTF Confluence General", False, f"Exception: {str(e)}")
+            self.log_result("MTF Confluence Baseline", False, f"Exception: {str(e)}")
     
-    def test_mtf_confluence_long_tier_b(self):
-        """Test MTF confluence with side=long&tier=B"""
+    def test_mtf_confluence_long_tier_b_phase2(self):
+        """Test MTF confluence with side=long&tier=B (Phase 1+2 integration)"""
         try:
             response = requests.get(f"{API_BASE}/mtf/confluence?side=long&tier=B", timeout=15)
             if response.status_code == 200:
                 data = response.json()
                 
-                # Check Phase 1 specific fields
-                required_fields = ['confluence', 'phase1_enabled', 'parameters']
+                # Check Phase 2 specific fields
+                required_fields = ['confluence', 'phase2_enabled', 'parameters']
                 if all(field in data for field in required_fields):
                     
-                    # Check phase1_enabled status
-                    phase1 = data['phase1_enabled']
-                    impulse_enabled = phase1.get('impulse_1m', False)
-                    tape_enabled = phase1.get('tape_filters', False)
-                    veto_enabled = phase1.get('veto_system', False)
+                    # Check phase2_enabled status
+                    phase2 = data['phase2_enabled']
+                    regime_enabled = phase2.get('regime_detection', False)
+                    context_enabled = phase2.get('context_gates', False)
+                    macro_enabled = phase2.get('macro_gates', False)
                     
                     # Check parameters
                     params = data['parameters']
                     side = params.get('side')
                     tier = params.get('tier')
-                    atr_5m = params.get('atr_5m')
                     
-                    # Check micro confluence details
-                    micro = data['confluence']['micro']
-                    if 'details' in micro:
-                        details = micro['details']
-                        has_impulse_details = 'impulse_1m' in details
-                        has_tape_details = 'tape_micro' in details
-                        has_veto_details = 'veto_hygiene' in details
-                        
-                        phase1_info = f"Impulse: {impulse_enabled}, Tape: {tape_enabled}, Veto: {veto_enabled}"
-                        details_info = f"Details - Impulse: {has_impulse_details}, Tape: {has_tape_details}, Veto: {has_veto_details}"
-                        
-                        self.log_result("MTF Confluence Long B-tier", True, 
-                                      f"{phase1_info} | {details_info} | Side: {side}, Tier: {tier}")
-                    else:
-                        self.log_result("MTF Confluence Long B-tier", False, "Missing micro details")
+                    # Check regime field
+                    regime = data['confluence'].get('regime')
+                    regime_classification = regime['regime'] if regime else 'unknown'
+                    
+                    # Check context details for Phase 2 gates
+                    context = data['confluence']['context']
+                    context_details = context.get('details', {})
+                    has_context_gates = 'context_gates' in context_details
+                    has_macro_gates = 'macro_gates' in context_details
+                    
+                    # Check final tier determination
+                    final = data['confluence']['final']
+                    final_tier = final.get('tier', 'UNKNOWN')
+                    macro_clearance = final.get('macro_clearance')
+                    conflict = final.get('conflict')
+                    bottleneck = final.get('bottleneck')
+                    
+                    phase2_info = f"Regime: {regime_enabled}, Context: {context_enabled}, Macro: {macro_enabled}"
+                    gates_info = f"Context Gates: {has_context_gates}, Macro Gates: {has_macro_gates}"
+                    final_info = f"Tier: {final_tier}, Macro Clearance: {macro_clearance}, Conflict: {conflict}, Bottleneck: {bottleneck}"
+                    
+                    self.log_result("MTF Confluence Long B-tier (Phase 2)", True, 
+                                  f"{phase2_info} | {gates_info} | Regime: {regime_classification} | {final_info}")
                 else:
-                    self.log_result("MTF Confluence Long B-tier", False, f"Missing Phase 1 fields: {data}")
+                    self.log_result("MTF Confluence Long B-tier (Phase 2)", False, f"Missing Phase 2 fields: {data}")
             else:
-                self.log_result("MTF Confluence Long B-tier", False, f"HTTP {response.status_code}: {response.text}")
+                self.log_result("MTF Confluence Long B-tier (Phase 2)", False, f"HTTP {response.status_code}: {response.text}")
         except Exception as e:
-            self.log_result("MTF Confluence Long B-tier", False, f"Exception: {str(e)}")
+            self.log_result("MTF Confluence Long B-tier (Phase 2)", False, f"Exception: {str(e)}")
     
-    def test_mtf_confluence_short_tier_a(self):
-        """Test MTF confluence with side=short&tier=A"""
+    def test_mtf_confluence_short_tier_a_phase2(self):
+        """Test MTF confluence with side=short&tier=A (A-tier testing)"""
         try:
             response = requests.get(f"{API_BASE}/mtf/confluence?side=short&tier=A", timeout=15)
             if response.status_code == 200:
                 data = response.json()
                 
-                # Verify A-tier volume thresholds are applied
-                if 'confluence' in data and 'micro' in data['confluence']:
-                    micro = data['confluence']['micro']
+                # Verify Phase 2 A-tier logic
+                if 'confluence' in data:
+                    confluence = data['confluence']
                     
-                    # Check if impulse details show A-tier volume requirements
-                    if 'details' in micro and 'impulse_1m' in micro['details']:
-                        impulse_details = micro['details']['impulse_1m']
+                    # Check regime detection
+                    regime = confluence.get('regime')
+                    if regime:
+                        regime_classification = regime.get('regime', 'unknown')
+                        bbwidth_pct = regime.get('bbwidth_pct', 'N/A')
+                        regime_params = regime.get('params', {})
                         
-                        # Look for volume ratio - A-tier should use 2.0x threshold
-                        volume_ratio = impulse_details.get('volume_ratio', 0)
-                        
-                        params = data.get('parameters', {})
-                        side = params.get('side')
-                        tier = params.get('tier')
-                        
-                        self.log_result("MTF Confluence Short A-tier", True, 
-                                      f"Side: {side}, Tier: {tier}, Vol Ratio: {volume_ratio:.2f}")
+                        regime_info = f"Regime: {regime_classification}, BBWidth %: {bbwidth_pct}"
+                        if regime_params:
+                            tp2_r = regime_params.get('tp2_r', 'N/A')
+                            tp3_r = regime_params.get('tp3_r', 'N/A')
+                            regime_info += f", TP2: {tp2_r}, TP3: {tp3_r}"
                     else:
-                        self.log_result("MTF Confluence Short A-tier", True, "Response structure correct (no impulse details)")
+                        regime_info = "Regime: unavailable"
+                    
+                    # Check context gates details
+                    context_details = confluence['context'].get('details', {})
+                    context_gates = context_details.get('context_gates', {})
+                    if context_gates:
+                        play_type = context_gates.get('play_type', 'unknown')
+                        context_score = context_gates.get('score', 0)
+                        ema_alignment = context_gates.get('ema_alignment', {})
+                        context_info = f"Play Type: {play_type}, Score: {context_score:.1f}"
+                        if ema_alignment:
+                            both_aligned = ema_alignment.get('both_aligned', False)
+                            context_info += f", EMA Aligned: {both_aligned}"
+                    else:
+                        context_info = "Context Gates: unavailable"
+                    
+                    # Check macro gates details
+                    macro_gates = context_details.get('macro_gates', {})
+                    if macro_gates:
+                        tier_clearance = macro_gates.get('tier_clearance', 'B')
+                        macro_aligned = macro_gates.get('macro_aligned', False)
+                        macro_score = macro_gates.get('score', 0)
+                        macro_info = f"Tier Clearance: {tier_clearance}, Aligned: {macro_aligned}, Score: {macro_score:.1f}"
+                    else:
+                        macro_info = "Macro Gates: unavailable"
+                    
+                    # Check final tier determination
+                    final = confluence.get('final', {})
+                    final_tier = final.get('tier', 'UNKNOWN')
+                    size_multiplier = final.get('size_multiplier', 0)
+                    
+                    params = data.get('parameters', {})
+                    side = params.get('side')
+                    tier = params.get('tier')
+                    
+                    self.log_result("MTF Confluence Short A-tier (Phase 2)", True, 
+                                  f"Side: {side}, Tier: {tier} -> Final: {final_tier} (x{size_multiplier}) | {regime_info} | {context_info} | {macro_info}")
                 else:
-                    self.log_result("MTF Confluence Short A-tier", False, "Missing confluence structure")
+                    self.log_result("MTF Confluence Short A-tier (Phase 2)", False, "Missing confluence structure")
             else:
-                self.log_result("MTF Confluence Short A-tier", False, f"HTTP {response.status_code}: {response.text}")
+                self.log_result("MTF Confluence Short A-tier (Phase 2)", False, f"HTTP {response.status_code}: {response.text}")
         except Exception as e:
-            self.log_result("MTF Confluence Short A-tier", False, f"Exception: {str(e)}")
+            self.log_result("MTF Confluence Short A-tier (Phase 2)", False, f"Exception: {str(e)}")
     
     def test_mtf_start(self):
         """Test MTF system startup (may fail if external services unavailable)"""
