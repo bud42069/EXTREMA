@@ -1080,7 +1080,10 @@ metadata:
   run_ui: true
 
 test_plan:
-  current_focus: []
+  current_focus:
+    - "Phase 4: Config Manager (JSON Configuration)"
+    - "Phase 4: Trade Logger (Comprehensive Logging)"
+    - "Phase 4: KPI Tracker (Performance Metrics)"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
