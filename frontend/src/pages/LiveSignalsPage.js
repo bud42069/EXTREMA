@@ -100,6 +100,31 @@ const ScalpCard = ({ signal }) => {
             <span>{signal.volume_behavior ? '✅' : '❌'}</span>
           </div>
         </div>
+        
+        {/* MTF Confirmation (NEW) */}
+        {(signal.mtf_1h_aligned || signal.mtf_4h_aligned) && (
+          <div className="mt-2 pt-2 border-t border-gray-700">
+            <div className="text-xs text-purple-400 mb-1 font-bold">MULTI-TIMEFRAME ⚡</div>
+            <div className="grid grid-cols-2 gap-1 text-xs">
+              {signal.mtf_1h_aligned && (
+                <div className="text-purple-300">✅ 1H Aligned</div>
+              )}
+              {signal.mtf_4h_aligned && (
+                <div className="text-purple-300">✅ 4H Aligned</div>
+              )}
+            </div>
+          </div>
+        )}
+        
+        {/* On-chain Confluence (NEW) */}
+        {signal.onchain_aligned && (
+          <div className="mt-2 pt-2 border-t border-gray-700">
+            <div className="text-xs text-green-400 mb-1 font-bold">ON-CHAIN FLOW 🔗</div>
+            <div className="text-xs text-green-300">
+              ✅ On-chain aligned ({signal.onchain_signals_count} signals)
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Indicators */}
