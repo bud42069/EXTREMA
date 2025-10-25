@@ -103,6 +103,43 @@ class MTFConfluenceEngine:
             asyncio.create_task(self.onchain_monitor.monitor_loop())
             logger.info("Helius on-chain monitor loop started")
     
+    def compute_regime_features(self, df_5m: pd.DataFrame) -> Dict:
+        """
+        Compute regime features using Phase 2 regime detector.
+        
+        Args:
+            df_5m: 5-minute DataFrame with OHLC data
+        
+        Returns:
+            Dict with regime analysis and parameters
+        """
+        if df_5m is None or len(df_5m) < 90:
+            return {
+                'regime': 'unknown',
+                'available': False,
+                'reason': 'Insufficient 5m data'
+            }
+        
+        try:
+            # Run regime analysis
+            regime_result = self.regime_detector.analyze_regime(df_5m)
+            regime_result['available'] = True
+            
+            logger.info(
+                f"Regime detected: {regime_result['regime'].upper()} "
+                f"(BBWidth pct={regime_result['bbwidth_pct']:.1f})"
+            )
+            
+            return regime_result
+        
+        except Exception as e:
+            logger.error(f"Error computing regime features: {e}", exc_info=True)
+            return {
+                'regime': 'unknown',
+                'available': False,
+                'error': str(e)
+            }
+    
     def compute_context_confluence(
         self,
         features_15m: dict,
