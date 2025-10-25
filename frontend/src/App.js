@@ -5,6 +5,7 @@ import 'react-toastify/dist/ReactToastify.css';
 
 // Import pages
 import LandingPage from './pages/LandingPage';
+import LandingPageV2 from './pages/LandingPageV2';
 import OverviewPage from './pages/OverviewPage';
 import OverviewPageV2 from './pages/OverviewPageV2';
 import LiveSignalsPageNew from './pages/LiveSignalsPageNew';
