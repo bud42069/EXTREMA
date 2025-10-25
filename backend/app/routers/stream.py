@@ -47,7 +47,7 @@ async def start_stream(symbol: str = "SOLUSDT"):
 @router.post("/stop")
 async def stop_stream():
     """
-    Stop the MEXC microstructure stream worker.
+    Stop the Binance microstructure stream worker.
     
     Returns:
         Success status and message
