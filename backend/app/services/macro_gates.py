@@ -76,7 +76,7 @@ def check_macro_alignment(
             elif side == 'short' and fast < slow:
                 aligned_4h += 1
         
-        result['4h_aligned'] = aligned_4h >= (len(ema_spans) - 2)  # At least 2/3
+        result['4h_aligned'] = bool(aligned_4h >= (len(ema_spans) - 2))  # At least 2/3
         
         # Determine 4h trend
         if aligned_4h >= (len(ema_spans) - 1):
