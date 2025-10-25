@@ -1,9 +1,14 @@
 """
-Multi-Timeframe Confluence Engine.
+Multi-Timeframe Confluence Engine (Enhanced with Phase 1 Integration).
 Computes context and micro confluence scores based on TF alignment.
 Includes Helius on-chain data integration.
+
+Phase 1 Enhancements:
+- 1m impulse detection (RSI-12, BOS, volume) via impulse_detector
+- 1s/5s tape filters (CVD z-score, OBI, VWAP proximity) via tape_filters
+- Comprehensive veto system (OBV cliff, spread, depth, mark-last, funding, ADL, liq shock) via veto_system
 """
-from typing import Optional
+from typing import Optional, Dict
 import pandas as pd
 import asyncio
 import os
@@ -12,6 +17,11 @@ from ..utils.logging import get_logger
 from ..utils.mtf_store import get_klines
 from .mtf_features import extract_mtf_features, compute_vwap_deviation
 from ..utils.micro_store import get_snapshot
+
+# Import Phase 1 services
+from .impulse_detector import check_1m_impulse
+from .tape_filters import check_tape_filters
+from .veto_system import run_comprehensive_veto_checks
 
 # Import Helius monitor
 try:
