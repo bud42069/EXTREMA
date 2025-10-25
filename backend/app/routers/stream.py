@@ -1,6 +1,6 @@
 """
 Microstructure stream control endpoints.
-Start/stop MEXC orderbook+trades worker and retrieve snapshots.
+Start/stop Binance orderbook+trades worker and retrieve snapshots.
 """
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
