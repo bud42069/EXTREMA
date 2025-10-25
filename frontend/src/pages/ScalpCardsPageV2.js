@@ -179,7 +179,6 @@ SIZE: ${card.size}
               size="lg"
               onClick={fetchCard}
               loading={loading}
-              leftIcon="🔄"
             >
               {loading ? 'GENERATING...' : 'GENERATE CARD'}
             </Button>
