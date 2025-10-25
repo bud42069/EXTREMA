@@ -6,12 +6,21 @@ Includes Helius on-chain data integration.
 from typing import Optional
 import pandas as pd
 import asyncio
+import os
 
 from ..utils.logging import get_logger
 from ..utils.mtf_store import get_klines
 from .mtf_features import extract_mtf_features, compute_vwap_deviation
 from ..utils.micro_store import get_snapshot
-from .onchain_monitor import HeliusOnChainMonitor
+
+# Import Helius monitor
+try:
+    from .onchain_monitor import HeliusOnChainMonitor
+    HELIUS_AVAILABLE = True
+except ImportError:
+    HELIUS_AVAILABLE = False
+    logger = get_logger(__name__)
+    logger.warning("Helius on-chain monitor not available")
 
 logger = get_logger(__name__)
 
