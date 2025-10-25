@@ -452,11 +452,11 @@ backend:
 
   - task: "Phase 2: Regime Detection (Squeeze/Normal/Wide)"
     implemented: true
-    working: "NA"
+    working: false
     file: "app/services/regime_detector.py"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
@@ -471,6 +471,30 @@ backend:
           Integrated into mtf_confluence.py via compute_regime_features() method.
           Returns regime with BBWidth percentile and regime-specific parameters.
           Needs backend testing with 5m data.
+      - working: false
+        agent: "testing"
+        comment: |
+          ❌ CRITICAL ISSUE FOUND: DataFrame Boolean Context Error in Phase 2 Code
+          
+          **Problem**: MTF Confluence endpoint (/api/mtf/confluence) returns HTTP 500 error:
+          "The truth value of a DataFrame is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all()"
+          
+          **Root Cause**: Phase 2 code is using pandas DataFrame in boolean context somewhere, which is not allowed.
+          This is likely in regime_detector.py, context_gates.py, or macro_gates.py integration.
+          
+          **Impact**: 
+          - Cannot test regime detection functionality
+          - All Phase 2 features are blocked by this error
+          - MTF confluence endpoint completely non-functional
+          
+          **Data Availability**: 
+          - 5m data: 0 bars (insufficient for regime detection - need 90 bars)
+          - 15m data: 134 bars (sufficient for context gates)
+          - 1h data: 200 bars (sufficient for context gates)  
+          - 4h data: 200 bars (sufficient for macro gates)
+          - 1D data: 0 bars (insufficient for macro gates)
+          
+          **Recommendation**: Fix DataFrame boolean context error before Phase 2 can be tested.
 
   - task: "Phase 2: Context Gates (15m/1h EMA Alignment)"
     implemented: true
