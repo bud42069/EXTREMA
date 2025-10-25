@@ -375,14 +375,10 @@ export default function LiveSignalsDashboardV2() {
   // Update CVD history for chart
   useEffect(() => {
     if (microSnap?.cvd_slope !== undefined && microSnap?.available) {
-      console.log('[CVD Chart] Adding cvd_slope to history:', microSnap.cvd_slope);
       setCvdHistory(prev => {
         const newHistory = [...prev, microSnap.cvd_slope];
-        console.log('[CVD Chart] History length:', newHistory.length);
         return newHistory.slice(-30); // Keep last 30 data points (60 seconds)
       });
-    } else {
-      console.log('[CVD Chart] No valid cvd_slope data. microSnap:', microSnap);
     }
   }, [microSnap]);
 
