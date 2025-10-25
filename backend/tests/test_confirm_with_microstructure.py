@@ -8,7 +8,7 @@ from unittest.mock import patch
 
 from app.services.signal_engine import mark_candidates, micro_confirm
 from app.services.indicators import compute_indicators
-from app.services.extrema import detect_local_extrema
+from app.services.extrema import mark_local_extrema
 from app.utils.micro_store import MicroSnapshot
 
 
