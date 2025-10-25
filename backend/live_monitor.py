@@ -488,6 +488,10 @@ class LiveMonitor:
         self.running = True
         logger.info("Live monitor started")
         
+        # Start on-chain monitor if available
+        if self.onchain_monitor:
+            asyncio.create_task(self.onchain_monitor.monitor_loop())
+        
         while self.running:
             try:
                 # Build 5-min candle
