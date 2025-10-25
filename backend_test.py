@@ -2253,24 +2253,40 @@ class BackendTester:
                        ['Phase 3', 'OrderManager', 'RiskManager', 'TPSLManager', 'Order', 'Risk', 'TPSL'])]
         phase3_passed = sum(1 for r in phase3_tests if r['success'])
         
+        print(f"\n🎯 Phase 4 Specific Results:")
+        print(f"Phase 4 Tests: {len(phase4_tests)}")
+        print(f"Phase 4 Passed: {phase4_passed}")
+        
         print(f"\n🎯 Phase 3 Specific Results:")
         print(f"Phase 3 Tests: {len(phase3_tests)}")
         print(f"Phase 3 Passed: {phase3_passed}")
         
-        # Service breakdown
+        # Phase 4 Service breakdown
+        config_tests = [r for r in self.test_results if 'ConfigManager' in r['test'] or 'Config' in r['test']]
+        logger_tests = [r for r in self.test_results if 'TradeLogger' in r['test'] or 'Trade' in r['test']]
+        kpi_tests = [r for r in self.test_results if 'KPITracker' in r['test'] or 'KPI' in r['test']]
+        
+        print(f"\n📈 Phase 4 Service Breakdown:")
+        print(f"  • Config Manager: {sum(1 for r in config_tests if r['success'])}/{len(config_tests)}")
+        print(f"  • Trade Logger: {sum(1 for r in logger_tests if r['success'])}/{len(logger_tests)}")
+        print(f"  • KPI Tracker: {sum(1 for r in kpi_tests if r['success'])}/{len(kpi_tests)}")
+        
+        # Phase 3 Service breakdown
         order_tests = [r for r in self.test_results if 'OrderManager' in r['test'] or 'Order' in r['test']]
         risk_tests = [r for r in self.test_results if 'RiskManager' in r['test'] or 'Risk' in r['test']]
         tpsl_tests = [r for r in self.test_results if 'TPSLManager' in r['test'] or 'TPSL' in r['test']]
         
-        print(f"\n📈 Service Breakdown:")
+        print(f"\n📈 Phase 3 Service Breakdown:")
         print(f"  • Order Manager: {sum(1 for r in order_tests if r['success'])}/{len(order_tests)}")
         print(f"  • Risk Manager: {sum(1 for r in risk_tests if r['success'])}/{len(risk_tests)}")
         print(f"  • TP/SL Manager: {sum(1 for r in tpsl_tests if r['success'])}/{len(tpsl_tests)}")
         
         if failed_tests == 0:
-            print("\n🎉 ALL TESTS PASSED - PHASE 3 IMPLEMENTATION SUCCESSFUL!")
+            print("\n🎉 ALL TESTS PASSED - PHASE 4 & 3 IMPLEMENTATION SUCCESSFUL!")
+        elif len(phase4_tests) > 0 and phase4_passed == len(phase4_tests):
+            print("\n✅ PHASE 4 TESTS PASSED - Config & Logging working!")
         elif len(phase3_tests) > 0 and phase3_passed == len(phase3_tests):
-            print("\n✅ PHASE 3 TESTS PASSED - Core functionality working!")
+            print("\n✅ PHASE 3 TESTS PASSED - Order Management working!")
         else:
             print(f"\n⚠️  {failed_tests} test(s) failed - see details above")
         
