@@ -372,7 +372,9 @@ export default function OverviewPageV2() {
                 className="flex items-center justify-between p-4 rounded-lg bg-black/20 border border-gray-800/50"
               >
                 <div className="flex items-center gap-3">
-                  <span className="text-2xl">{service.icon}</span>
+                  <span className={`${service.status ? 'text-emerald-400' : 'text-gray-600'}`}>
+                    {getServiceIcon(service.iconType)}
+                  </span>
                   <span className="font-medium text-gray-300">{service.label}</span>
                 </div>
                 <StatusIndicator
