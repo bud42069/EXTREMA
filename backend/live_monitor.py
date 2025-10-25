@@ -90,7 +90,8 @@ class LiveMonitor:
                  candle_window: int = 500,
                  atr_threshold: float = 0.6,
                  vol_z_threshold: float = 0.5,
-                 bb_width_threshold: float = 0.005):
+                 bb_width_threshold: float = 0.005,
+                 helius_api_key: Optional[str] = None):
         """
         Initialize live monitor.
         
@@ -99,6 +100,7 @@ class LiveMonitor:
             atr_threshold: ATR threshold for candidate detection
             vol_z_threshold: Volume z-score threshold
             bb_width_threshold: BB width threshold
+            helius_api_key: Optional Helius API key for on-chain monitoring
         """
         self.candle_window = candle_window
         self.candles: Deque[Candle] = deque(maxlen=candle_window)
@@ -116,6 +118,15 @@ class LiveMonitor:
             atr_multiplier=0.5,
             volume_multiplier=1.5
         )
+        
+        # Multi-timeframe analyzer
+        self.mtf_analyzer = MultiTimeframeAnalyzer()
+        
+        # On-chain monitor (if API key provided)
+        self.onchain_monitor = None
+        if helius_api_key:
+            self.onchain_monitor = HeliusOnChainMonitor(helius_api_key)
+            logger.info("Helius on-chain monitor initialized")
         
         # Signal storage
         self.active_signals: List[SignalCard] = []
