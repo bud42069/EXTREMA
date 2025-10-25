@@ -192,7 +192,7 @@ async def get_mtf_confluence():
         # Extract features from all available timeframes
         features_dict = {}
         
-        for tf in ['1s', '5s', '1m', '5m']:
+        for tf in ['1s', '5s', '1m', '5m', '15m', '1h', '4h', '1d']:
             klines = get_klines(tf, limit=100)
             if klines and len(klines) >= 50:
                 df = pd.DataFrame(klines)
@@ -209,10 +209,10 @@ async def get_mtf_confluence():
             features_5s=features_dict.get('5s'),
             features_1m=features_dict.get('1m'),
             features_5m=features_dict.get('5m'),
-            features_15m=None,  # TODO: Implement higher TFs
-            features_1h=None,
-            features_4h=None,
-            features_1d=None,
+            features_15m=features_dict.get('15m'),
+            features_1h=features_dict.get('1h'),
+            features_4h=features_dict.get('4h'),
+            features_1d=features_dict.get('1d'),
             micro_snapshot=micro_snapshot
         )
         
