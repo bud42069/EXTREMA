@@ -236,7 +236,7 @@ const LiveSignalsPage = () => {
 
   const handleStartMonitor = async () => {
     try {
-      const response = await axios.post(`${API}/live-monitor/start`);
+      const response = await axios.post(`${API}/live/start`);
       if (response.data.success) {
         toast.success('Live monitor started!');
         fetchMonitorStatus();
@@ -249,7 +249,7 @@ const LiveSignalsPage = () => {
 
   const handleStopMonitor = async () => {
     try {
-      const response = await axios.post(`${API}/live-monitor/stop`);
+      const response = await axios.post(`${API}/live/stop`);
       if (response.data.success) {
         toast.info('Monitor stopped');
         fetchMonitorStatus();
