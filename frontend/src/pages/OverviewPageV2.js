@@ -299,7 +299,10 @@ export default function OverviewPageV2() {
         {/* System Health */}
         <Card variant="elevated">
           <h3 className="text-xl font-bold text-gray-200 mb-6 flex items-center gap-2">
-            <span>💚</span> SYSTEM HEALTH
+            <svg className="w-6 h-6 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            SYSTEM HEALTH
           </h3>
           
           <div className="space-y-4">
