@@ -67,7 +67,7 @@ class MexcStreamWorker:
     async def start(self):
         """Start the WebSocket stream worker."""
         self.running = True
-        logger.info(f"Starting MEXC stream worker for {self.symbol}")
+        logger.info(f"Starting Binance stream worker for {self.symbol}")
         
         while self.running:
             try:
@@ -76,7 +76,7 @@ class MexcStreamWorker:
                 logger.error(f"Stream error: {e}")
                 await asyncio.sleep(5)  # Reconnect delay
         
-        logger.info("MEXC stream worker stopped")
+        logger.info("Binance stream worker stopped")
     
     def stop(self):
         """Stop the WebSocket stream worker."""
@@ -84,13 +84,16 @@ class MexcStreamWorker:
         reset_snapshot()
     
     async def _connect_and_stream(self):
-        """Connect to MEXC WebSocket and stream data."""
-        async with websockets.connect(self.ws_url) as ws:
+        """Connect to Binance WebSocket and stream data."""
+        async with websockets.connect(
+            self.ws_url,
+            ping_interval=20,
+            ping_timeout=60
+        ) as ws:
             self.ws = ws
+            logger.info(f"Connected to Binance WebSocket for {self.symbol}")
             
-            # Subscribe to depth and trades
-            await self._subscribe(ws)
-            
+            # No subscription needed for combined streams - they auto-start
             # Main message loop
             async for message in ws:
                 try:
@@ -98,36 +101,21 @@ class MexcStreamWorker:
                 except Exception as e:
                     logger.error(f"Message handling error: {e}")
     
-    async def _subscribe(self, ws):
-        """Subscribe to depth and trade streams."""
-        # MEXC subscription format
-        subscribe_msg = {
-            "method": "sub.depth.full",
-            "param": {
-                "symbol": self.symbol,
-                "limit": self.depth_levels
-            }
-        }
-        await ws.send(json.dumps(subscribe_msg))
-        logger.info(f"Subscribed to depth stream: {self.symbol}")
-        
-        # Subscribe to trades
-        trade_msg = {
-            "method": "sub.deal",
-            "param": {
-                "symbol": self.symbol
-            }
-        }
-        await ws.send(json.dumps(trade_msg))
-        logger.info(f"Subscribed to trade stream: {self.symbol}")
-    
     async def _handle_message(self, message: str):
-        """Process incoming WebSocket messages."""
+        """Process incoming WebSocket messages from Binance combined streams."""
         data = json.loads(message)
         
-        # Handle depth updates
-        if "channel" in data and "depth" in data["channel"]:
-            await self._handle_depth(data)
+        # Combined stream format: {"stream":"<streamName>","data":{...}}
+        if "stream" in data and "data" in data:
+            stream_name = data["stream"]
+            stream_data = data["data"]
+            
+            # Handle depth updates
+            if "depth" in stream_name or stream_data.get("e") == "depthUpdate":
+                await self._handle_depth(stream_data)
+            # Handle trade updates
+            elif "trade" in stream_name or stream_data.get("e") == "trade":
+                await self._handle_trade(stream_data)
         
         # Handle trade updates
         elif "channel" in data and "deal" in data["channel"]:
