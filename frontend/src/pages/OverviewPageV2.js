@@ -54,10 +54,26 @@ export default function OverviewPageV2() {
   };
 
   const systemHealth = [
-    { label: 'Backend API', status: true },
-    { label: 'Live Monitor', status: stats.monitor.running },
-    { label: 'Microstructure Stream', status: stats.stream.available },
-    { label: 'MTF Engine', status: stats.mtf.running },
+    { 
+      label: 'Backend API', 
+      status: true,
+      iconType: 'server'
+    },
+    { 
+      label: 'Live Monitor', 
+      status: stats.monitor.running,
+      iconType: 'chart'
+    },
+    { 
+      label: 'Microstructure Stream', 
+      status: stats.stream.available,
+      iconType: 'activity'
+    },
+    { 
+      label: 'MTF Engine', 
+      status: stats.mtf.running,
+      iconType: 'cpu'
+    },
   ];
 
   const allSystemsOnline = systemHealth.every(s => s.status);
