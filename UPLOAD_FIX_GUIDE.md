@@ -44,7 +44,7 @@ time,open,high,low,close,Volume
 ### Step 2: Upload Process
 
 1. **Go to Upload Page**
-   - URL: https://solana-impulse.preview.emergentagent.com/upload
+   - URL: https://bloomberg-sol.preview.emergentagent.com/upload
    - Or click "📁 Upload Data" in sidebar
 
 2. **Select Your File**
