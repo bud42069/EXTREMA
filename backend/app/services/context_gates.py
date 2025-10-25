@@ -271,7 +271,7 @@ def check_oscillator_agreement(
         # For short: RSI shouldn't be >70 (overbought against)
         
         if side == 'long':
-            result['extreme'] = current_rsi < 30
+            result['extreme'] = bool(current_rsi < 30)
             result['oscillator_ok'] = not result['extreme']
         else:  # short
             result['extreme'] = current_rsi > 70
