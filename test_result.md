@@ -1442,3 +1442,79 @@ agent_communication:
       All Phase 1 backend services (impulse_detector, tape_filters, veto_system) are successfully integrated into the MTF Confluence Engine. The enhanced /api/mtf/confluence endpoint works excellently with proper parameter handling, detailed response structure, and graceful fallback behavior. System demonstrates robust error handling and maintains backward compatibility.
       
       **RECOMMENDATION**: Phase 1 implementation is complete and working excellently. Main agent can proceed with Phase 2 features or focus on frontend integration.
+
+  - agent: "testing"
+    message: |
+      **🚀 PHASE 2: CONTEXT & MACRO GATES - BACKEND TESTING COMPLETE**
+      
+      **TESTING SUMMARY**:
+      Conducted comprehensive backend testing of Phase 2 Context & Macro Gates implementation. Found critical integration bug that blocks all Phase 2 functionality.
+      
+      **❌ CRITICAL ISSUE DISCOVERED - PHASE 2 BLOCKED (0/10 PASS)**:
+      
+      **1. DataFrame Boolean Context Error**:
+      - **Error**: "The truth value of a DataFrame is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all()"
+      - **Endpoint**: GET /api/mtf/confluence (HTTP 500)
+      - **Impact**: Complete Phase 2 functionality blocked
+      - **Root Cause**: Phase 2 integration code uses pandas DataFrame in boolean context
+      
+      **2. Affected Phase 2 Features**:
+      - ❌ Regime Detection (Squeeze/Normal/Wide): Cannot test due to upstream error
+      - ❌ Context Gates (15m/1h EMA alignment): Cannot test due to upstream error  
+      - ❌ Macro Gates (4h/1D A/B tiering): Cannot test due to upstream error
+      - ❌ Enhanced Tier Determination: Cannot test due to upstream error
+      - ❌ Phase 2 Integration Status: Cannot test due to upstream error
+      
+      **3. Data Availability Analysis**:
+      - ✅ 15m data: 134 bars (sufficient for context gates)
+      - ✅ 1h data: 200 bars (sufficient for context gates)
+      - ✅ 4h data: 200 bars (sufficient for macro gates)
+      - ❌ 5m data: 0 bars (insufficient for regime detection - need 90 bars)
+      - ❌ 1D data: 0 bars (insufficient for macro gates - need 50 bars)
+      
+      **4. MTF System Status (✅ WORKING)**:
+      - ✅ POST /api/mtf/start: System starts successfully
+      - ✅ GET /api/mtf/status: Returns proper state machine status
+      - ✅ GET /api/mtf/features/1m: Handles insufficient data gracefully
+      - ✅ POST /api/mtf/run-cycle: Expected data limitations
+      - ✅ POST /api/mtf/stop: Clean shutdown
+      
+      **5. Regression Testing (✅ PASS)**:
+      - ✅ GET /api/health/: Backend health OK
+      - ✅ MTF system control endpoints functional
+      - ✅ No breaking changes to existing functionality
+      
+      **TECHNICAL ANALYSIS**:
+      
+      **Likely Error Locations**:
+      1. `mtf_confluence.py` evaluate() method - DataFrame validation checks
+      2. `context_gates.py` or `macro_gates.py` - DataFrame processing logic  
+      3. `regime_detector.py` - DataFrame analysis functions
+      
+      **Common DataFrame Boolean Context Issues**:
+      ```python
+      # ❌ WRONG - causes the error
+      if df:
+          process_data(df)
+      
+      # ✅ CORRECT - proper DataFrame checks
+      if df is not None and not df.empty:
+          process_data(df)
+      ```
+      
+      **PHASE 2 IMPLEMENTATION STATUS**:
+      - ✅ **Code Structure**: All Phase 2 services appear complete based on file review
+      - ✅ **Integration**: Phase 2 services properly imported and initialized
+      - ❌ **Functionality**: Blocked by DataFrame boolean context bug
+      - ❌ **API Endpoints**: MTF confluence endpoint non-functional
+      
+      **CONCLUSION**: 
+      ❌ **PHASE 2 IMPLEMENTATION HAS CRITICAL BUG - NOT PRODUCTION READY**
+      
+      While Phase 2 services (regime_detector, context_gates, macro_gates) appear to be implemented correctly, there is a critical DataFrame boolean context error in the integration code that prevents any Phase 2 functionality from working. The MTF confluence endpoint returns HTTP 500 errors, blocking all Phase 2 testing.
+      
+      **URGENT RECOMMENDATION**: 
+      1. **Fix DataFrame boolean context error** in Phase 2 integration code
+      2. **Use web search tool** to find proper DataFrame validation patterns
+      3. **Re-test Phase 2 functionality** after fix is applied
+      4. **Focus on 5m and 1D data collection** to enable full Phase 2 feature testing
