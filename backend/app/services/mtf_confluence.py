@@ -623,10 +623,23 @@ class MTFConfluenceEngine:
     def compute_final_confluence(
         self,
         context_score: float,
-        micro_score: float
+        micro_score: float,
+        macro_result: Optional[Dict] = None,
+        context_result: Optional[Dict] = None
     ) -> dict:
         """
-        Compute final confluence using min(context, micro) bottleneck logic.
+        Compute final confluence using min(context, micro) bottleneck logic with Phase 2 enhancements.
+        
+        Phase 2 Enhancements:
+        - Uses macro_gates.determine_final_tier() for A/B tier classification
+        - Considers macro alignment for tier clearance
+        - Enhanced bottleneck logic
+        
+        Args:
+            context_score: Context confluence score (0-100)
+            micro_score: Micro confluence score (0-100)
+            macro_result: Optional macro gate result from context confluence
+            context_result: Optional full context result
         
         Returns:
             Dict with final score and tier
@@ -634,25 +647,72 @@ class MTFConfluenceEngine:
         # Bottleneck: use minimum of the two
         final_score = min(context_score, micro_score)
         
-        # Tier determination
-        if final_score >= 75 and context_score >= 75 and micro_score >= 80:
-            tier = 'A'
-            size_multiplier = 1.0
-        elif final_score >= 60 and context_score >= 60 and micro_score >= 70:
-            tier = 'B'
-            size_multiplier = 0.5
-        else:
-            tier = 'SKIP'
-            size_multiplier = 0.0
+        # Phase 2: Use macro_gates for tier determination if available
+        if macro_result and context_result:
+            tier = determine_final_tier(
+                macro_result=macro_result,
+                context_result=context_result,
+                confluence_score=final_score,
+                min_context_a=75.0,
+                min_micro_a=80.0,
+                min_context_b=60.0,
+                min_micro_b=70.0
+            )
+            
+            # Check for conflicts
+            conflict_result = check_macro_conflict(macro_result, context_result)
+            
+            # Determine size multiplier
+            if tier == 'A':
+                size_multiplier = 1.0
+            elif tier == 'B':
+                size_multiplier = 0.5
+            else:
+                size_multiplier = 0.0
+            
+            logger.info(
+                f"Final confluence (Phase 2): score={final_score:.1f}, tier={tier}, "
+                f"macro_tier={macro_result.get('tier_clearance', 'unknown')}, "
+                f"conflict={conflict_result['has_conflict']}"
+            )
+            
+            return {
+                'final_score': final_score,
+                'context_score': context_score,
+                'micro_score': micro_score,
+                'tier': tier,
+                'size_multiplier': size_multiplier,
+                'allow_entry': tier in ['A', 'B'],
+                'macro_clearance': macro_result.get('tier_clearance', 'unknown'),
+                'conflict': conflict_result,
+                'bottleneck': 'context' if context_score < micro_score else 'micro'
+            }
         
-        return {
-            'final_score': final_score,
-            'context_score': context_score,
-            'micro_score': micro_score,
-            'tier': tier,
-            'size_multiplier': size_multiplier,
-            'allow_entry': tier in ['A', 'B']
-        }
+        else:
+            # Fallback to simplified tier determination
+            if final_score >= 75 and context_score >= 75 and micro_score >= 80:
+                tier = 'A'
+                size_multiplier = 1.0
+            elif final_score >= 60 and context_score >= 60 and micro_score >= 70:
+                tier = 'B'
+                size_multiplier = 0.5
+            else:
+                tier = 'SKIP'
+                size_multiplier = 0.0
+            
+            logger.info(
+                f"Final confluence (fallback): score={final_score:.1f}, tier={tier}"
+            )
+            
+            return {
+                'final_score': final_score,
+                'context_score': context_score,
+                'micro_score': micro_score,
+                'tier': tier,
+                'size_multiplier': size_multiplier,
+                'allow_entry': tier in ['A', 'B'],
+                'bottleneck': 'context' if context_score < micro_score else 'micro'
+            }
     
     def evaluate(
         self,
