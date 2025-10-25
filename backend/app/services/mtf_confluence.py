@@ -247,7 +247,7 @@ class MTFConfluenceEngine:
         
         scores['tape_micro'] = tape_score
         
-        # Veto Hygiene (5%)
+        # Veto Hygiene (3%)
         veto_score = self.micro_weights['veto_hygiene'] * 100  # Default full points
         
         # Check for vetoes
@@ -264,6 +264,10 @@ class MTFConfluenceEngine:
         
         scores['veto_hygiene'] = veto_score
         
+        # On-Chain Veto (2%) - NEW!
+        onchain_veto_score = self.micro_weights['onchain_veto'] * 100  # Default full points
+        scores['onchain_veto'] = onchain_veto_score
+        
         # Total micro score
         total = sum(scores.values())
         
@@ -272,6 +276,54 @@ class MTFConfluenceEngine:
             'total': total,
             'tier': 'A' if total >= 80 else ('B' if total >= 70 else 'C')
         }
+    
+    async def compute_micro_confluence_async(
+        self,
+        features_1s: Optional[dict],
+        features_5s: Optional[dict],
+        features_1m: Optional[dict],
+        features_5m: Optional[dict],
+        micro_snapshot: Optional[dict],
+        signal_direction: Optional[str] = None
+    ) -> dict:
+        """
+        Async version with on-chain veto integration.
+        
+        Returns:
+            Dict with score breakdown and total
+        """
+        # Get base micro scores
+        result = self.compute_micro_confluence(
+            features_1s, features_5s, features_1m, features_5m, micro_snapshot
+        )
+        
+        # Add on-chain veto check if available
+        if self.onchain_monitor and signal_direction:
+            try:
+                onchain_data = await self.onchain_monitor.get_on_chain_confluence(
+                    direction=signal_direction,
+                    lookback_minutes=15  # Short lookback for veto
+                )
+                
+                # Check for conflicting on-chain signals
+                if signal_direction == 'long' and onchain_data['bearish_signals'] > onchain_data['bullish_signals'] * 2:
+                    # Strong bearish on-chain conflicts with long signal
+                    result['scores']['onchain_veto'] = 0.0
+                    result['total'] = sum(result['scores'].values())
+                    result['tier'] = 'A' if result['total'] >= 80 else ('B' if result['total'] >= 70 else 'C')
+                    logger.warning(f"On-chain VETO triggered: bearish on-chain conflicts with long signal")
+                
+                elif signal_direction == 'short' and onchain_data['bullish_signals'] > onchain_data['bearish_signals'] * 2:
+                    # Strong bullish on-chain conflicts with short signal
+                    result['scores']['onchain_veto'] = 0.0
+                    result['total'] = sum(result['scores'].values())
+                    result['tier'] = 'A' if result['total'] >= 80 else ('B' if result['total'] >= 70 else 'C')
+                    logger.warning(f"On-chain VETO triggered: bullish on-chain conflicts with short signal")
+            
+            except Exception as e:
+                logger.error(f"Error computing on-chain veto: {e}")
+        
+        return result
     
     def compute_final_confluence(
         self,
