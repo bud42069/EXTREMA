@@ -18,7 +18,7 @@ import websockets
 from websockets.exceptions import ConnectionClosedError
 
 # Backend URL from frontend environment
-BACKEND_URL = "https://swingmatrix.preview.emergentagent.com"
+BACKEND_URL = "https://sol-swing-detect.preview.emergentagent.com"
 API_BASE = f"{BACKEND_URL}/api"
 METRICS_URL = f"{BACKEND_URL}/metrics"
 
