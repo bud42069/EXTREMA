@@ -34,25 +34,44 @@ const UploadPage = () => {
     const formData = new FormData();
     formData.append('file', file);
 
+    // Show info toast for large files
+    toast.info('⏳ Processing... Large files may take 1-3 minutes', {
+      autoClose: false,
+      position: 'top-center'
+    });
+
     try {
       const response = await axios.post(`${API}/data/upload`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         },
-        timeout: 120000 // 2 minutes timeout for large files
+        timeout: 180000, // 3 minutes timeout
+        onUploadProgress: (progressEvent) => {
+          const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+          console.log(`Upload progress: ${percentCompleted}%`);
+        }
       });
 
-      toast.success(`✅ Uploaded ${response.data.rows} rows successfully!`);
+      toast.dismiss(); // Dismiss the processing toast
+      toast.success(`✅ Uploaded ${response.data.rows} rows successfully!`, {
+        position: 'top-right'
+      });
       setUploadResult(response.data);
       
-      // Optionally navigate to analysis page
+      // Navigate to analysis page after success
       setTimeout(() => navigate('/analysis'), 2000);
     } catch (error) {
+      toast.dismiss(); // Dismiss the processing toast
       console.error('Upload error:', error);
-      const errorMsg = error.code === 'ECONNABORTED' 
-        ? 'Upload timed out. File might be too large.' 
-        : error.response?.data?.detail || 'Failed to upload dataset';
-      toast.error(errorMsg);
+      
+      let errorMsg = 'Failed to upload dataset';
+      if (error.code === 'ECONNABORTED') {
+        errorMsg = '⏱️ Upload timed out. File may be too large (>20K rows). Try splitting the file.';
+      } else if (error.response?.data?.detail) {
+        errorMsg = error.response.data.detail;
+      }
+      
+      toast.error(errorMsg, { autoClose: 8000 });
     } finally {
       setUploading(false);
     }
