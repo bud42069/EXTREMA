@@ -108,9 +108,18 @@ export default function LiveSignalsPage() {
         axios.post(`${API}/stream/stop`)
       ]);
       
-      if (liveRes.data.success && mtfRes.data.success && streamRes.data.success) {
-        toast.info('Monitor stopped', { position: 'top-right' });
+      // Check each response individually and provide feedback
+      const stopped = [];
+      if (liveRes.data.success) stopped.push('Live Monitor');
+      if (mtfRes.data.success) stopped.push('MTF System');
+      if (streamRes.data.success) stopped.push('Microstructure Stream');
+      
+      if (stopped.length > 0) {
+        toast.info(`⏸️ Stopped: ${stopped.join(', ')}`, { position: 'top-right' });
         fetchMonitorStatus();
+        fetchMtfData();
+      } else {
+        toast.warning('Nothing was running to stop', { position: 'top-right' });
       }
     } catch (error) {
       console.error('Error stopping monitor:', error);
