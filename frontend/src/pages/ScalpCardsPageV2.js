@@ -508,8 +508,11 @@ function ExecutionTab({ card, notionalValue, riskAmount, side }) {
 
       {/* Execution Checklist */}
       <div>
-        <h3 className="text-sm font-bold text-amber-400 uppercase tracking-wider mb-4 flex items-center gap-2">
-          <span>✅</span> PRE-FLIGHT CHECKLIST
+        <h3 className="text-lg font-bold text-gray-200 mb-4 flex items-center gap-2">
+          <svg className="w-5 h-5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          PRE-FLIGHT CHECKLIST
         </h3>
         
         <div className="space-y-2">
