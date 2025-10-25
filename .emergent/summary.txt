@@ -1,0 +1,99 @@
+<analysis>
+The AI engineer's work began with a detailed problem statement on detecting >10% SOLUSDT swings using a two-stage methodology. Initially, it established the existing codebase, installed dependencies, and built offline analysis tools for indicators, extrema detection, signal generation, and backtesting. Subsequent user requests pivoted to a live signal generation system. This involved integrating Pyth Network for real-time data, building a matrix-themed frontend, and incorporating advanced features like Multi-Timeframe (MTF) confirmation and Helius-based on-chain monitoring. A critical bug in displaying the live price was addressed.
+
+A significant phase involved refactoring the entire backend to a production-grade FastAPI structure, introducing modular services, routers, models, and utilities, along with comprehensive configuration, logging, and in-memory data storage. The final steps focused on hardening the application: implementing CI/CD with GitHub Actions, writing unit tests, Dockerizing the backend, and setting up a smoke test script. The work concluded with the engineer addressing code quality issues flagged by , specifically fixing  settings and attempting to auto-fix linting errors. The trajectory shows a systematic approach from initial data analysis and feature implementation to robust production readiness.
+</analysis>
+
+<product_requirements>
+The core product requirement is a trading signal detection system for SOLUSDT that identifies and captures price swings exceeding 10% (long or short) on a 5-minute timeframe. This system must leverage a data-driven, two-stage methodology:
+1.  **Candidate Detection**: Scan for potential swing starts at local extrema (defined as +/- 12 bars initially, later updated to +/- 20 bars in a hybrid approach), conditional on coarse filters like ,  (prefer >= 1.0), and .
+2.  **Micro Confirmation**: After a candidate is flagged, within the next 6 bars (30 minutes), require both a decisive directional breakout candle (5m close above/below local extremum + ) and volume confirmation ( 50-bar median volume).
+
+Further requirements and enhancements include:
+-   **Live Signal Generation**: Real-time monitoring of SOLUSDT (using Pyth Network) to generate signals.
+-   **Scalp Card Output**: Display these live signals in a structured Swing Capture Scalp Card Template format.
+-   **UI/UX**: A futuristic matrix look (dark and technourban yet clean) for the frontend dashboard.
+-   **On-chain Triggers**: Integration of Solana on-chain data (via Helius API key) to enhance signal quality.
+-   **Multi-Timeframe (MTF) Confirmation**: Incorporate 1H or 4H alignment for higher-tier entries.
+-   **Hybrid Methodology**: Adopt a two-tier framework combining the user's macro SAR/EMA/FVG context with the AI's empirically-derived micro-entry gates.
+-   **Backend Robustness**: Restructure the backend to production standards, including modular architecture, configuration management, logging, CI/CD, unit tests, and Dockerization.
+-   **Future Capabilities**: Infrastructure for push notifications for manual trading and future API calls for auto-trading.
+
+The current product build includes a FastAPI backend for data upload, indicator computation, extrema detection, signal generation (both historical and live), and backtesting. A React frontend provides dashboards, an upload page, and a live signals page with the matrix theme and real-time price updates. The backend has been refactored into a modular structure with CI/CD and initial tests.
+</product_requirements>
+
+<key_technical_concepts>
+-   **FastAPI**: Python web framework for backend APIs.
+-   **React**: JavaScript library for frontend UI development.
+-   **Pyth Network**: Real-time oracle for cryptocurrency price feeds.
+-   **Helius API**: Solana infrastructure for on-chain data.
+-   **Pandas/NumPy/SciPy**: Python libraries for data analysis and scientific computing.
+-   **WebSockets**: Real-time communication for live signals.
+-   **Docker**: Containerization for deployment.
+-   **GitHub Actions**: CI/CD for automated testing/linting.
+-   **Pydantic-Settings**: Environment variable and config management.
+-   **Pytest/Ruff/Mypy**: Testing, linting, and type-checking tools.
+</key_technical_concepts>
+
+<code_architecture>
+
+
+**Code Architecture Summary:**
+The application is a full-stack project with a React frontend and a FastAPI backend.
+-   **Root Level**: Contains  (documentation for signal rules),  (environment variable template),  and  (Dockerization),  (project configuration for linters/tests), , , and  for utilities like . The  sets up a CI pipeline.
+-   **Backend ()**: This is a FastAPI application. The original  has been largely replaced by a new, modular structure under .
+    -   : The main FastAPI instance, configured with CORS and includes routers.
+    -   : Manages application settings and environment variables using Pydantic Settings.
+    -   : Defines Pydantic data models for API request/response validation (e.g., , , ).
+    -   : A collection of Python files (, , , , ) defining modular API endpoints for specific functionalities.
+    -   : Houses core business logic.
+        -   : Computes technical indicators (ATR, RSI, BB, EMA, Volume z-score).
+        -   : Detects local extrema and labels swings.
+        -   : Implements the two-stage candidate and micro-confirmation logic.
+        -   : Simulates trades and provides backtest statistics.
+        -   , , , , : These were created for initial live monitoring and enhanced signal logic, but their integration into the latest  structure (specifically ) might need verification as the project evolved.
+    -   : Contains utility modules like  (custom logging) and  (in-memory Pandas DataFrame store).
+    -   : Unit tests (, , ) to ensure API functionality.
+-   **Frontend ()**: A React application.
+    -   : Main component handling routing to different pages.
+    -   : Global styles, notably including the matrix rain animation.
+    -   : Contains individual page components: , , , , and  (for displaying real-time signals with a matrix theme).
+</code_architecture>
+
+<pending_tasks>
+-   Integrating orderbook/tape/CVD/OI microstructure data for enhanced precision.
+-   Developing a WebSocket signal streamer for .
+-   Adding Prometheus  counters.
+-   Returning CSV attachment for backtest ledger.
+-   Adding placeholder veto checks (spread/depth/funding) into  model.
+</pending_tasks>
+
+<current_work>
+The current work immediately before this summary request focused on hardening the application's backend and ensuring code quality and deployment readiness. The AI engineer implemented a new, production-grade backend architecture, including:
+-   **Configuration ()**: Centralized application settings using .
+-   **Logging ()**: Standardized logging for the application.
+-   **CI/CD Pipeline ()**: Setup of GitHub Actions for automated testing and linting, leveraging ...                                                                      [100%]
+=============================== warnings summary ===============================
+../root/.venv/lib/python3.11/site-packages/starlette/formparsers.py:12
+  /root/.venv/lib/python3.11/site-packages/starlette/formparsers.py:12: PendingDeprecationWarning: Please use `import python_multipart` instead.
+    import multipart
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+3 passed, 1 warning in 1.51s, , and .
+-   **Unit Tests ()**: Creation of basic unit tests for the , , and  endpoints.
+-   **Dockerization (, )**: Implementation of Docker configurations for containerizing the backend API.
+-   **Smoke Test ()**: A utility script for quickly testing API functionality.
+
+After implementing these components and running initial tests, the ...                                                                      [100%]
+=============================== warnings summary ===============================
+../root/.venv/lib/python3.11/site-packages/starlette/formparsers.py:12
+  /root/.venv/lib/python3.11/site-packages/starlette/formparsers.py:12: PendingDeprecationWarning: Please use `import python_multipart` instead.
+    import multipart
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+3 passed, 1 warning in 0.83s suite passed successfully. However,  identified several linting issues, primarily related to code style and import formatting, including a deprecation warning for top-level linter settings in . The engineer then updated  to address this deprecation and was in the process of running  to automatically resolve the remaining linting issues. This indicates a focus on finalizing the code quality and ensuring the new modular structure adheres to established style guides.
+</current_work>
+
+<optional_next_step>
+Run  to automatically resolve the identified code style and import formatting issues.
+</optional_next_step>
