@@ -434,17 +434,22 @@ class MTFConfluenceEngine:
         features_1m: Optional[dict],
         features_5m: Optional[dict],
         micro_snapshot: Optional[dict],
-        signal_direction: Optional[str] = None
+        signal_direction: Optional[str] = None,
+        df_1m: Optional[pd.DataFrame] = None,
+        df_tape: Optional[pd.DataFrame] = None,
+        tier: str = 'B',
+        atr_5m: Optional[float] = None
     ) -> dict:
         """
-        Async version with on-chain veto integration.
+        Async version with on-chain veto integration and Phase 1 enhancements.
         
         Returns:
             Dict with score breakdown and total
         """
-        # Get base micro scores
+        # Get base micro scores with Phase 1 integration
         result = self.compute_micro_confluence(
-            features_1s, features_5s, features_1m, features_5m, micro_snapshot
+            features_1s, features_5s, features_1m, features_5m, micro_snapshot,
+            df_1m=df_1m, df_tape=df_tape, side=signal_direction, tier=tier, atr_5m=atr_5m
         )
         
         # Add on-chain veto check if available
