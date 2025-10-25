@@ -116,10 +116,6 @@ class MexcStreamWorker:
             # Handle trade updates
             elif "trade" in stream_name or stream_data.get("e") == "trade":
                 await self._handle_trade(stream_data)
-        
-        # Handle trade updates
-        elif "channel" in data and "deal" in data["channel"]:
-            await self._handle_trade(data)
     
     
     async def _handle_depth(self, data: dict):
