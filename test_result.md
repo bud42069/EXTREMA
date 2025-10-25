@@ -1188,6 +1188,117 @@ agent_communication:
       
       **Status**: ✅ Phase 1 implementation complete. Ready for backend testing.
 
+  - agent: "main"
+    message: |
+      **🚀 PHASE 2: CONTEXT & MACRO GATES - IMPLEMENTATION COMPLETE**
+      
+      **Implementation Summary**:
+      Successfully integrated Phase 2 components from SOLUSDT Swing-Capture Playbook v1.0 into the MTF Confluence Engine. Phase 2 focuses on higher timeframe alignment, regime detection, and enhanced tier determination.
+      
+      **Phase 2 Services Integrated:**
+      
+      1. **regime_detector.py (Squeeze/Normal/Wide Classification)**:
+         - ✅ RegimeDetector class with BBWidth percentile calculation (90-bar window)
+         - ✅ compute_bbwidth(): Bollinger Band Width = (BBupper - BBlower) / BBupper
+         - ✅ compute_percentile(): Rolling percentile rank (0-100)
+         - ✅ detect_regime(): Classification (squeeze ≤30%, normal 30-70%, wide ≥70%)
+         - ✅ get_regime_params(): Regime-specific parameters for TP/SL adjustment
+         - ✅ analyze_regime(): Comprehensive regime analysis with all metrics
+         - ✅ Regime adjustments: Squeeze (TP2/TP3 extended), Normal (standard), Wide (looser triggers)
+      
+      2. **context_gates.py (15m/1h EMA Alignment & Pivot Structure)**:
+         - ✅ compute_ema_set(): EMAs (5/9/21/38) for alignment checks
+         - ✅ check_ema_alignment(): ≥3/4 EMAs aligned in trade direction
+         - ✅ compute_pivot_points(): Classic daily pivot (R1, S1) calculation
+         - ✅ check_pivot_structure(): Price position relative to pivot/VWAP
+         - ✅ check_oscillator_agreement(): RSI-12 not extreme against direction
+         - ✅ check_context_gates(): Comprehensive 15m/1h analysis
+         - ✅ Play type determination: Continuation (A-tier eligible) vs Deviation (B-tier only)
+         - ✅ Context score (0-100): EMA 40%, Pivot 30%, Oscillator 30%
+      
+      3. **macro_gates.py (4h/1D Alignment for A/B Tiering)**:
+         - ✅ check_macro_alignment(): 4h/1D EMA alignment with trend detection
+         - ✅ Tier clearance: A-tier (macro aligned) vs B-tier (mixed/neutral)
+         - ✅ check_macro_conflict(): Conflict detection between macro and context
+         - ✅ compute_macro_score(): Comprehensive macro scoring (0-100)
+         - ✅ determine_final_tier(): A/B/SKIP tier determination with bottleneck logic
+         - ✅ A-tier: Context ≥75 AND Micro ≥80 with macro aligned
+         - ✅ B-tier: Context ≥60 AND Micro ≥70 with macro neutral/mixed
+      
+      **MTF Confluence Engine Updates:**
+      
+      ✅ **Enhanced compute_context_confluence()**:
+      - Accepts df_15m, df_1h, df_4h, df_1d, side parameters
+      - Uses check_context_gates() for 15m/1h analysis (ema, pivot, oscillator)
+      - Uses check_macro_alignment() for 4h/1D analysis and tier clearance
+      - Returns detailed breakdown with context_gates and macro_gates results
+      - Scoring: EMA 15%, Oscillator 10%, Pivot 10%, Macro 10%, OnChain 5%
+      - Fallback to simplified logic if DataFrames not available
+      
+      ✅ **New compute_regime_features()**:
+      - Uses RegimeDetector.analyze_regime() on 5m data
+      - Returns regime (squeeze/normal/wide) with BBWidth percentile
+      - Returns regime-specific parameters for TP/SL adjustment
+      - Available flag indicates if regime detection successful
+      
+      ✅ **Enhanced compute_final_confluence()**:
+      - Uses determine_final_tier() for A/B/SKIP classification
+      - Uses check_macro_conflict() for conflict detection
+      - Applies min(context, micro) bottleneck logic
+      - Returns tier, size_multiplier, macro_clearance, conflict info, bottleneck ID
+      - Detailed logging of tier determination logic
+      
+      ✅ **Updated evaluate() Method**:
+      - Accepts all Phase 2 DataFrames (df_5m, df_15m, df_1h, df_4h, df_1d)
+      - Computes regime features first
+      - Passes DataFrames to context/macro gates
+      - Returns complete result with regime and phase2_enabled status
+      - Maintains backward compatibility
+      
+      ✅ **Updated MTF Router** (/api/mtf/confluence):
+      - Prepares all DataFrames for Phase 2 (5m, 15m, 1h, 4h, 1D)
+      - Passes DataFrames to confluence engine
+      - Returns phase2_enabled status for transparency
+      - Full integration with existing MTF infrastructure
+      
+      **Scoring Breakdown (Context Confluence - 50% total):**
+      - ema_alignment: 15% (15m/1h/4h EMA alignment) ← **ENHANCED**
+      - oscillator_agreement: 10% (RSI-12 agreement) ← **ENHANCED**
+      - pivot_structure: 10% (Pivot/VWAP position) ← **ENHANCED**
+      - macro_gate: 10% (4h/1D alignment) ← **ENHANCED**
+      - onchain_confluence: 5% (Helius integration)
+      
+      **Regime-Specific Adjustments:**
+      - Squeeze: TP2/TP3 extended (2.5R/4.0R), 2-close confirmation required
+      - Normal: Standard TP/SL (2.0R/3.0R), single-close confirmation
+      - Wide: Looser triggers (0.35× ATR), earlier trail consideration
+      
+      **Files Modified**:
+      1. backend/app/services/mtf_confluence.py - Enhanced with Phase 2 imports and logic
+      2. backend/app/routers/mtf.py - Updated /confluence endpoint with Phase 2 DataFrames
+      
+      **Files Created (Phase 2)**:
+      1. backend/app/services/regime_detector.py
+      2. backend/app/services/context_gates.py
+      3. backend/app/services/macro_gates.py
+      
+      **Testing Requirements**:
+      - Backend API testing for enhanced /api/mtf/confluence endpoint
+      - Test regime detection with 5m data (squeeze/normal/wide scenarios)
+      - Test context gates with 15m/1h data (EMA alignment, pivot structure)
+      - Test macro gates with 4h/1D data (A-tier vs B-tier clearance)
+      - Verify tier determination logic (A/B/SKIP with bottleneck)
+      - Check conflict detection between macro and context
+      - Verify phase2_enabled status in response
+      - Check detailed breakdown in context.details and final
+      
+      **Next Steps (Phase 3)**:
+      - Order Management & TP/SL (Post-only orders, unfilled protocol, liq-gap guards)
+      - 3-tier TP/SL with trailing
+      - Time stops and early reduce logic
+      
+      **Status**: ✅ Phase 2 implementation complete. Ready for backend testing.
+
   - agent: "testing"
     message: |
       **🚀 PHASE 1: ENHANCED DETECTION ENGINE - COMPREHENSIVE BACKEND TESTING COMPLETE**
