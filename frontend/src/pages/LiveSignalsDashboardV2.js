@@ -147,79 +147,135 @@ const CVDSlopeChart = ({ data }) => {
   );
 };
 
-// Trade Log Component
+// Trade Log Component (Enhanced with Animation)
 const TradeLog = ({ signals, isOpen, onToggle }) => {
   if (!isOpen) {
     return (
-      <button
+      <motion.button
+        initial={{ y: 100, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ type: "spring", stiffness: 300, damping: 30 }}
         onClick={onToggle}
-        className="fixed bottom-4 left-1/2 -translate-x-1/2 px-4 py-2 bg-gray-900/90 backdrop-blur-xl border border-gray-700 rounded-full text-sm font-medium text-gray-300 hover:bg-gray-800 transition-all flex items-center gap-2"
+        className="fixed bottom-6 left-1/2 -translate-x-1/2 px-6 py-3 bg-gray-900/95 backdrop-blur-xl border border-cyan-500/30 rounded-full text-sm font-semibold text-gray-300 hover:bg-gray-800 hover:border-cyan-500/50 transition-all flex items-center gap-3 shadow-lg shadow-cyan-500/10 group"
       >
-        <span>📋</span>
-        <span>Trade Log ({signals.length})</span>
-        <span>↑</span>
-      </button>
+        <span className="text-lg">📋</span>
+        <span>Trade Log</span>
+        <span className="px-2 py-0.5 bg-cyan-500/20 text-cyan-400 rounded-full text-xs font-bold">
+          {signals.length}
+        </span>
+        <span className="text-xs text-gray-500 group-hover:text-cyan-400 transition-colors">↑</span>
+      </motion.button>
     );
   }
   
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-gray-900/95 backdrop-blur-xl border-t border-gray-800 z-40">
-      <div className="flex items-center justify-between px-6 py-3 border-b border-gray-800">
-        <h3 className="text-sm font-semibold text-gray-300 uppercase tracking-wider">Trade Log</h3>
+    <motion.div 
+      initial={{ y: "100%" }}
+      animate={{ y: 0 }}
+      exit={{ y: "100%" }}
+      transition={{ type: "spring", stiffness: 300, damping: 30 }}
+      className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-gray-950 via-gray-900/98 to-gray-900/95 backdrop-blur-2xl border-t border-cyan-500/20 z-40 shadow-2xl shadow-cyan-500/10"
+    >
+      <div className="flex items-center justify-between px-8 py-4 border-b border-gray-800/50">
+        <div className="flex items-center gap-3">
+          <span className="text-xl">📋</span>
+          <h3 className="text-sm font-bold text-gray-300 uppercase tracking-wider">Trade Execution Log</h3>
+          <span className="px-2 py-0.5 bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 rounded text-xs font-mono">
+            {signals.length} SIGNALS
+          </span>
+        </div>
         <button
           onClick={onToggle}
-          className="text-gray-500 hover:text-gray-300 transition-colors"
+          className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-700 text-gray-400 hover:text-white hover:bg-gray-800 hover:border-gray-600 transition-all"
         >
-          ✕
+          ↓
         </button>
       </div>
       
-      <div className="max-h-64 overflow-y-auto p-4">
+      <div className="max-h-72 overflow-y-auto p-6">
         {signals.length === 0 ? (
-          <div className="text-center py-8 text-gray-500 text-sm">No signals yet</div>
+          <div className="text-center py-12">
+            <div className="text-4xl mb-3 opacity-40">📭</div>
+            <div className="text-gray-500 text-sm font-medium">No signals logged yet</div>
+            <div className="text-gray-600 text-xs mt-1">Confirmed signals will appear here</div>
+          </div>
         ) : (
-          <div className="space-y-2">
-            {signals.map((signal, idx) => (
-              <div
-                key={idx}
-                className="flex items-center justify-between p-3 bg-gray-800/50 rounded-lg border border-gray-700/50 hover:border-gray-600 transition-colors"
-              >
-                <div className="flex items-center gap-4">
-                  <div className={`text-2xl ${signal.side === 'long' ? 'text-cyan-400' : 'text-pink-400'}`}>
-                    {signal.side === 'long' ? '✅' : '❌'}
-                  </div>
-                  <div>
-                    <div className="text-sm font-semibold text-gray-300">
-                      {signal.side.toUpperCase()} @ ${signal.entry?.toFixed(2)}
-                    </div>
-                    <div className="text-xs text-gray-500 font-mono">
-                      SL: ${signal.sl?.toFixed(2)} • TP1: ${signal.tp1?.toFixed(2)}
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="flex items-center gap-3">
-                  <div className="text-right">
-                    <div className="text-xs text-gray-500">Tier</div>
-                    <div className={`text-sm font-bold ${
-                      signal.tier === 'A' ? 'text-cyan-400' : 'text-amber-400'
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <AnimatePresence>
+              {signals.map((signal, idx) => (
+                <motion.div
+                  key={idx}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  transition={{ duration: 0.2 }}
+                  className={`relative rounded-xl p-4 border-2 ${
+                    signal.side === 'long'
+                      ? 'bg-gradient-to-br from-cyan-500/10 to-transparent border-cyan-500/40 hover:border-cyan-500/60'
+                      : 'bg-gradient-to-br from-pink-500/10 to-transparent border-pink-500/40 hover:border-pink-500/60'
+                  } transition-all hover:scale-[1.02] cursor-pointer group`}
+                >
+                  {/* Tier Badge */}
+                  <div className="absolute top-3 right-3">
+                    <div className={`px-2 py-1 rounded-lg text-xs font-bold border ${
+                      signal.tier === 'A'
+                        ? 'bg-cyan-500/20 border-cyan-500/40 text-cyan-300'
+                        : 'bg-amber-500/20 border-amber-500/40 text-amber-300'
                     }`}>
-                      {signal.tier || 'B'}
+                      TIER {signal.tier || 'B'}
                     </div>
                   </div>
-                  <div className="text-right">
-                    <div className="text-xs text-gray-500">Score</div>
-                    <div className="text-sm font-mono text-gray-300">
-                      {signal.confluence_score?.toFixed(0) || '--'}
+                  
+                  <div className="flex items-start gap-3 mb-3">
+                    <div className={`text-3xl ${signal.side === 'long' ? 'text-cyan-400' : 'text-pink-400'}`}>
+                      {signal.side === 'long' ? '📈' : '📉'}
+                    </div>
+                    <div className="flex-1">
+                      <div className={`text-lg font-bold uppercase mb-1 ${
+                        signal.side === 'long' ? 'text-cyan-300' : 'text-pink-300'
+                      }`}>
+                        {signal.side}
+                      </div>
+                      <div className="text-xs text-gray-500 font-mono">
+                        @ {signal.entry ? `$${signal.entry.toFixed(2)}` : '--'}
+                      </div>
                     </div>
                   </div>
-                </div>
-              </div>
-            ))}
+                  
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div className="bg-black/20 rounded-lg p-2 border border-gray-800/50">
+                      <div className="text-gray-500 mb-1">Stop Loss</div>
+                      <div className="font-mono text-rose-400">${signal.sl?.toFixed(2) || '--'}</div>
+                    </div>
+                    <div className="bg-black/20 rounded-lg p-2 border border-gray-800/50">
+                      <div className="text-gray-500 mb-1">Target (TP1)</div>
+                      <div className="font-mono text-emerald-400">${signal.tp1?.toFixed(2) || '--'}</div>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-3 pt-3 border-t border-gray-800/50 flex items-center justify-between">
+                    <div>
+                      <div className="text-xs text-gray-500">R:R Ratio</div>
+                      <div className="text-sm font-bold text-gray-300">
+                        1:{signal.tp1 && signal.entry && signal.sl 
+                          ? ((signal.tp1 - signal.entry) / (signal.entry - signal.sl)).toFixed(1)
+                          : '--'}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-gray-500">Confluence</div>
+                      <div className="text-sm font-bold text-cyan-400">
+                        {signal.confluence_score?.toFixed(0) || '--'}
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
           </div>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 };
 
