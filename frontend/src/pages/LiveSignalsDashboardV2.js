@@ -88,7 +88,6 @@ const CommandPalette = ({ isOpen, onClose, onCommand }) => {
               className="w-full px-6 py-3 flex items-center justify-between hover:bg-gray-800/50 transition-colors text-left"
             >
               <div className="flex items-center gap-3">
-                <span className="text-2xl">{cmd.icon}</span>
                 <span className="text-gray-300">{cmd.label}</span>
               </div>
               {cmd.hotkey && (
