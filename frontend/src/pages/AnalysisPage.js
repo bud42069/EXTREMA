@@ -220,9 +220,12 @@ const AnalysisPage = () => {
 
       {/* Analysis Results */}
       {analysisResult && (
-        <div className="space-y-6">
+        <div className="max-w-7xl mx-auto space-y-6">
           {/* Summary Stats */}
-          <div className="bg-gray-900 rounded-lg p-8">
+          <div className="relative overflow-hidden rounded-2xl">
+            <div className="absolute inset-0 bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-xl"></div>
+            <div className="absolute inset-0 border border-slate-700/50 rounded-2xl"></div>
+            <div className="relative p-8">
             <h2 className="text-2xl font-bold text-white mb-6">Analysis Results</h2>
             
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
