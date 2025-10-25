@@ -321,9 +321,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "WebSocket Signal Streaming - /api/signals/stream endpoint"
-    - "Live Monitoring API - start/stop/status/signals endpoints"
-    - "Modular Backend Architecture - all /api/* routes"
+    - "Chart Data API - needs migration to modular structure"
     - "Full E2E workflow: Upload CSV → Analyze → Backtest"
   stuck_tasks: []
   test_all: false
