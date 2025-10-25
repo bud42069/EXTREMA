@@ -36,11 +36,11 @@ const CommandPalette = ({ isOpen, onClose, onCommand }) => {
   const inputRef = useRef(null);
   
   const commands = [
-    { id: 'start', label: 'Start Monitor', icon: '▶️', hotkey: 'S' },
-    { id: 'stop', label: 'Stop Monitor', icon: '⏸️', hotkey: 'X' },
-    { id: 'toggle-log', label: 'Toggle Trade Log', icon: '📋', hotkey: 'L' },
-    { id: 'scalp-card', label: 'Generate Scalp Card', icon: '🎯', hotkey: 'C' },
-    { id: 'clear-signals', label: 'Clear Signal Stack', icon: '🗑️', hotkey: '' },
+    { id: 'start', label: 'Start Monitor', hotkey: 'S' },
+    { id: 'stop', label: 'Stop Monitor', hotkey: 'X' },
+    { id: 'toggle-log', label: 'Toggle Trade Log', hotkey: 'L' },
+    { id: 'scalp-card', label: 'Generate Scalp Card', hotkey: 'C' },
+    { id: 'clear-signals', label: 'Clear Signal Stack', hotkey: '' },
   ];
   
   const filteredCommands = commands.filter(cmd => 
