@@ -288,7 +288,9 @@ function TradeCard({ card, orderSize, leverage }) {
                 transition={theme.animation.spring}
                 className="text-5xl"
               >
-                {side === 'long' ? '📈' : '📉'}
+                <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={side === 'long' ? "M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" : "M13 17h8m0 0v-8m0 8l-8-8-4 4-6-6"} />
+                </svg>
               </motion.div>
               <div>
                 <h2 className="text-3xl font-black" style={{ color: side === 'long' ? theme.colors.accent.emerald : theme.colors.accent.rose }}>
