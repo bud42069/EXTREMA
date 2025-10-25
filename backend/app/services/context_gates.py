@@ -203,7 +203,7 @@ def check_pivot_structure(
             result['vwap'] = vwap
             
             if side == 'long':
-                result['vwap_ok'] = current_price > vwap
+                result['vwap_ok'] = bool(current_price > vwap)
             else:
                 result['vwap_ok'] = current_price < vwap
         else:
