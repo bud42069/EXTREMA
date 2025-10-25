@@ -143,7 +143,6 @@ SIZE: ${card.size}
             subValue="basis points"
             color={snap?.spread_bps < 1 ? 'up' : 'amber'}
             size="sm"
-            icon="📊"
           />
           <MetricCard
             label="Imbalance"
@@ -151,7 +150,6 @@ SIZE: ${card.size}
             subValue="bid/ask ratio"
             trend={snap?.ladder_imbalance > 0 ? 'up' : snap?.ladder_imbalance < 0 ? 'down' : 'neutral'}
             size="sm"
-            icon="⚖️"
           />
           <MetricCard
             label="CVD"
@@ -159,7 +157,6 @@ SIZE: ${card.size}
             subValue="cumulative delta"
             trend={snap?.cvd > 0 ? 'up' : snap?.cvd < 0 ? 'down' : 'neutral'}
             size="sm"
-            icon="📈"
           />
           <MetricCard
             label="CVD Slope"
