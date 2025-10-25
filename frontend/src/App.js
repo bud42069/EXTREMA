@@ -13,6 +13,7 @@ import ScalpCardsPage from './pages/ScalpCardsPage';
 import ScalpCardsPageV2 from './pages/ScalpCardsPageV2';
 import UploadPage from './pages/UploadPage';
 import AnalysisPage from './pages/AnalysisPage';
+import AnalysisPageV2 from './pages/AnalysisPageV2';
 import BacktestPage from './pages/BacktestPage';
 
 // Modern Sidebar Component
