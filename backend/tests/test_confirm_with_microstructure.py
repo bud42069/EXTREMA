@@ -166,4 +166,4 @@ def test_obv_cliff_veto_in_candidates():
     df = mark_candidates(df, atr_min=0.5, volz_min=1.0, bbw_min=0.005, obv_z_veto=2.0)
     
     # Should NOT be marked as candidate due to OBV cliff
-    assert df.loc[50, 'cand_long'] is False
+    assert df.loc[50, 'cand_long'] == False  # noqa: E712
