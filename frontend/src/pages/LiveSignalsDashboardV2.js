@@ -157,7 +157,9 @@ const TradeLog = ({ signals, isOpen, onToggle }) => {
         onClick={onToggle}
         className="fixed bottom-6 left-1/2 -translate-x-1/2 px-6 py-3 bg-gray-900/95 backdrop-blur-xl border border-cyan-500/30 rounded-full text-sm font-semibold text-gray-300 hover:bg-gray-800 hover:border-cyan-500/50 transition-all flex items-center gap-3 shadow-lg shadow-cyan-500/10 group"
       >
-        <span className="text-lg">📋</span>
+        <svg className="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
         <span>Trade Log</span>
         <span className="px-2 py-0.5 bg-cyan-500/20 text-cyan-400 rounded-full text-xs font-bold">
           {signals.length}
