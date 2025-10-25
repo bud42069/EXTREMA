@@ -19,7 +19,8 @@ class BinanceRestClient:
     """
     
     def __init__(self):
-        self.base_url = "https://api.binance.com/api/v3"
+        # Try futures API which has different geo-restrictions
+        self.base_url = "https://fapi.binance.com/fapi/v1"
         self.client = httpx.AsyncClient(timeout=30.0)
         
         # Timeframe mapping (internal -> Binance API)
