@@ -82,14 +82,15 @@ export default function LiveSignalsPage() {
 
   const handleStartMonitor = async () => {
     try {
-      // Start both live monitor and MTF system
-      const [liveRes, mtfRes] = await Promise.all([
+      // Start live monitor, MTF system, AND microstructure stream
+      const [liveRes, mtfRes, streamRes] = await Promise.all([
         axios.post(`${API}/live/start`),
-        axios.post(`${API}/mtf/start`)
+        axios.post(`${API}/mtf/start`),
+        axios.post(`${API}/stream/start`)
       ]);
       
-      if (liveRes.data.success && mtfRes.data.success) {
-        toast.success('🚀 Live monitor + MTF system started!', { position: 'top-right' });
+      if (liveRes.data.success && mtfRes.data.success && streamRes.data.success) {
+        toast.success('🚀 Live monitor + MTF + Microstructure started!', { position: 'top-right' });
         fetchMonitorStatus();
         fetchMtfData();
       }
@@ -101,12 +102,13 @@ export default function LiveSignalsPage() {
 
   const handleStopMonitor = async () => {
     try {
-      const [liveRes, mtfRes] = await Promise.all([
+      const [liveRes, mtfRes, streamRes] = await Promise.all([
         axios.post(`${API}/live/stop`),
-        axios.post(`${API}/mtf/stop`)
+        axios.post(`${API}/mtf/stop`),
+        axios.post(`${API}/stream/stop`)
       ]);
       
-      if (liveRes.data.success && mtfRes.data.success) {
+      if (liveRes.data.success && mtfRes.data.success && streamRes.data.success) {
         toast.info('Monitor stopped', { position: 'top-right' });
         fetchMonitorStatus();
       }
