@@ -70,7 +70,7 @@ export default function ScalpCardsPageV2() {
       if (js.card) {
         toast.success('✅ Scalp Card Generated', { position: 'top-right', autoClose: 2000 });
       } else {
-        toast.info(`ℹ️ ${js.message || 'No signal available'}`, { position: 'top-right', autoClose: 3000 });
+        toast.info(`${js.message || 'No signal available'}`, { position: 'top-right', autoClose: 3000 });
       }
     } catch (e) {
       console.error('Card fetch error:', e);
