@@ -188,14 +188,24 @@ async def get_mtf_features(timeframe: str, limit: int = 100):
 
 
 @router.get("/confluence")
-async def get_mtf_confluence():
+async def get_mtf_confluence(side: Optional[str] = None, tier: str = 'B'):
     """
-    Get current MTF confluence evaluation.
+    Get current MTF confluence evaluation with Phase 1 enhancements.
     Combines all timeframes to produce context and micro confluence scores.
+    
+    Phase 1 Features:
+    - 1m impulse detection (RSI-12, BOS, volume)
+    - 1s/5s tape filters (CVD z-score, OBI, VWAP proximity)
+    - Comprehensive veto system
+    
+    Args:
+        side: Trade direction ('long' or 'short', optional for general evaluation)
+        tier: Tier for volume thresholds ('A' or 'B', default 'B')
     """
     try:
         # Extract features from all available timeframes
         features_dict = {}
+        df_dict = {}  # Store DataFrames for Phase 1 analysis
         
         for tf in ['1s', '5s', '1m', '5m', '15m', '1h', '4h', '1d']:
             klines = get_klines(tf, limit=100)
@@ -203,12 +213,35 @@ async def get_mtf_confluence():
                 df = pd.DataFrame(klines)
                 df['time'] = pd.to_datetime(df['timestamp'], unit='s')
                 df.set_index('time', inplace=True)
+                
+                # Store DataFrame for Phase 1 services
+                df_dict[tf] = df
+                
+                # Extract features
                 features_dict[tf] = extract_mtf_features(df, tf)
         
         # Get microstructure snapshot
         micro_snapshot = get_snapshot()
         
-        # Evaluate confluence
+        # Prepare DataFrames for Phase 1 analysis
+        df_1m = df_dict.get('1m')
+        df_tape = df_dict.get('5s') or df_dict.get('1s')  # Prefer 5s, fallback to 1s
+        
+        # Compute 5m ATR for VWAP proximity check
+        atr_5m = None
+        if '5m' in df_dict:
+            df_5m = df_dict['5m']
+            if 'atr' in df_5m.columns and len(df_5m) > 0:
+                atr_5m = df_5m['atr'].iloc[-1]
+            elif len(df_5m) >= 14:
+                # Compute ATR on the fly
+                high_low = df_5m['high'] - df_5m['low']
+                high_close = (df_5m['high'] - df_5m['close'].shift()).abs()
+                low_close = (df_5m['low'] - df_5m['close'].shift()).abs()
+                tr = pd.concat([high_low, high_close, low_close], axis=1).max(axis=1)
+                atr_5m = tr.rolling(window=14).mean().iloc[-1]
+        
+        # Evaluate confluence with Phase 1 integration
         confluence_result = confluence_engine.evaluate(
             features_1s=features_dict.get('1s'),
             features_5s=features_dict.get('5s'),
@@ -218,13 +251,28 @@ async def get_mtf_confluence():
             features_1h=features_dict.get('1h'),
             features_4h=features_dict.get('4h'),
             features_1d=features_dict.get('1d'),
-            micro_snapshot=micro_snapshot
+            micro_snapshot=micro_snapshot,
+            df_1m=df_1m,
+            df_tape=df_tape,
+            side=side,
+            tier=tier,
+            atr_5m=atr_5m
         )
         
         return {
             "available": True,
             "confluence": confluence_result,
-            "features_available": list(features_dict.keys())
+            "features_available": list(features_dict.keys()),
+            "phase1_enabled": {
+                "impulse_1m": df_1m is not None and side is not None,
+                "tape_filters": df_tape is not None and side is not None and atr_5m is not None,
+                "veto_system": df_tape is not None and side is not None
+            },
+            "parameters": {
+                "side": side,
+                "tier": tier,
+                "atr_5m": atr_5m
+            }
         }
     
     except Exception as e:
