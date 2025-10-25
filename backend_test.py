@@ -979,6 +979,482 @@ class BackendTester:
         except Exception as e:
             self.log_result("MTF System Stop", False, f"Exception: {str(e)}")
 
+    # ============= PHASE 4: CONFIG & LOGGING TESTS =============
+    
+    def test_phase4_imports(self):
+        """Test Phase 4 service imports"""
+        try:
+            from app.services.config_manager import ConfigManager
+            from app.services.trade_logger import TradeLogger, TradeStatus
+            from app.services.kpi_tracker import KPITracker
+            self.log_result("Phase 4 Imports", True, "All Phase 4 services imported successfully")
+            return True
+        except ImportError as e:
+            self.log_result("Phase 4 Imports", False, f"Failed to import Phase 4 services: {e}")
+            return False
+    
+    def test_config_manager_initialization(self):
+        """Test ConfigManager initialization and default config"""
+        try:
+            from app.services.config_manager import ConfigManager
+            
+            # Test initialization with temporary config path
+            import tempfile
+            with tempfile.TemporaryDirectory() as temp_dir:
+                config_path = os.path.join(temp_dir, "test_config.json")
+                cm = ConfigManager(config_path)
+                
+                # Check if default config was created
+                config_file_exists = os.path.exists(config_path)
+                
+                # Check default config structure
+                expected_sections = ['detection', 'risk', 'execution', 'tp_sl', 'regime', 'confluence', 'veto', 'system']
+                has_all_sections = all(section in cm.config for section in expected_sections)
+                
+                # Check specific default values
+                detection_atr_min = cm.get('detection', 'atr_min')
+                risk_max_leverage = cm.get('risk', 'max_leverage')
+                tp_sl_tp1_r = cm.get('tp_sl', 'tp1_r')
+                
+                defaults_correct = (
+                    detection_atr_min == 0.6 and
+                    risk_max_leverage == 5.0 and
+                    tp_sl_tp1_r == 1.0
+                )
+                
+                if config_file_exists and has_all_sections and defaults_correct:
+                    self.log_result("ConfigManager Initialization", True, 
+                                  f"8 sections created, defaults correct (ATR: {detection_atr_min}, Leverage: {risk_max_leverage})")
+                else:
+                    self.log_result("ConfigManager Initialization", False, 
+                                  f"File: {config_file_exists}, Sections: {has_all_sections}, Defaults: {defaults_correct}")
+                    
+        except Exception as e:
+            self.log_result("ConfigManager Initialization", False, f"Exception: {str(e)}")
+    
+    def test_config_manager_load_save(self):
+        """Test ConfigManager load and save functionality"""
+        try:
+            from app.services.config_manager import ConfigManager
+            
+            import tempfile
+            with tempfile.TemporaryDirectory() as temp_dir:
+                config_path = os.path.join(temp_dir, "test_config.json")
+                
+                # Create and save config
+                cm = ConfigManager(config_path)
+                save_success = cm.save_config()
+                
+                # Modify a value
+                cm.set('risk', 'max_leverage', 10.0)
+                cm.set('detection', 'atr_min', 0.8)
+                
+                # Save again
+                save_success2 = cm.save_config()
+                
+                # Create new instance to test loading
+                cm2 = ConfigManager(config_path)
+                
+                # Check if values were loaded correctly
+                loaded_leverage = cm2.get('risk', 'max_leverage')
+                loaded_atr = cm2.get('detection', 'atr_min')
+                
+                values_correct = loaded_leverage == 10.0 and loaded_atr == 0.8
+                
+                if save_success and save_success2 and values_correct:
+                    self.log_result("ConfigManager Load/Save", True, 
+                                  f"Save/load working, values: leverage={loaded_leverage}, atr={loaded_atr}")
+                else:
+                    self.log_result("ConfigManager Load/Save", False, 
+                                  f"Save1: {save_success}, Save2: {save_success2}, Values: {values_correct}")
+                    
+        except Exception as e:
+            self.log_result("ConfigManager Load/Save", False, f"Exception: {str(e)}")
+    
+    def test_config_manager_validation(self):
+        """Test ConfigManager validation functionality"""
+        try:
+            from app.services.config_manager import ConfigManager
+            
+            import tempfile
+            with tempfile.TemporaryDirectory() as temp_dir:
+                config_path = os.path.join(temp_dir, "test_config.json")
+                cm = ConfigManager(config_path)
+                
+                # Test valid config
+                valid_errors = cm.validate_config()
+                valid_config = len(valid_errors) == 0
+                
+                # Test invalid config
+                cm.set('risk', 'max_leverage', 25.0)  # Invalid: > 20
+                cm.set('detection', 'atr_min', -0.5)  # Invalid: <= 0
+                cm.set('tp_sl', 'tp1_pct', 0.6)       # Invalid: percentages won't sum to 1.0
+                
+                invalid_errors = cm.validate_config()
+                has_errors = len(invalid_errors) > 0
+                
+                # Check specific error detection
+                has_risk_errors = 'risk' in invalid_errors
+                has_detection_errors = 'detection' in invalid_errors
+                has_tp_sl_errors = 'tp_sl' in invalid_errors
+                
+                if valid_config and has_errors and has_risk_errors and has_detection_errors:
+                    self.log_result("ConfigManager Validation", True, 
+                                  f"Valid config passed, invalid config caught {len(invalid_errors)} error sections")
+                else:
+                    self.log_result("ConfigManager Validation", False, 
+                                  f"Valid: {valid_config}, HasErrors: {has_errors}, Sections: {list(invalid_errors.keys())}")
+                    
+        except Exception as e:
+            self.log_result("ConfigManager Validation", False, f"Exception: {str(e)}")
+    
+    def test_trade_logger_initialization(self):
+        """Test TradeLogger initialization"""
+        try:
+            from app.services.trade_logger import TradeLogger, TradeStatus
+            
+            import tempfile
+            with tempfile.TemporaryDirectory() as temp_dir:
+                log_dir = os.path.join(temp_dir, "trades")
+                tl = TradeLogger(log_dir=log_dir)
+                
+                # Check directory creation
+                dir_created = os.path.exists(log_dir)
+                
+                # Check data structures
+                trades_dict = isinstance(tl.trades, dict) and len(tl.trades) == 0
+                events_dict = isinstance(tl.trade_events, dict) and len(tl.trade_events) == 0
+                
+                # Check TradeStatus enum
+                status_values = [status.value for status in TradeStatus]
+                has_key_statuses = all(status in status_values for status in 
+                                     ['signal_detected', 'entry_filled', 'tp1_hit', 'closed'])
+                
+                if dir_created and trades_dict and events_dict and has_key_statuses:
+                    self.log_result("TradeLogger Initialization", True, 
+                                  f"Log directory created, data structures initialized, {len(status_values)} statuses")
+                else:
+                    self.log_result("TradeLogger Initialization", False, 
+                                  f"Dir: {dir_created}, Trades: {trades_dict}, Events: {events_dict}, Statuses: {has_key_statuses}")
+                    
+        except Exception as e:
+            self.log_result("TradeLogger Initialization", False, f"Exception: {str(e)}")
+    
+    def test_trade_logger_lifecycle(self):
+        """Test TradeLogger complete trade lifecycle"""
+        try:
+            from app.services.trade_logger import TradeLogger, TradeStatus
+            
+            import tempfile
+            with tempfile.TemporaryDirectory() as temp_dir:
+                log_dir = os.path.join(temp_dir, "trades")
+                tl = TradeLogger(log_dir=log_dir)
+                
+                # Create trade
+                trade_id = "TEST_TRADE_001"
+                signal = {
+                    'side': 'long',
+                    'entry': 100.0,
+                    'sl': 95.0,
+                    'tp1': 105.0,
+                    'tp2': 110.0,
+                    'tp3': 115.0
+                }
+                confluence = {
+                    'context': {'total': 75.0},
+                    'micro': {'total': 80.0},
+                    'final': {'final_score': 77.5, 'bottleneck': 'none'}
+                }
+                
+                trade = tl.create_trade(trade_id, signal, confluence, 'normal', 'A')
+                
+                # Check trade creation
+                trade_created = trade_id in tl.trades
+                correct_status = tl.trades[trade_id]['status'] == TradeStatus.SIGNAL_DETECTED.value
+                has_signal_data = tl.trades[trade_id]['signal']['side'] == 'long'
+                
+                # Log risk check
+                risk_result = {
+                    'liq_gap': {'liq_price': 67.0, 'liq_gap_multiplier': 6.6},
+                    'position_sizing': {'risk_usd': 50.0, 'risk_distance_pct': 5.0}
+                }
+                tl.log_risk_check(trade_id, risk_result, True)
+                
+                # Log entry
+                tl.log_entry(trade_id, 100.1, 10.0, 1000.0, 3.0, 0.1, 2.0)
+                
+                # Log TP hits
+                tl.log_tp_hit(trade_id, 'tp1', 105.0, 5.0)
+                tl.log_trailing_activation(trade_id)
+                tl.log_tp_hit(trade_id, 'tp2', 110.0, 3.0)
+                
+                # Log exit
+                tl.log_exit(trade_id, 112.0, 'tp2_hit', 120.0)
+                
+                # Check final state
+                final_trade = tl.trades[trade_id]
+                is_closed = final_trade['status'] == TradeStatus.CLOSED.value
+                has_performance = final_trade['performance']['realized_pnl_usd'] == 120.0
+                tp_hits_correct = final_trade['tp_sl']['tp1_hit'] and final_trade['tp_sl']['tp2_hit']
+                
+                # Check file creation
+                trade_file = os.path.join(log_dir, f"{trade_id}.json")
+                file_created = os.path.exists(trade_file)
+                
+                if trade_created and correct_status and has_signal_data and is_closed and has_performance and tp_hits_correct and file_created:
+                    self.log_result("TradeLogger Lifecycle", True, 
+                                  f"Complete lifecycle: signal → risk → entry → TP1/TP2 → exit, file saved")
+                else:
+                    self.log_result("TradeLogger Lifecycle", False, 
+                                  f"Created: {trade_created}, Status: {correct_status}, Closed: {is_closed}, File: {file_created}")
+                    
+        except Exception as e:
+            self.log_result("TradeLogger Lifecycle", False, f"Exception: {str(e)}")
+    
+    def test_kpi_tracker_initialization(self):
+        """Test KPITracker initialization"""
+        try:
+            from app.services.kpi_tracker import KPITracker
+            
+            import tempfile
+            with tempfile.TemporaryDirectory() as temp_dir:
+                output_dir = os.path.join(temp_dir, "kpis")
+                kt = KPITracker(output_dir=output_dir)
+                
+                # Check directory creation
+                dir_created = os.path.exists(output_dir)
+                
+                # Check data structures
+                kpis_dict = isinstance(kt.kpis, dict) and len(kt.kpis) == 0
+                last_update_none = kt.last_update is None
+                
+                if dir_created and kpis_dict and last_update_none:
+                    self.log_result("KPITracker Initialization", True, 
+                                  f"Output directory created, data structures initialized")
+                else:
+                    self.log_result("KPITracker Initialization", False, 
+                                  f"Dir: {dir_created}, KPIs: {kpis_dict}, LastUpdate: {last_update_none}")
+                    
+        except Exception as e:
+            self.log_result("KPITracker Initialization", False, f"Exception: {str(e)}")
+    
+    def test_kpi_tracker_calculations(self):
+        """Test KPITracker KPI calculations with sample trades"""
+        try:
+            from app.services.kpi_tracker import KPITracker
+            
+            import tempfile
+            with tempfile.TemporaryDirectory() as temp_dir:
+                output_dir = os.path.join(temp_dir, "kpis")
+                kt = KPITracker(output_dir=output_dir)
+                
+                # Create sample trades
+                sample_trades = [
+                    # Winning trade
+                    {
+                        'status': 'closed',
+                        'created_at': '2024-01-01T10:00:00Z',
+                        'signal': {'side': 'long'},
+                        'context': {'tier': 'A', 'regime': 'normal'},
+                        'performance': {'realized_pnl_usd': 100.0, 'r_multiple': 2.0, 'win': True},
+                        'tp_sl': {'tp1_hit': True, 'tp2_hit': True, 'tp3_hit': False},
+                        'exit': {'exit_at': '2024-01-01T14:00:00Z', 'hold_duration_hours': 4.0, 
+                                'exit_reason': 'tp2_hit', 'time_stop_triggered': False, 'early_reduce_triggered': False}
+                    },
+                    # Losing trade
+                    {
+                        'status': 'closed',
+                        'created_at': '2024-01-01T15:00:00Z',
+                        'signal': {'side': 'short'},
+                        'context': {'tier': 'B', 'regime': 'squeeze'},
+                        'performance': {'realized_pnl_usd': -50.0, 'r_multiple': -1.0, 'win': False},
+                        'tp_sl': {'tp1_hit': False, 'tp2_hit': False, 'tp3_hit': False},
+                        'exit': {'exit_at': '2024-01-01T17:00:00Z', 'hold_duration_hours': 2.0, 
+                                'exit_reason': 'stop_hit', 'time_stop_triggered': False, 'early_reduce_triggered': False}
+                    },
+                    # Another winning trade
+                    {
+                        'status': 'closed',
+                        'created_at': '2024-01-02T09:00:00Z',
+                        'signal': {'side': 'long'},
+                        'context': {'tier': 'A', 'regime': 'wide'},
+                        'performance': {'realized_pnl_usd': 75.0, 'r_multiple': 1.5, 'win': True},
+                        'tp_sl': {'tp1_hit': True, 'tp2_hit': False, 'tp3_hit': False},
+                        'exit': {'exit_at': '2024-01-02T15:00:00Z', 'hold_duration_hours': 6.0, 
+                                'exit_reason': 'tp1_hit', 'time_stop_triggered': False, 'early_reduce_triggered': False}
+                    }
+                ]
+                
+                # Calculate KPIs
+                kpis = kt.calculate_kpis(sample_trades)
+                
+                # Verify KPI structure
+                required_sections = ['summary', 'returns', 'risk', 'efficiency', 'breakdown', 'metadata']
+                has_all_sections = all(section in kpis for section in required_sections)
+                
+                # Verify calculations
+                summary = kpis['summary']
+                returns = kpis['returns']
+                
+                # Win rate: 2/3 = 66.67%
+                win_rate_correct = abs(summary['win_rate'] - 66.67) < 0.1
+                
+                # Total P&L: 100 + (-50) + 75 = 125
+                total_pnl_correct = summary['total_pnl_usd'] == 125.0
+                
+                # Profit factor: 175 / 50 = 3.5
+                profit_factor_correct = abs(returns['profit_factor'] - 3.5) < 0.1
+                
+                # Average R-multiple: (2.0 + (-1.0) + 1.5) / 3 = 0.833
+                avg_r_correct = abs(returns['avg_r_multiple'] - 0.833) < 0.1
+                
+                # Tier breakdown
+                breakdown = kpis['breakdown']
+                has_tier_breakdown = 'A' in breakdown['by_tier'] and 'B' in breakdown['by_tier']
+                tier_a_count = breakdown['by_tier']['A']['count'] == 2
+                tier_b_count = breakdown['by_tier']['B']['count'] == 1
+                
+                calculations_correct = (win_rate_correct and total_pnl_correct and 
+                                      profit_factor_correct and avg_r_correct)
+                
+                if has_all_sections and calculations_correct and has_tier_breakdown and tier_a_count and tier_b_count:
+                    self.log_result("KPITracker Calculations", True, 
+                                  f"Win rate: {summary['win_rate']:.1f}%, P&L: ${summary['total_pnl_usd']}, "
+                                  f"Profit factor: {returns['profit_factor']:.2f}, Avg R: {returns['avg_r_multiple']:.2f}")
+                else:
+                    self.log_result("KPITracker Calculations", False, 
+                                  f"Sections: {has_all_sections}, Calcs: {calculations_correct}, Breakdown: {has_tier_breakdown}")
+                    
+        except Exception as e:
+            self.log_result("KPITracker Calculations", False, f"Exception: {str(e)}")
+    
+    def test_kpi_tracker_edge_cases(self):
+        """Test KPITracker edge case handling"""
+        try:
+            from app.services.kpi_tracker import KPITracker
+            
+            import tempfile
+            with tempfile.TemporaryDirectory() as temp_dir:
+                output_dir = os.path.join(temp_dir, "kpis")
+                kt = KPITracker(output_dir=output_dir)
+                
+                # Test empty trade list
+                empty_kpis = kt.calculate_kpis([])
+                empty_handled = empty_kpis['metadata']['total_trades'] == 0
+                
+                # Test only winning trades
+                winning_trades = [
+                    {
+                        'status': 'closed',
+                        'created_at': '2024-01-01T10:00:00Z',
+                        'signal': {'side': 'long'},
+                        'context': {'tier': 'A', 'regime': 'normal'},
+                        'performance': {'realized_pnl_usd': 100.0, 'r_multiple': 2.0, 'win': True},
+                        'tp_sl': {'tp1_hit': True, 'tp2_hit': False, 'tp3_hit': False},
+                        'exit': {'exit_at': '2024-01-01T14:00:00Z', 'hold_duration_hours': 4.0, 
+                                'exit_reason': 'tp1_hit', 'time_stop_triggered': False, 'early_reduce_triggered': False}
+                    }
+                ]
+                
+                win_only_kpis = kt.calculate_kpis(winning_trades)
+                win_rate_100 = win_only_kpis['summary']['win_rate'] == 100.0
+                profit_factor_inf = win_only_kpis['returns']['profit_factor'] == float('inf')
+                
+                # Test only losing trades
+                losing_trades = [
+                    {
+                        'status': 'closed',
+                        'created_at': '2024-01-01T10:00:00Z',
+                        'signal': {'side': 'short'},
+                        'context': {'tier': 'B', 'regime': 'squeeze'},
+                        'performance': {'realized_pnl_usd': -50.0, 'r_multiple': -1.0, 'win': False},
+                        'tp_sl': {'tp1_hit': False, 'tp2_hit': False, 'tp3_hit': False},
+                        'exit': {'exit_at': '2024-01-01T12:00:00Z', 'hold_duration_hours': 2.0, 
+                                'exit_reason': 'stop_hit', 'time_stop_triggered': False, 'early_reduce_triggered': False}
+                    }
+                ]
+                
+                loss_only_kpis = kt.calculate_kpis(losing_trades)
+                win_rate_0 = loss_only_kpis['summary']['win_rate'] == 0.0
+                profit_factor_0 = loss_only_kpis['returns']['profit_factor'] == 0.0
+                
+                if empty_handled and win_rate_100 and profit_factor_inf and win_rate_0 and profit_factor_0:
+                    self.log_result("KPITracker Edge Cases", True, 
+                                  "Empty list, 100% wins (PF=∞), 0% wins (PF=0) handled correctly")
+                else:
+                    self.log_result("KPITracker Edge Cases", False, 
+                                  f"Empty: {empty_handled}, Win100: {win_rate_100}, PF∞: {profit_factor_inf}, "
+                                  f"Win0: {win_rate_0}, PF0: {profit_factor_0}")
+                    
+        except Exception as e:
+            self.log_result("KPITracker Edge Cases", False, f"Exception: {str(e)}")
+    
+    def test_phase4_integration(self):
+        """Test Phase 4 services integration"""
+        try:
+            from app.services.config_manager import ConfigManager
+            from app.services.trade_logger import TradeLogger
+            from app.services.kpi_tracker import KPITracker
+            
+            import tempfile
+            with tempfile.TemporaryDirectory() as temp_dir:
+                # Initialize all services
+                config_path = os.path.join(temp_dir, "config.json")
+                log_dir = os.path.join(temp_dir, "trades")
+                kpi_dir = os.path.join(temp_dir, "kpis")
+                
+                cm = ConfigManager(config_path)
+                tl = TradeLogger(log_dir=log_dir)
+                kt = KPITracker(output_dir=kpi_dir)
+                
+                # Test config provides parameters for all phases
+                detection_params = cm.get_section('detection')
+                risk_params = cm.get_section('risk')
+                tp_sl_params = cm.get_section('tp_sl')
+                
+                has_detection = 'atr_min' in detection_params and 'volz_min' in detection_params
+                has_risk = 'max_leverage' in risk_params and 'min_liq_gap_multiplier' in risk_params
+                has_tp_sl = 'tp1_r' in tp_sl_params and 'tp2_r_normal' in tp_sl_params
+                
+                # Test trade logger captures complete lifecycle
+                trade_id = "INTEGRATION_TEST_001"
+                signal = {'side': 'long', 'entry': 100.0, 'sl': 95.0, 'tp1': 105.0}
+                confluence = {'final': {'final_score': 80.0}}
+                
+                trade = tl.create_trade(trade_id, signal, confluence, 'normal', 'A')
+                tl.log_entry(trade_id, 100.0, 10.0, 1000.0, 3.0, 0.0)
+                tl.log_exit(trade_id, 105.0, 'tp1_hit', 50.0)
+                
+                # Test KPI tracker analyzes logged trades
+                closed_trades = tl.get_closed_trades()
+                kpis = kt.calculate_kpis(closed_trades)
+                
+                # Test file outputs
+                config_file_exists = os.path.exists(config_path)
+                trade_file_exists = os.path.exists(os.path.join(log_dir, f"{trade_id}.json"))
+                
+                # Export KPI report
+                kpi_report_path = kt.export_report()
+                kpi_file_exists = os.path.exists(kpi_report_path)
+                
+                integration_success = (
+                    has_detection and has_risk and has_tp_sl and
+                    len(closed_trades) == 1 and
+                    kpis['summary']['total_trades'] == 1 and
+                    config_file_exists and trade_file_exists and kpi_file_exists
+                )
+                
+                if integration_success:
+                    self.log_result("Phase 4 Integration", True, 
+                                  f"Config sections: 8, Trade logged: {trade_id}, KPIs calculated: 1 trade, Files created")
+                else:
+                    self.log_result("Phase 4 Integration", False, 
+                                  f"Config: {has_detection and has_risk and has_tp_sl}, "
+                                  f"Trades: {len(closed_trades)}, Files: {config_file_exists and trade_file_exists and kpi_file_exists}")
+                    
+        except Exception as e:
+            self.log_result("Phase 4 Integration", False, f"Exception: {str(e)}")
+
     # ============= PHASE 3: ORDER MANAGEMENT & TP/SL TESTS =============
     
     def test_phase3_imports(self):
