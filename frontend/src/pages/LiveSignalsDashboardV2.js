@@ -129,8 +129,8 @@ const CVDSlopeChart = ({ data }) => {
   }));
   
   return (
-    <div className="w-full h-full">
-      <ResponsiveContainer width="100%" height="100%">
+    <div className="w-full h-full min-h-[128px]">
+      <ResponsiveContainer width="100%" height={128}>
         <AreaChart data={chartData} margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
           <defs>
             <linearGradient id="cvdGradient" x1="0" y1="0" x2="0" y2="1">
