@@ -405,15 +405,15 @@ class BackendTester:
                 if all(field in data for field in required_fields):
                     
                     # Check phase2_enabled status
-                    phase2 = data['phase2_enabled']
+                    phase2 = data.get('phase2_enabled', {})
                     regime_enabled = phase2.get('regime_detection', False)
                     context_enabled = phase2.get('context_gates', False)
                     macro_enabled = phase2.get('macro_gates', False)
                     
-                    # Check parameters
-                    params = data['parameters']
-                    side = params.get('side')
-                    tier = params.get('tier')
+                    # Check parameters (may not be present in baseline call)
+                    params = data.get('parameters', {})
+                    side = params.get('side', 'baseline')
+                    tier = params.get('tier', 'baseline')
                     
                     # Check regime field
                     regime = data['confluence'].get('regime')
