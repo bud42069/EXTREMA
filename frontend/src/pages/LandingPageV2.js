@@ -224,10 +224,10 @@ export default function LandingPageV2() {
           className="grid md:grid-cols-4 gap-6 max-w-5xl mx-auto"
         >
           {[
-            { icon: '📈', label: 'Win Rate', value: '68.4%', color: theme.colors.accent.emerald },
-            { icon: '💰', label: 'Avg R-Multiple', value: '2.3R', color: theme.colors.accent.cyan },
-            { icon: '⚡', label: 'Signals Today', value: '14', color: theme.colors.accent.amber },
-            { icon: '🎯', label: 'Uptime', value: '99.9%', color: theme.colors.accent.purple }
+            { icon: '📈', label: 'Win Rate', value: kpiData.winRate, color: theme.colors.accent.emerald },
+            { icon: '💰', label: 'Avg R-Multiple', value: kpiData.avgRMultiple, color: theme.colors.accent.cyan },
+            { icon: '⚡', label: 'Signals Today', value: kpiData.signalsToday, color: theme.colors.accent.amber },
+            { icon: '🎯', label: 'Uptime', value: kpiData.uptime, color: theme.colors.accent.purple }
           ].map((stat, idx) => (
             <motion.div
               key={idx}
