@@ -15,7 +15,7 @@ const UploadPage = () => {
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
     if (selectedFile) {
-      if (!selectedFile.name.endswith('.csv')) {
+      if (!selectedFile.name.endsWith('.csv')) {
         toast.error('Please select a CSV file');
         return;
       }
