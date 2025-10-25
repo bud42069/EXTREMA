@@ -355,32 +355,42 @@ class BackendTester:
     
     async def run_all_tests(self):
         """Run all backend tests"""
-        print("🚀 Starting SOLUSDT Backend Testing")
+        print("🚀 Starting SOLUSDT Backend Testing - Microstructure + Prometheus")
         print(f"📡 Backend URL: {BACKEND_URL}")
-        print("=" * 60)
+        print("=" * 70)
         
-        # Priority 1 - Basic connectivity and existing endpoints
-        print("\n📋 PRIORITY 1: Basic Endpoints & Regression Testing")
+        # Priority 1 - Microstructure Stream API
+        print("\n🔬 PRIORITY 1: Microstructure Stream API")
+        self.test_stream_start()
+        time.sleep(3)  # Give stream time to initialize
+        self.test_stream_health()
+        self.test_stream_snapshot()
+        self.test_signals_latest_with_veto()
+        self.test_stream_stop()
+        
+        # Priority 2 - Prometheus Metrics
+        print("\n📊 PRIORITY 2: Prometheus Metrics")
+        self.test_prometheus_metrics()
+        
+        # Priority 3 - Regression Testing (Existing Endpoints)
+        print("\n🔄 PRIORITY 3: Regression Testing")
         self.test_health_endpoint()
         self.test_csv_upload()
         self.test_signals_latest()
-        
-        # Priority 2 - NEW WebSocket functionality
-        print("\n🔌 PRIORITY 2: WebSocket Signal Streaming")
         await self.test_websocket_signals()
         
-        # Priority 3 - NEW Live monitoring endpoints
-        print("\n📊 PRIORITY 3: Live Monitoring API")
+        # Live monitoring (quick test)
+        print("\n📈 PRIORITY 3: Live Monitoring (Quick Test)")
         self.test_live_monitor_start()
-        time.sleep(2)  # Give monitor time to initialize
+        time.sleep(2)
         self.test_live_monitor_status()
         self.test_live_signals()
         self.test_live_monitor_stop()
         
         # Summary
-        print("\n" + "=" * 60)
+        print("\n" + "=" * 70)
         print("📊 TEST SUMMARY")
-        print("=" * 60)
+        print("=" * 70)
         
         total_tests = len(self.test_results)
         passed_tests = sum(1 for r in self.test_results if r['success'])
