@@ -443,7 +443,15 @@ function ChecksTab({ checks, card }) {
                       : 'bg-rose-500/10 border-rose-500/30 text-rose-300'
                   }`}
                 >
-                  <span className="text-xl">{check.passed ? '✓' : '✗'}</span>
+                  {check.passed ? (
+                    <svg className="w-5 h-5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  ) : (
+                    <svg className="w-5 h-5 text-rose-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  )}
                   <span>{check.label}</span>
                 </motion.div>
               ))}
