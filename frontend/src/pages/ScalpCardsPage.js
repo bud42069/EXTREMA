@@ -58,7 +58,8 @@ export default function ScalpCardsPage() {
   async function fetchCard() {
     setLoading(true);
     try {
-      const js = await api("/api/scalp/card?enable_micro_gate=true");
+      const forceParam = demoMode ? "&force=true" : "";
+      const js = await api(`/api/scalp/card?enable_micro_gate=true${forceParam}`);
       setResp(js);
     } catch (e) {
       console.error("Card fetch error:", e);
