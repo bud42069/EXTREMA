@@ -17,9 +17,9 @@ logger = get_logger(__name__)
 @router.post("/start")
 async def start_stream(symbol: str = "SOLUSDT"):
     """
-    Start the MEXC microstructure stream worker.
+    Start the Binance microstructure stream worker.
     
-    Connects to MEXC WebSocket for:
+    Connects to Binance WebSocket for:
     - Depth (L2, top 20 levels)
     - Trades (for CVD calculation)
     
