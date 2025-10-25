@@ -518,9 +518,9 @@ export default function LiveSignalsDashboardV2() {
       />
 
       {/* Hotkey Hint */}
-      <div className="fixed top-4 right-4 z-30 flex items-center gap-2 text-xs text-gray-500 font-mono">
-        <kbd className="px-2 py-1 bg-gray-900 border border-gray-800 rounded">⌘K</kbd>
-        <span>Command Palette</span>
+      <div className="fixed top-4 right-4 z-30 flex items-center gap-2 px-3 py-2 bg-gray-900/80 backdrop-blur-xl border border-gray-800/50 rounded-lg shadow-lg">
+        <kbd className="px-2 py-1 bg-gray-800 border border-gray-700 rounded text-xs font-mono text-gray-400">⌘K</kbd>
+        <span className="text-xs text-gray-500 font-medium">Command Palette</span>
       </div>
 
       {/* Top Status Strip */}
