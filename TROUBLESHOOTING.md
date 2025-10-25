@@ -26,7 +26,7 @@ curl http://localhost:8001/api/swings/
 
 1. **CORS Issue** - Frontend can't reach backend
    - Check `/app/frontend/.env` has correct `REACT_APP_BACKEND_URL`
-   - Should be: `https://sol-swing-detect.preview.emergentagent.com` (for preview)
+   - Should be: `https://solana-impulse.preview.emergentagent.com` (for preview)
    - Or: `http://localhost:8001` (for local testing)
 
 2. **File Size Too Large** - Proxy limits
@@ -145,7 +145,7 @@ tail -f /var/log/supervisor/frontend.err.log
    cat /app/frontend/.env
    
    # Should contain:
-   # REACT_APP_BACKEND_URL=https://sol-swing-detect.preview.emergentagent.com
+   # REACT_APP_BACKEND_URL=https://solana-impulse.preview.emergentagent.com
    ```
 
 ---

@@ -1,63 +1,94 @@
 <analysis>
-The AI engineer's trajectory chronicles the evolution of a sophisticated trading application. Initially, it involved fixing a critical data display issue on the  due to a frontend-backend data structure mismatch. Following this, the microstructure data feed was stabilized by migrating from MEXC to Binance, successfully bypassing geo-restrictions. A significant undertaking was the implementation of a comprehensive Multi-Timeframe (MTF) framework, systematically built across four phases: establishing data infrastructure, developing a six-state state machine, integrating higher timeframe data via CryptoCompare (after Binance REST API geo-restrictions), and finally, visually integrating the MTF status into the . Helius on-chain monitoring was subsequently woven into the MTF confluence engine to enhance signal quality and veto logic. A crucial bug where the microstructure stream failed to stop was also meticulously resolved. The trajectory culminates with the commencement of a major UI/UX overhaul, specifically redesigning the  to a Bloomberg-class aesthetic, a task that is currently in progress.
+The AI engineer's work began by resolving a data display bug in  and migrating microstructure data from MEXC to Binance due to geo-restrictions, stabilizing the feed. A comprehensive Multi-Timeframe (MTF) framework was then built, including data infrastructure, a six-state state machine, higher timeframe data integration via CryptoCompare, and UI integration into . Helius on-chain monitoring was integrated for signal quality, and a critical bug where the microstructure stream failed to stop was resolved. Subsequently, a major UI/UX overhaul to a Bloomberg-class aesthetic was initiated, redesigning , , , , , and . During this, a bug in  (incorrectly using  on a dataclass) was fixed. The current focus is a backend enhancement, implementing the SOLUSDT Swing-Capture Playbook v1.0, specifically the detection engine (Phase 1) and context/macro gates (Phase 2), with new services created for impulse detection, tape filters, veto system, regime detection, context gates, and macro gates.
 </analysis>
-
 <product_requirements>
-The application's primary objective is a SOLUSDT trading signal system designed to detect price swings exceeding 10% on a 5-minute timeframe. It employs a two-stage methodology: Candidate Detection (using local extrema, ATR, volume, BBWidth filters) and Micro Confirmation (breakout candle, volume confirmation). Key features include real-time signal generation via Pyth Network, a sophisticated UI/UX (evolving from a futuristic matrix look to a sleek dark mode with emerald/green accents), Solana on-chain triggers (Helius), Multi-Timeframe (MTF) confirmation, and a hybrid methodology. The backend is built with a modular FastAPI architecture, , , CI/CD, unit tests, and Dockerization. Microstructure integration, initially with MEXC (later Binance) orderbook data (spread, depth, imbalance, CVD, OBV-cliff veto), enhances signal precision. Prometheus provides monitoring metrics. Future plans include push notifications and an auto-trading API. The current build features a FastAPI backend with data processing, signal generation, and backtesting, and a React frontend for dashboards, data upload, live signals, and Scalp Cards, all within the new sleek aesthetic, now further enhanced with a full MTF framework, Helius integration, and a Bloomberg-class Live Signals Dashboard redesign.
+The core objective is a SOLUSDT trading system detecting >10% price swings on a 5-minute timeframe using a two-stage methodology: Candidate Detection (local extrema, ATR, volume, BBWidth) and Micro Confirmation (breakout candle, volume). Key features include real-time signals (Pyth Network), a Bloomberg-class UI/UX (dark-luxury aesthetic with emerald/cyan/magenta accents), Solana on-chain triggers (Helius), Multi-Timeframe (MTF) confirmation, and hybrid methodology. The backend uses FastAPI, , , CI/CD, and Docker. Microstructure data from Binance (formerly MEXC) provides orderbook details for precision. The current build features a FastAPI backend for data processing, signal generation, and backtesting, and a React frontend with dashboards, data upload, live signals, and Scalp Cards, all conforming to the new sleek aesthetic, further enhanced with a full MTF framework and Helius integration. The latest explicit requirement is to implement the SOLUSDT Swing-Capture Playbook v1.0 for backend enhancements, focusing on precise detection, confirmation, execution, and risk management.
 </product_requirements>
-
 <key_technical_concepts>
-- **FastAPI**: Python web framework.
-- **React**: JavaScript UI library.
-- **Pyth Network**: Real-time price oracle.
-- **Helius API**: Solana on-chain data.
-- **Pandas/NumPy**: Data analysis.
+- **FastAPI**: Python web framework for backend.
+- **React**: JavaScript library for frontend UI.
+- **Pyth Network**: Real-time price oracle for data feeds.
+- **Helius API**: Solana on-chain data for triggers.
 - **WebSockets**: Real-time communication (Binance, CryptoCompare).
-- **Docker**: Containerization.
-- **GitHub Actions**: CI/CD.
-- **Pydantic-Settings**: Configuration.
-- **Pytest/Ruff/Mypy**: Testing, linting.
-- **Starlette Exporter**: Prometheus metrics.
-- ****: Asynchronous HTTP client.
+- **Framer Motion**: React animation library.
+- **Recharts**: React charting library.
+- **Tailwind CSS**: Utility-first CSS framework for styling.
+- **Pandas/NumPy**: Data analysis and manipulation.
 </key_technical_concepts>
-
 <code_architecture>
 
-**Code Architecture Summary:**
-The application is a full-stack project utilizing a React frontend and a FastAPI backend.
-- ****: Main FastAPI instance. Registered the newly created .
-- ****: Controls microstructure data streams. Modified to integrate Binance WebSocket, ensuring proper start/stop and accurate health status reporting by using an  flag.
-- ****: **(New)** Exposes API endpoints for the Multi-Timeframe system, including starting, stopping, status checks, and confluence score retrieval.
-- ****: **(Moved)** Helius on-chain monitoring. Moved from root  to  and integrated into the MTF confluence engine.
-- ****: **(New)** Implements the six-state MTF trading logic.
-- ****: **(New)** Calculates multi-timeframe confluence scores, now integrated with Helius on-chain data for context scoring and veto logic, and correctly configured with the Helius API key.
-- ****: (Renamed internally and logic migrated from MEXC to Binance). Manages the WebSocket connection for microstructure data, now connected to Binance's market data stream with proper  cleanup.
-- ****: **(New/Modified)** Originally for Binance REST, adapted to fetch historical klines for higher timeframes from CryptoCompare due to geo-restrictions. Required adding  and fixing an orphaned code block.
-- ****: **(New)** Multi-timeframe data store with automatic resampling (1s→5s/15s/30s/1m).
-- ****: **(New)** Extracts features per timeframe (RSI, EMA, BOS, Volume, VWAP).
-- ****: **(New)** Worker for Binance 1-second kline WebSocket stream.
-- ****: Displays analysis results. Modified to correctly handle and display a single signal object.
-- ****: Displays live signals. Updated to display Binance microstructure, auto-start microstructure stream with live monitor, correctly stop all streams, and integrate the MTF Confluence Engine panel.
-- ****: **(New)** The new Bloomberg-class dashboard for live signals, implementing a significant UI/UX redesign.
-- ****: Main React component. Updated routing to use  for the  path and integrated it into the application's layout.
-- ****: Tailwind configuration. Modified to add a  background for the new dark-luxury aesthetic.
+- ****: Main FastAPI application, routing entry point.
+- ****: API routes for Multi-Timeframe functionality.
+- ****: Calculates MTF confluence scores, now integrated with on-chain data. *Corrected bug where  was used on  dataclass attributes.*
+- ****: **(New)** Created to implement 1-minute impulse requirements for signal confirmation.
+- ****: **(New)** Implements 1-second/5-second tape filters (CVD, OBI, VWAP proximity) for microstructure analysis.
+- ****: **(New)** Designed to house the comprehensive veto logic for disqualifying trade signals.
+- ****: **(New)** Service for detecting market regimes (Squeeze/Normal/Wide) based on BBWidth.
+- ****: **(New)** Implements 15-minute/1-hour EMA alignment logic for context-driven trade decisions.
+- ****: **(New)** Handles 4-hour/1-day macro gate logic for A-tier/B-tier sizing and risk management.
+- ****: Main React component, manages routing. *Updated to use new V2 pages (, , , , , ).*
+- ****: **(New)** Centralized file defining design tokens, colors, and typography for consistent UI/UX.
+- ****: **(New)** Houses reusable React components conforming to the established design system.
+- ****: **(New)** Implements the Bloomberg-class live signals dashboard. *Significantly enhanced with Framer Motion animations, better microstructure visualizations, and a Floating Action Button.*
+- ****: **(New)** Reimagined Scalp Cards page with a dark-luxury aesthetic and enhanced trade execution elements.
+- ****: **(New)** Overhauled Overview page with hero metrics, quick actions, and system health status.
+- ****: **(New)** Redesigned Analysis page for parameter tuning with a dual-column layout and visual feedback.
+- ****: **(New)** New Backtest page featuring two-step wizard, equity curve, and performance metrics.
+- ****: **(New)** Visually stunning, Bloomberg-class landing page with animated elements and key stats.
+- ****: Tailwind CSS configuration. *Modified to include a  background for the new aesthetic.*
 </code_architecture>
-
 <pending_tasks>
 - Returning CSV attachment for backtest ledger.
 - Exporting Scalp Card as PNG/PDF for journaling.
-- Implementing regime auto-tagging (S/N/W from BBWidth percentiles).
 - Integrating Grafana for visualizing confluence hit-rate, veto ratios, and latency.
 - Developing an Order Preview endpoint for margin and liquidity gap calculation.
-- Implementing auto size-tiering (B-tier on weak microstructure).
+- Implementing auto size-tiering.
 - Backtesting the new MTF logic on uploaded CSV data.
-- Further UI updates for Scalp Cards, Overview, Upload, Analysis, and Backtest pages as per the new design blueprint.
+- Completing Phase 3 (Entries, Orders, and Fills), Phase 4 (Stops, TP Ladder, Trail), and Phase 5 (State Machine) of the backend playbook.
+- UI updates for the Upload and Navigation modules as per the Bloomberg-class redesign.
 </pending_tasks>
-
 <current_work>
-Immediately before this summary request, the AI engineer was continuing the implementation of the Bloomberg-class redesign for the **Live Signals Dashboard**. This work began by creating  and updating  to route  to this new component, applying a radial gradient background via . The dashboard successfully displays premium design elements, real-time SOL/USD price, microstructure metrics (CVD, Spread, Depth), and system health. The engineer then received a request to IMPLEMENT NEXT STEPS for this dashboard. In response, the engineer attempted to further refine the  component. A File already exists error was encountered during an attempt to  the file, which was then resolved by using a  to overwrite the existing file. The current task involves verifying the changes applied to  after this overwrite and frontend restart, which constitutes the ongoing effort to fully realize the Bloomberg-class aesthetic and functionality detailed in the comprehensive design blueprint.
-</current_work>
+Immediately before this summary request, the AI engineer was implementing Phase 1 and beginning Phase 2 of the SOLUSDT Swing-Capture Playbook v1.0 for the backend. The prior work involved a complete UI/UX overhaul to a Bloomberg-class aesthetic, successfully redesigning and implementing , , , , , and , including creating a new  and . The  bug (using  on a  dataclass) was also fixed.
 
+The current work focuses on enhancing the backend's core detection engine logic.
+For **Phase 1: Enhance Detection Engine**, the following services were created:
+- 
+- 
+- 
+For **Phase 2: Context & Macro Gates**, the following services were created:
+- 
+- 
+- 
+
+The next immediate task is to integrate these newly created services into the  or a new enhanced confluence engine to realize the detailed logic specified in the playbook.
+
+Phase 1 (1-2 hours): Enhance Detection Engine
+
+Add 1m impulse requirements (RSI-12, BOS, volume)
+Add 1s/5s tape filters (CVD z-score, OBI, VWAP proximity)
+Implement comprehensive veto system
+Update MTF confluence scoring
+Phase 2 (2-3 hours): Context & Macro Gates
+
+Add 15m/1h EMA alignment logic
+Add 4h/1D macro gate for A/B tiering
+Implement regime detection (Squeeze/Normal/Wide)
+Enhanced confluence bottleneck logic
+Phase 3 (2-3 hours): Order Management & TP/SL
+
+Post-only order placement logic
+Unfilled protocol with slip caps
+Liq-gap guards
+3-tier TP/SL with trailing
+Time stops and early reduce
+Phase 4 (1 hour): Config & Logging
+
+JSON config system
+Comprehensive trade logging
+KPI tracking
+
+
+</current_work>
 <optional_next_step>
-Take a screenshot to verify the updated  after the file overwrite and frontend restart.
+Integrate , , , , , and  into an enhanced MTF confluence engine.
 </optional_next_step>
