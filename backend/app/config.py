@@ -1,7 +1,9 @@
 from pydantic_settings import BaseSettings
-from pydantic import Field
+from pydantic import Field, ConfigDict
 
 class Settings(BaseSettings):
+    model_config = ConfigDict(env_file=".env")
+    
     ENV: str = Field(default="dev")
     LOG_LEVEL: str = Field(default="INFO")
     # data / signal defaults
@@ -13,8 +15,5 @@ class Settings(BaseSettings):
     CONFIRM_WINDOW: int = 6
     # CORS
     CORS_ORIGINS: str = "*"
-
-    class Config:
-        env_file = ".env"
 
 settings = Settings()
