@@ -648,7 +648,7 @@ class MTFConfluenceEngine:
         final_score = min(context_score, micro_score)
         
         # Phase 2: Use macro_gates for tier determination if available
-        if macro_result and context_result:
+        if macro_result is not None and context_result is not None:
             tier = determine_final_tier(
                 macro_result=macro_result,
                 context_result=context_result,
