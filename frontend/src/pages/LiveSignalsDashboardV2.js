@@ -109,76 +109,41 @@ const CommandPalette = ({ isOpen, onClose, onCommand }) => {
   );
 };
 
-// CVD Slope Chart Component
+// CVD Slope Chart Component (Enhanced with Recharts)
 const CVDSlopeChart = ({ data }) => {
-  const canvasRef = useRef(null);
+  if (!data || data.length === 0) {
+    return (
+      <div className="w-full h-32 flex items-center justify-center text-gray-600 text-xs">
+        Awaiting data...
+      </div>
+    );
+  }
   
-  useEffect(() => {
-    if (!canvasRef.current || !data || data.length === 0) return;
-    
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
-    const width = canvas.width;
-    const height = canvas.height;
-    
-    // Clear canvas
-    ctx.clearRect(0, 0, width, height);
-    
-    // Draw grid
-    ctx.strokeStyle = '#1f2937';
-    ctx.lineWidth = 1;
-    
-    // Horizontal lines
-    for (let i = 0; i <= 4; i++) {
-      const y = (height / 4) * i;
-      ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.lineTo(width, y);
-      ctx.stroke();
-    }
-    
-    // Draw CVD line
-    if (data.length > 1) {
-      const max = Math.max(...data.map(d => Math.abs(d)));
-      const scale = height / (max * 2);
-      
-      ctx.beginPath();
-      ctx.strokeStyle = '#06b6d4'; // Cyan
-      ctx.lineWidth = 2;
-      
-      data.forEach((value, index) => {
-        const x = (width / (data.length - 1)) * index;
-        const y = height / 2 - value * scale;
-        
-        if (index === 0) {
-          ctx.moveTo(x, y);
-        } else {
-          ctx.lineTo(x, y);
-        }
-      });
-      
-      ctx.stroke();
-      
-      // Gradient fill
-      ctx.lineTo(width, height / 2);
-      ctx.lineTo(0, height / 2);
-      ctx.closePath();
-      
-      const gradient = ctx.createLinearGradient(0, 0, 0, height);
-      gradient.addColorStop(0, 'rgba(6, 182, 212, 0.2)');
-      gradient.addColorStop(1, 'rgba(6, 182, 212, 0)');
-      ctx.fillStyle = gradient;
-      ctx.fill();
-    }
-  }, [data]);
+  const chartData = data.map((value, index) => ({
+    index,
+    value: value || 0
+  }));
   
   return (
-    <canvas 
-      ref={canvasRef} 
-      width={400} 
-      height={120}
-      className="w-full h-full"
-    />
+    <ResponsiveContainer width="100%" height={128}>
+      <AreaChart data={chartData} margin={{ top: 5, right: 0, left: 0, bottom: 5 }}>
+        <defs>
+          <linearGradient id="cvdGradient" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#06b6d4" stopOpacity={0.4} />
+            <stop offset="100%" stopColor="#06b6d4" stopOpacity={0} />
+          </linearGradient>
+        </defs>
+        <YAxis hide domain={['auto', 'auto']} />
+        <Area
+          type="monotone"
+          dataKey="value"
+          stroke="#06b6d4"
+          strokeWidth={2}
+          fill="url(#cvdGradient)"
+          animationDuration={300}
+        />
+      </AreaChart>
+    </ResponsiveContainer>
   );
 };
 
