@@ -4,13 +4,269 @@ import { toast } from 'react-toastify';
 
 const API = process.env.REACT_APP_BACKEND_URL || '';
 
-export default function LiveSignalsDashboard() {
+// Audio notification system
+const playNotificationSound = (type = 'success') => {
+  const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+  const oscillator = audioContext.createOscillator();
+  const gainNode = audioContext.createGain();
+  
+  oscillator.connect(gainNode);
+  gainNode.connect(audioContext.destination);
+  
+  if (type === 'long') {
+    oscillator.frequency.value = 800; // Higher pitch for long
+  } else if (type === 'short') {
+    oscillator.frequency.value = 400; // Lower pitch for short
+  } else {
+    oscillator.frequency.value = 600; // Neutral
+  }
+  
+  gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+  gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+  
+  oscillator.start(audioContext.currentTime);
+  oscillator.stop(audioContext.currentTime + 0.3);
+};
+
+// Command Palette Component
+const CommandPalette = ({ isOpen, onClose, onCommand }) => {
+  const [query, setQuery] = useState('');
+  const inputRef = useRef(null);
+  
+  const commands = [
+    { id: 'start', label: 'Start Monitor', icon: '▶️', hotkey: 'S' },
+    { id: 'stop', label: 'Stop Monitor', icon: '⏸️', hotkey: 'X' },
+    { id: 'toggle-log', label: 'Toggle Trade Log', icon: '📋', hotkey: 'L' },
+    { id: 'scalp-card', label: 'Generate Scalp Card', icon: '🎯', hotkey: 'C' },
+    { id: 'clear-signals', label: 'Clear Signal Stack', icon: '🗑️', hotkey: '' },
+  ];
+  
+  const filteredCommands = commands.filter(cmd => 
+    cmd.label.toLowerCase().includes(query.toLowerCase())
+  );
+  
+  useEffect(() => {
+    if (isOpen && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [isOpen]);
+  
+  if (!isOpen) return null;
+  
+  return (
+    <div 
+      className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-start justify-center pt-32"
+      onClick={onClose}
+    >
+      <div 
+        className="bg-gradient-to-br from-gray-900 to-gray-950 border border-gray-700 rounded-2xl w-full max-w-2xl shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Search Input */}
+        <div className="p-4 border-b border-gray-800">
+          <input
+            ref={inputRef}
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Type a command or search..."
+            className="w-full bg-transparent text-white text-lg placeholder-gray-500 outline-none"
+          />
+        </div>
+        
+        {/* Command List */}
+        <div className="max-h-96 overflow-y-auto">
+          {filteredCommands.map((cmd) => (
+            <button
+              key={cmd.id}
+              onClick={() => {
+                onCommand(cmd.id);
+                onClose();
+              }}
+              className="w-full px-6 py-3 flex items-center justify-between hover:bg-gray-800/50 transition-colors text-left"
+            >
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">{cmd.icon}</span>
+                <span className="text-gray-300">{cmd.label}</span>
+              </div>
+              {cmd.hotkey && (
+                <kbd className="px-2 py-1 bg-gray-800 text-gray-400 text-xs rounded font-mono">
+                  {cmd.hotkey}
+                </kbd>
+              )}
+            </button>
+          ))}
+        </div>
+        
+        <div className="p-3 border-t border-gray-800 text-xs text-gray-500 flex items-center justify-between">
+          <span>Navigate with ↑↓ • Execute with ↵</span>
+          <span>ESC to close</span>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// CVD Slope Chart Component
+const CVDSlopeChart = ({ data }) => {
+  const canvasRef = useRef(null);
+  
+  useEffect(() => {
+    if (!canvasRef.current || !data || data.length === 0) return;
+    
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    const width = canvas.width;
+    const height = canvas.height;
+    
+    // Clear canvas
+    ctx.clearRect(0, 0, width, height);
+    
+    // Draw grid
+    ctx.strokeStyle = '#1f2937';
+    ctx.lineWidth = 1;
+    
+    // Horizontal lines
+    for (let i = 0; i <= 4; i++) {
+      const y = (height / 4) * i;
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(width, y);
+      ctx.stroke();
+    }
+    
+    // Draw CVD line
+    if (data.length > 1) {
+      const max = Math.max(...data.map(d => Math.abs(d)));
+      const scale = height / (max * 2);
+      
+      ctx.beginPath();
+      ctx.strokeStyle = '#06b6d4'; // Cyan
+      ctx.lineWidth = 2;
+      
+      data.forEach((value, index) => {
+        const x = (width / (data.length - 1)) * index;
+        const y = height / 2 - value * scale;
+        
+        if (index === 0) {
+          ctx.moveTo(x, y);
+        } else {
+          ctx.lineTo(x, y);
+        }
+      });
+      
+      ctx.stroke();
+      
+      // Gradient fill
+      ctx.lineTo(width, height / 2);
+      ctx.lineTo(0, height / 2);
+      ctx.closePath();
+      
+      const gradient = ctx.createLinearGradient(0, 0, 0, height);
+      gradient.addColorStop(0, 'rgba(6, 182, 212, 0.2)');
+      gradient.addColorStop(1, 'rgba(6, 182, 212, 0)');
+      ctx.fillStyle = gradient;
+      ctx.fill();
+    }
+  }, [data]);
+  
+  return (
+    <canvas 
+      ref={canvasRef} 
+      width={400} 
+      height={120}
+      className="w-full h-full"
+    />
+  );
+};
+
+// Trade Log Component
+const TradeLog = ({ signals, isOpen, onToggle }) => {
+  if (!isOpen) {
+    return (
+      <button
+        onClick={onToggle}
+        className="fixed bottom-4 left-1/2 -translate-x-1/2 px-4 py-2 bg-gray-900/90 backdrop-blur-xl border border-gray-700 rounded-full text-sm font-medium text-gray-300 hover:bg-gray-800 transition-all flex items-center gap-2"
+      >
+        <span>📋</span>
+        <span>Trade Log ({signals.length})</span>
+        <span>↑</span>
+      </button>
+    );
+  }
+  
+  return (
+    <div className="fixed bottom-0 left-0 right-0 bg-gray-900/95 backdrop-blur-xl border-t border-gray-800 z-40">
+      <div className="flex items-center justify-between px-6 py-3 border-b border-gray-800">
+        <h3 className="text-sm font-semibold text-gray-300 uppercase tracking-wider">Trade Log</h3>
+        <button
+          onClick={onToggle}
+          className="text-gray-500 hover:text-gray-300 transition-colors"
+        >
+          ✕
+        </button>
+      </div>
+      
+      <div className="max-h-64 overflow-y-auto p-4">
+        {signals.length === 0 ? (
+          <div className="text-center py-8 text-gray-500 text-sm">No signals yet</div>
+        ) : (
+          <div className="space-y-2">
+            {signals.map((signal, idx) => (
+              <div
+                key={idx}
+                className="flex items-center justify-between p-3 bg-gray-800/50 rounded-lg border border-gray-700/50 hover:border-gray-600 transition-colors"
+              >
+                <div className="flex items-center gap-4">
+                  <div className={`text-2xl ${signal.side === 'long' ? 'text-cyan-400' : 'text-pink-400'}`}>
+                    {signal.side === 'long' ? '✅' : '❌'}
+                  </div>
+                  <div>
+                    <div className="text-sm font-semibold text-gray-300">
+                      {signal.side.toUpperCase()} @ ${signal.entry?.toFixed(2)}
+                    </div>
+                    <div className="text-xs text-gray-500 font-mono">
+                      SL: ${signal.sl?.toFixed(2)} • TP1: ${signal.tp1?.toFixed(2)}
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-3">
+                  <div className="text-right">
+                    <div className="text-xs text-gray-500">Tier</div>
+                    <div className={`text-sm font-bold ${
+                      signal.tier === 'A' ? 'text-cyan-400' : 'text-amber-400'
+                    }`}>
+                      {signal.tier || 'B'}
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-xs text-gray-500">Score</div>
+                    <div className="text-sm font-mono text-gray-300">
+                      {signal.confluence_score?.toFixed(0) || '--'}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default function LiveSignalsDashboardV2() {
   const [monitorStatus, setMonitorStatus] = useState({ running: false, last_price: 0, candles_count: 0 });
   const [signals, setSignals] = useState([]);
   const [microSnap, setMicroSnap] = useState(null);
   const [mtfStatus, setMtfStatus] = useState(null);
   const [mtfConfluence, setMtfConfluence] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [cvdHistory, setCvdHistory] = useState([]);
+  const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
+  const [tradeLogOpen, setTradeLogOpen] = useState(false);
+  const previousSignalsCount = useRef(0);
 
   useEffect(() => {
     fetchInitialData();
@@ -25,6 +281,64 @@ export default function LiveSignalsDashboard() {
       clearInterval(mtfInterval);
     };
   }, []);
+
+  // Hotkey listener
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // Command Palette: Cmd+K or Ctrl+K
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setCommandPaletteOpen(true);
+      }
+      
+      // ESC to close command palette
+      if (e.key === 'Escape' && commandPaletteOpen) {
+        setCommandPaletteOpen(false);
+      }
+      
+      // Hotkeys (only when command palette is closed)
+      if (!commandPaletteOpen) {
+        if (e.key.toLowerCase() === 's' && !e.metaKey && !e.ctrlKey) {
+          handleStartMonitor();
+        } else if (e.key.toLowerCase() === 'x' && !e.metaKey && !e.ctrlKey) {
+          handleStopMonitor();
+        } else if (e.key.toLowerCase() === 'l' && !e.metaKey && !e.ctrlKey) {
+          setTradeLogOpen(prev => !prev);
+        } else if (e.key.toLowerCase() === 'c' && !e.metaKey && !e.ctrlKey) {
+          window.location.href = '/scalp-cards';
+        }
+      }
+    };
+    
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [commandPaletteOpen]);
+
+  // Check for new signals and play sound
+  useEffect(() => {
+    if (signals.length > previousSignalsCount.current && previousSignalsCount.current > 0) {
+      const newSignal = signals[signals.length - 1];
+      playNotificationSound(newSignal.side);
+      
+      // Visual flash
+      document.body.style.transition = 'background-color 0.2s';
+      document.body.style.backgroundColor = newSignal.side === 'long' ? 'rgba(6, 182, 212, 0.1)' : 'rgba(236, 72, 153, 0.1)';
+      setTimeout(() => {
+        document.body.style.backgroundColor = '';
+      }, 200);
+    }
+    previousSignalsCount.current = signals.length;
+  }, [signals]);
+
+  // Update CVD history for chart
+  useEffect(() => {
+    if (microSnap?.cvd_slope !== undefined) {
+      setCvdHistory(prev => {
+        const newHistory = [...prev, microSnap.cvd_slope];
+        return newHistory.slice(-30); // Keep last 30 data points (60 seconds)
+      });
+    }
+  }, [microSnap]);
 
   const fetchInitialData = async () => {
     try {
@@ -85,6 +399,7 @@ export default function LiveSignalsDashboard() {
       
       if (liveRes.data.success && mtfRes.data.success && streamRes.data.success) {
         toast.success('🚀 System online', { position: 'top-right', autoClose: 2000 });
+        playNotificationSound('success');
         fetchMonitorStatus();
         fetchMtfData();
       }
@@ -118,6 +433,29 @@ export default function LiveSignalsDashboard() {
     }
   };
 
+  const handleCommand = (commandId) => {
+    switch (commandId) {
+      case 'start':
+        handleStartMonitor();
+        break;
+      case 'stop':
+        handleStopMonitor();
+        break;
+      case 'toggle-log':
+        setTradeLogOpen(prev => !prev);
+        break;
+      case 'scalp-card':
+        window.location.href = '/scalp-cards';
+        break;
+      case 'clear-signals':
+        setSignals([]);
+        toast.info('Signal stack cleared');
+        break;
+      default:
+        break;
+    }
+  };
+
   const formatPrice = (price) => {
     return price ? `$${price.toFixed(2)}` : '--';
   };
@@ -131,10 +469,6 @@ export default function LiveSignalsDashboard() {
     if (tier === 'A') return 'from-cyan-500/20 to-cyan-600/10 border-cyan-500/40 text-cyan-300';
     if (tier === 'B') return 'from-amber-500/20 to-amber-600/10 border-amber-500/40 text-amber-300';
     return 'from-gray-700/20 to-gray-800/10 border-gray-600/30 text-gray-500';
-  };
-
-  const getSideColor = (side) => {
-    return side === 'long' ? 'cyan' : 'magenta';
   };
 
   const getSideGlow = (side) => {
@@ -153,6 +487,19 @@ export default function LiveSignalsDashboard() {
 
   return (
     <div className="min-h-screen bg-gradient-radial from-[#0B0E14] to-[#141921] text-gray-100">
+      {/* Command Palette */}
+      <CommandPalette 
+        isOpen={commandPaletteOpen}
+        onClose={() => setCommandPaletteOpen(false)}
+        onCommand={handleCommand}
+      />
+
+      {/* Hotkey Hint */}
+      <div className="fixed top-4 right-4 z-30 flex items-center gap-2 text-xs text-gray-500 font-mono">
+        <kbd className="px-2 py-1 bg-gray-900 border border-gray-800 rounded">⌘K</kbd>
+        <span>Command Palette</span>
+      </div>
+
       {/* Top Status Strip */}
       <div className="sticky top-0 z-50 bg-black/60 backdrop-blur-xl border-b border-gray-800/50">
         <div className="px-6 py-3 flex items-center justify-between">
@@ -188,14 +535,14 @@ export default function LiveSignalsDashboard() {
                 onClick={handleStopMonitor}
                 className="px-4 py-1.5 bg-gray-800/50 hover:bg-gray-700/50 border border-gray-700/50 rounded-lg text-xs font-medium transition-all"
               >
-                STOP
+                STOP <kbd className="ml-1 text-gray-600">X</kbd>
               </button>
             ) : (
               <button
                 onClick={handleStartMonitor}
                 className="px-4 py-1.5 bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-500/40 text-emerald-300 rounded-lg text-xs font-semibold transition-all"
               >
-                START
+                START <kbd className="ml-1 text-emerald-600">S</kbd>
               </button>
             )}
           </div>
@@ -203,12 +550,12 @@ export default function LiveSignalsDashboard() {
       </div>
 
       {/* Main Split View */}
-      <div className="p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="p-6 grid grid-cols-1 lg:grid-cols-3 gap-6 pb-32">
         
         {/* LEFT: Signal Stack */}
         <div className="lg:col-span-2 space-y-4">
           
-          {/* MTF Confluence Engine - Active State Tile */}
+          {/* MTF Confluence Engine */}
           {mtfStatus && mtfConfluence && (
             <div className={`relative rounded-2xl p-6 border transition-all ${
               mtfStatus.running 
@@ -266,9 +613,19 @@ export default function LiveSignalsDashboard() {
 
           {/* Signal Stack */}
           <div className="bg-gray-900/30 rounded-2xl border border-gray-800/50 overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-800/50">
-              <h3 className="text-lg font-semibold text-gray-300">Signal Stack</h3>
-              <p className="text-xs text-gray-500 mt-1">Chronological detection feed</p>
+            <div className="px-6 py-4 border-b border-gray-800/50 flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-300">Signal Stack</h3>
+                <p className="text-xs text-gray-500 mt-1">Chronological detection feed</p>
+              </div>
+              <button
+                onClick={() => setTradeLogOpen(prev => !prev)}
+                className="px-3 py-1.5 bg-gray-800/50 hover:bg-gray-700/50 border border-gray-700 rounded-lg text-xs font-medium transition-all flex items-center gap-2"
+              >
+                <span>📋</span>
+                <span>Log</span>
+                <kbd className="text-gray-600">L</kbd>
+              </button>
             </div>
             
             <div className="p-6">
@@ -282,7 +639,7 @@ export default function LiveSignalsDashboard() {
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {signals.map((signal, idx) => (
+                  {signals.slice(-5).reverse().map((signal, idx) => (
                     <div
                       key={idx}
                       className={`relative rounded-xl p-4 border-2 ${getSideGlow(signal.side)} bg-gradient-to-br from-gray-900/50 to-gray-800/30 transition-all hover:scale-[1.02]`}
@@ -318,6 +675,17 @@ export default function LiveSignalsDashboard() {
         {/* RIGHT: Microstructure Grid */}
         <div className="space-y-4">
           
+          {/* CVD Slope Chart */}
+          <div className="bg-gray-900/30 rounded-2xl border border-gray-800/50 p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h4 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">CVD Slope</h4>
+              <span className="text-xs text-gray-600 font-mono">30s Rolling</span>
+            </div>
+            <div className="h-32 bg-black/30 rounded-lg overflow-hidden">
+              <CVDSlopeChart data={cvdHistory} />
+            </div>
+          </div>
+
           {/* CVD Gauge */}
           <div className="bg-gray-900/30 rounded-2xl border border-gray-800/50 p-6">
             <div className="flex items-center justify-between mb-4">
@@ -367,7 +735,7 @@ export default function LiveSignalsDashboard() {
             </div>
           </div>
 
-          {/* Depth Imbalance Gauge */}
+          {/* Depth Imbalance */}
           <div className="bg-gray-900/30 rounded-2xl border border-gray-800/50 p-6">
             <div className="flex items-center justify-between mb-4">
               <h4 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Depth Imbalance</h4>
@@ -433,6 +801,13 @@ export default function LiveSignalsDashboard() {
           </div>
         </div>
       </div>
+
+      {/* Trade Log Drawer */}
+      <TradeLog 
+        signals={signals}
+        isOpen={tradeLogOpen}
+        onToggle={() => setTradeLogOpen(prev => !prev)}
+      />
     </div>
   );
 }
