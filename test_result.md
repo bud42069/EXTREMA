@@ -537,14 +537,13 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Live Signals Dashboard V2 (Bloomberg-Class) - Full E2E testing with signal generation"
-    - "Command Palette functionality (⌘K hotkey)"
-    - "Trade Log drawer with multiple signals"
     - "Chart Data API - needs migration to modular structure"
+    - "MTF Confluence Engine backend endpoints - 500 errors need resolution"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
   completed_testing:
+    - "Live Signals Dashboard V2 (Bloomberg-Class) - COMPREHENSIVE E2E TESTING COMPLETE ✅"
     - "Microstructure Stream API - All endpoints tested and working"
     - "Prometheus Metrics Integration - Metrics endpoint verified"
     - "Signal Engine Microstructure Gates - Veto transparency confirmed"
