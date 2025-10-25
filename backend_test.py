@@ -517,7 +517,7 @@ class BackendTester:
     def test_regime_detection_verification(self):
         """Test regime detection from 5m data"""
         try:
-            response = requests.get(f"{API_BASE}/mtf/confluence?side=long&tier=B", timeout=15)
+            response = requests.get(f"{API_BASE}/mtf/confluence", timeout=15)
             if response.status_code == 200:
                 data = response.json()
                 
