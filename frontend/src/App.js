@@ -137,7 +137,7 @@ function App() {
       <BrowserRouter>
         <Layout>
           <Routes>
-            <Route path="/" element={<LandingPage />} />
+            <Route path="/" element={<LandingPageV2 />} />
             <Route path="/dashboard" element={<OverviewPageV2 />} />
             <Route path="/live" element={<LiveSignalsDashboardV2 />} />
             <Route path="/live-old" element={<LiveSignalsPageNew />} />
