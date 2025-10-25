@@ -7,6 +7,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import LandingPage from './pages/LandingPage';
 import OverviewPage from './pages/OverviewPage';
 import LiveSignalsPageNew from './pages/LiveSignalsPageNew';
+import LiveSignalsDashboardV2 from './pages/LiveSignalsDashboardV2';
 import ScalpCardsPage from './pages/ScalpCardsPage';
 import UploadPage from './pages/UploadPage';
 import AnalysisPage from './pages/AnalysisPage';
