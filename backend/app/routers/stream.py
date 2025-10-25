@@ -59,7 +59,7 @@ async def stop_stream():
             "message": "Binance stream stopped"
         })
     except Exception as e:
-        logger.error(f"Error stopping MEXC stream: {e}")
+        logger.error(f"Error stopping Binance stream: {e}")
         return JSONResponse({
             "success": False,
             "error": str(e)
