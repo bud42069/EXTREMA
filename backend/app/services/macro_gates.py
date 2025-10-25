@@ -109,7 +109,7 @@ def check_macro_alignment(
             elif side == 'short' and fast < slow:
                 aligned_1d += 1
         
-        result['1d_aligned'] = aligned_1d >= (len(ema_spans) - 2)  # At least 2/3
+        result['1d_aligned'] = bool(aligned_1d >= (len(ema_spans) - 2))  # At least 2/3
         
         # Determine 1D trend
         if aligned_1d >= (len(ema_spans) - 1):
