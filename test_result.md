@@ -498,11 +498,11 @@ backend:
 
   - task: "Phase 2: Context Gates (15m/1h EMA Alignment)"
     implemented: true
-    working: "NA"
+    working: false
     file: "app/services/context_gates.py"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
@@ -518,6 +518,18 @@ backend:
           Determines continuation (A-tier eligible) vs deviation (B-tier only) play types.
           Returns context score (0-100) with detailed breakdown.
           Needs backend testing with 15m/1h data.
+      - working: false
+        agent: "testing"
+        comment: |
+          ❌ BLOCKED BY CRITICAL ISSUE: Same DataFrame boolean context error prevents testing.
+          
+          **Data Availability**: SUFFICIENT for context gates testing
+          - 15m data: 134 bars ✅ (need ~50 bars)
+          - 1h data: 200 bars ✅ (need ~50 bars)
+          
+          **Expected Functionality**: Context gates should work with available data, but cannot test due to upstream error.
+          
+          **Implementation Status**: Code appears complete based on review, but integration with MTF confluence has DataFrame boolean context bug.
 
   - task: "Phase 2: Macro Gates (4h/1D A/B Tiering)"
     implemented: true
