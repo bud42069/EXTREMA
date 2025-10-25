@@ -979,60 +979,743 @@ class BackendTester:
         except Exception as e:
             self.log_result("MTF System Stop", False, f"Exception: {str(e)}")
 
+    # ============= PHASE 3: ORDER MANAGEMENT & TP/SL TESTS =============
+    
+    def test_phase3_imports(self):
+        """Test Phase 3 service imports"""
+        if PHASE3_IMPORTS_OK:
+            self.log_result("Phase 3 Imports", True, "All Phase 3 services imported successfully")
+        else:
+            self.log_result("Phase 3 Imports", False, "Failed to import Phase 3 services")
+    
+    def test_order_manager_initialization(self):
+        """Test OrderManager initialization and default parameters"""
+        try:
+            if not PHASE3_IMPORTS_OK:
+                self.log_result("OrderManager Initialization", False, "Phase 3 imports failed")
+                return
+            
+            # Test default initialization
+            om = OrderManager()
+            
+            # Check default parameters
+            expected_defaults = {
+                'max_slip_attempts': 3,
+                'max_slip_pct': 0.05,
+                'unfilled_wait_seconds': 2,
+                'tick_size': 0.01
+            }
+            
+            all_defaults_ok = True
+            for param, expected in expected_defaults.items():
+                actual = getattr(om, param)
+                if actual != expected:
+                    all_defaults_ok = False
+                    break
+            
+            # Check data structures
+            structures_ok = (
+                isinstance(om.orders, dict) and
+                isinstance(om.active_orders, list) and
+                len(om.orders) == 0 and
+                len(om.active_orders) == 0
+            )
+            
+            if all_defaults_ok and structures_ok:
+                self.log_result("OrderManager Initialization", True, 
+                              f"Defaults: {expected_defaults}, structures initialized")
+            else:
+                self.log_result("OrderManager Initialization", False, 
+                              f"Defaults OK: {all_defaults_ok}, Structures OK: {structures_ok}")
+                
+        except Exception as e:
+            self.log_result("OrderManager Initialization", False, f"Exception: {str(e)}")
+    
+    def test_risk_manager_initialization(self):
+        """Test RiskManager initialization and default parameters"""
+        try:
+            if not PHASE3_IMPORTS_OK:
+                self.log_result("RiskManager Initialization", False, "Phase 3 imports failed")
+                return
+            
+            # Test default initialization
+            rm = RiskManager()
+            
+            # Check default parameters
+            expected_defaults = {
+                'base_position_size': 1000.0,
+                'max_leverage': 5.0,
+                'min_liq_gap_multiplier': 3.0,
+                'account_balance': 10000.0,
+                'max_risk_per_trade_pct': 2.0
+            }
+            
+            all_defaults_ok = True
+            for param, expected in expected_defaults.items():
+                actual = getattr(rm, param)
+                if actual != expected:
+                    all_defaults_ok = False
+                    break
+            
+            if all_defaults_ok:
+                self.log_result("RiskManager Initialization", True, 
+                              f"All defaults correct: {expected_defaults}")
+            else:
+                self.log_result("RiskManager Initialization", False, 
+                              "Some default parameters incorrect")
+                
+        except Exception as e:
+            self.log_result("RiskManager Initialization", False, f"Exception: {str(e)}")
+    
+    def test_tpsl_manager_initialization(self):
+        """Test TPSLManager initialization and default parameters"""
+        try:
+            if not PHASE3_IMPORTS_OK:
+                self.log_result("TPSLManager Initialization", False, "Phase 3 imports failed")
+                return
+            
+            # Test default initialization
+            tpsl = TPSLManager()
+            
+            # Check default parameters
+            expected_defaults = {
+                'tp1_r': 1.0,
+                'tp2_r': 2.0,
+                'tp3_r': 3.0,
+                'tp1_pct': 0.50,
+                'tp2_pct': 0.30,
+                'tp3_pct': 0.20,
+                'trail_atr_mult': 0.5,
+                'max_hold_hours_normal': 24,
+                'max_hold_hours_squeeze': 12
+            }
+            
+            all_defaults_ok = True
+            for param, expected in expected_defaults.items():
+                actual = getattr(tpsl, param)
+                if actual != expected:
+                    all_defaults_ok = False
+                    break
+            
+            # Check positions dict
+            positions_ok = isinstance(tpsl.positions, dict) and len(tpsl.positions) == 0
+            
+            if all_defaults_ok and positions_ok:
+                self.log_result("TPSLManager Initialization", True, 
+                              f"Defaults: TP ladder {tpsl.tp1_r}/{tpsl.tp2_r}/{tpsl.tp3_r}R, "
+                              f"trail={tpsl.trail_atr_mult}×ATR")
+            else:
+                self.log_result("TPSLManager Initialization", False, 
+                              f"Defaults OK: {all_defaults_ok}, Positions OK: {positions_ok}")
+                
+        except Exception as e:
+            self.log_result("TPSLManager Initialization", False, f"Exception: {str(e)}")
+    
+    def test_order_manager_post_only_price(self):
+        """Test OrderManager post-only price calculation"""
+        try:
+            if not PHASE3_IMPORTS_OK:
+                self.log_result("OrderManager Post-Only Price", False, "Phase 3 imports failed")
+                return
+            
+            om = OrderManager()
+            
+            # Test data
+            best_bid = 100.0
+            best_ask = 100.1
+            spread_bps = 10.0  # 0.1% spread
+            
+            # Test long order (should use best_bid)
+            long_price = om.calculate_post_only_price(
+                OrderSide.LONG, best_bid, best_ask, spread_bps
+            )
+            
+            # Test short order (should use best_ask)
+            short_price = om.calculate_post_only_price(
+                OrderSide.SHORT, best_bid, best_ask, spread_bps
+            )
+            
+            long_correct = long_price == best_bid
+            short_correct = short_price == best_ask
+            
+            if long_correct and short_correct:
+                self.log_result("OrderManager Post-Only Price", True, 
+                              f"Long: {long_price} (bid), Short: {short_price} (ask)")
+            else:
+                self.log_result("OrderManager Post-Only Price", False, 
+                              f"Long: {long_price} != {best_bid} or Short: {short_price} != {best_ask}")
+                
+        except Exception as e:
+            self.log_result("OrderManager Post-Only Price", False, f"Exception: {str(e)}")
+    
+    def test_risk_manager_liquidation_price(self):
+        """Test RiskManager liquidation price calculation"""
+        try:
+            if not PHASE3_IMPORTS_OK:
+                self.log_result("RiskManager Liquidation Price", False, "Phase 3 imports failed")
+                return
+            
+            rm = RiskManager()
+            
+            # Test cases: [entry_price, side, leverage, expected_direction]
+            test_cases = [
+                (100.0, 'long', 3.0, 'below_entry'),   # Long liq should be below entry
+                (100.0, 'short', 3.0, 'above_entry'),  # Short liq should be above entry
+                (100.0, 'long', 5.0, 'below_entry'),   # Higher leverage = closer liq
+                (100.0, 'long', 10.0, 'below_entry'),  # Very high leverage
+            ]
+            
+            all_correct = True
+            results = []
+            
+            for entry, side, leverage, expected_dir in test_cases:
+                liq_price = rm.calculate_liquidation_price(entry, side, leverage)
+                
+                if side == 'long':
+                    direction_correct = liq_price < entry
+                else:  # short
+                    direction_correct = liq_price > entry
+                
+                if not direction_correct:
+                    all_correct = False
+                
+                results.append(f"{side} {leverage}×: {liq_price:.2f}")
+            
+            if all_correct:
+                self.log_result("RiskManager Liquidation Price", True, 
+                              f"All calculations correct: {', '.join(results)}")
+            else:
+                self.log_result("RiskManager Liquidation Price", False, 
+                              f"Some calculations incorrect: {', '.join(results)}")
+                
+        except Exception as e:
+            self.log_result("RiskManager Liquidation Price", False, f"Exception: {str(e)}")
+    
+    def test_risk_manager_liq_gap(self):
+        """Test RiskManager liq-gap calculation and 3× guard"""
+        try:
+            if not PHASE3_IMPORTS_OK:
+                self.log_result("RiskManager Liq-Gap", False, "Phase 3 imports failed")
+                return
+            
+            rm = RiskManager()
+            
+            # Test case 1: Sufficient liq-gap (should pass)
+            entry_price = 100.0
+            stop_loss = 95.0  # 5% stop
+            side = 'long'
+            leverage = 3.0
+            
+            liq_gap = rm.calculate_liq_gap(entry_price, stop_loss, side, leverage)
+            
+            # Check structure
+            required_fields = ['liq_price', 'liq_distance', 'stop_distance', 
+                             'liq_gap_multiplier', 'liq_gap_ok', 'min_required_multiplier']
+            structure_ok = all(field in liq_gap for field in required_fields)
+            
+            # Check logic
+            logic_ok = (
+                liq_gap['liq_price'] < entry_price and  # Long liq below entry
+                liq_gap['stop_distance'] == 5.0 and    # 5% stop distance
+                liq_gap['min_required_multiplier'] == 3.0  # 3× requirement
+            )
+            
+            # Test case 2: Insufficient liq-gap (should fail)
+            high_leverage = 10.0  # Very high leverage
+            liq_gap_fail = rm.calculate_liq_gap(entry_price, stop_loss, side, high_leverage)
+            
+            fail_logic_ok = not liq_gap_fail['liq_gap_ok']  # Should fail with high leverage
+            
+            if structure_ok and logic_ok and fail_logic_ok:
+                self.log_result("RiskManager Liq-Gap", True, 
+                              f"3× guard working: {liq_gap['liq_gap_multiplier']:.2f}× (pass), "
+                              f"{liq_gap_fail['liq_gap_multiplier']:.2f}× (fail)")
+            else:
+                self.log_result("RiskManager Liq-Gap", False, 
+                              f"Structure: {structure_ok}, Logic: {logic_ok}, Fail: {fail_logic_ok}")
+                
+        except Exception as e:
+            self.log_result("RiskManager Liq-Gap", False, f"Exception: {str(e)}")
+    
+    def test_risk_manager_position_sizing(self):
+        """Test RiskManager position sizing for A-tier and B-tier"""
+        try:
+            if not PHASE3_IMPORTS_OK:
+                self.log_result("RiskManager Position Sizing", False, "Phase 3 imports failed")
+                return
+            
+            rm = RiskManager()
+            
+            # Test parameters
+            entry_price = 100.0
+            stop_loss = 95.0  # 5% risk
+            leverage = 3.0
+            
+            # Test A-tier sizing
+            a_tier = rm.calculate_position_size('A', entry_price, stop_loss, leverage)
+            
+            # Test B-tier sizing
+            b_tier = rm.calculate_position_size('B', entry_price, stop_loss, leverage)
+            
+            # Check structure
+            required_fields = ['tier', 'tier_multiplier', 'position_size_usd', 'quantity', 
+                             'leverage', 'margin_required', 'risk_distance_pct', 'risk_usd', 'risk_ok']
+            a_structure_ok = all(field in a_tier for field in required_fields)
+            b_structure_ok = all(field in b_tier for field in required_fields)
+            
+            # Check tier multipliers
+            a_multiplier_ok = a_tier['tier_multiplier'] == 1.0
+            b_multiplier_ok = b_tier['tier_multiplier'] == 0.5
+            
+            # Check relative sizing (B-tier should be half of A-tier)
+            size_ratio_ok = abs(b_tier['position_size_usd'] / a_tier['position_size_usd'] - 0.5) < 0.01
+            
+            # Check risk calculation
+            risk_calc_ok = abs(a_tier['risk_distance_pct'] - 5.0) < 0.1  # Should be ~5%
+            
+            if a_structure_ok and b_structure_ok and a_multiplier_ok and b_multiplier_ok and size_ratio_ok and risk_calc_ok:
+                self.log_result("RiskManager Position Sizing", True, 
+                              f"A-tier: ${a_tier['position_size_usd']:.0f}, "
+                              f"B-tier: ${b_tier['position_size_usd']:.0f} (ratio: {b_tier['position_size_usd']/a_tier['position_size_usd']:.1f})")
+            else:
+                self.log_result("RiskManager Position Sizing", False, 
+                              f"Structure: A={a_structure_ok}, B={b_structure_ok}, "
+                              f"Multipliers: A={a_multiplier_ok}, B={b_multiplier_ok}, "
+                              f"Ratio: {size_ratio_ok}, Risk: {risk_calc_ok}")
+                
+        except Exception as e:
+            self.log_result("RiskManager Position Sizing", False, f"Exception: {str(e)}")
+    
+    def test_tpsl_manager_tp_levels(self):
+        """Test TPSLManager TP/SL level calculation for normal and squeeze regimes"""
+        try:
+            if not PHASE3_IMPORTS_OK:
+                self.log_result("TPSLManager TP Levels", False, "Phase 3 imports failed")
+                return
+            
+            tpsl = TPSLManager()
+            
+            # Test parameters
+            entry_price = 100.0
+            stop_loss = 95.0  # 5.0 risk
+            side = 'long'
+            atr = 2.0
+            
+            # Test normal regime
+            normal_levels = tpsl.calculate_tp_sl_levels(
+                entry_price, stop_loss, side, 'normal', atr
+            )
+            
+            # Test squeeze regime (should have extended TP2/TP3)
+            squeeze_levels = tpsl.calculate_tp_sl_levels(
+                entry_price, stop_loss, side, 'squeeze', atr
+            )
+            
+            # Check structure
+            required_fields = ['entry', 'stop_loss', 'risk', 'tp1', 'tp2', 'tp3', 
+                             'tp1_r', 'tp2_r', 'tp3_r', 'regime', 'trail_distance']
+            normal_structure_ok = all(field in normal_levels for field in required_fields)
+            squeeze_structure_ok = all(field in squeeze_levels for field in required_fields)
+            
+            # Check TP calculations for long
+            risk = 5.0  # entry - stop
+            expected_tp1 = entry_price + (1.0 * risk)  # 105.0
+            expected_tp2_normal = entry_price + (2.0 * risk)  # 110.0
+            expected_tp2_squeeze = entry_price + (2.5 * risk)  # 112.5
+            expected_tp3_normal = entry_price + (3.0 * risk)  # 115.0
+            expected_tp3_squeeze = entry_price + (4.0 * risk)  # 120.0
+            
+            tp_calc_ok = (
+                abs(normal_levels['tp1'] - expected_tp1) < 0.01 and
+                abs(normal_levels['tp2'] - expected_tp2_normal) < 0.01 and
+                abs(squeeze_levels['tp2'] - expected_tp2_squeeze) < 0.01 and
+                abs(normal_levels['tp3'] - expected_tp3_normal) < 0.01 and
+                abs(squeeze_levels['tp3'] - expected_tp3_squeeze) < 0.01
+            )
+            
+            # Check regime adjustment
+            regime_adjustment_ok = (
+                squeeze_levels['tp2_r'] == 2.5 and
+                squeeze_levels['tp3_r'] == 4.0 and
+                normal_levels['tp2_r'] == 2.0 and
+                normal_levels['tp3_r'] == 3.0
+            )
+            
+            if normal_structure_ok and squeeze_structure_ok and tp_calc_ok and regime_adjustment_ok:
+                self.log_result("TPSLManager TP Levels", True, 
+                              f"Normal: TP1={normal_levels['tp1']}, TP2={normal_levels['tp2']}, TP3={normal_levels['tp3']} | "
+                              f"Squeeze: TP2={squeeze_levels['tp2']}, TP3={squeeze_levels['tp3']}")
+            else:
+                self.log_result("TPSLManager TP Levels", False, 
+                              f"Structure: N={normal_structure_ok}, S={squeeze_structure_ok}, "
+                              f"Calc: {tp_calc_ok}, Regime: {regime_adjustment_ok}")
+                
+        except Exception as e:
+            self.log_result("TPSLManager TP Levels", False, f"Exception: {str(e)}")
+    
+    def test_tpsl_manager_position_tracking(self):
+        """Test TPSLManager position creation and tracking"""
+        try:
+            if not PHASE3_IMPORTS_OK:
+                self.log_result("TPSLManager Position Tracking", False, "Phase 3 imports failed")
+                return
+            
+            tpsl = TPSLManager()
+            
+            # Create test position
+            position_id = "TEST_POS_001"
+            entry_price = 100.0
+            stop_loss = 95.0
+            side = 'long'
+            quantity = 10.0
+            regime = 'normal'
+            atr = 2.0
+            
+            position = tpsl.create_position(
+                position_id, entry_price, stop_loss, side, quantity, regime, atr
+            )
+            
+            # Check position structure
+            required_fields = ['position_id', 'side', 'entry_price', 'current_quantity', 
+                             'original_quantity', 'levels', 'tp_hits', 'trailing_stop', 
+                             'entry_time', 'max_hold_hours', 'early_reduce_triggered', 'closed']
+            structure_ok = all(field in position for field in required_fields)
+            
+            # Check position data
+            data_ok = (
+                position['position_id'] == position_id and
+                position['side'] == side and
+                position['entry_price'] == entry_price and
+                position['current_quantity'] == quantity and
+                position['original_quantity'] == quantity and
+                position['max_hold_hours'] == 24 and  # Normal regime
+                not position['early_reduce_triggered'] and
+                not position['closed']
+            )
+            
+            # Check TP hits initialization
+            tp_hits_ok = (
+                not position['tp_hits']['tp1'] and
+                not position['tp_hits']['tp2'] and
+                not position['tp_hits']['tp3']
+            )
+            
+            # Check trailing stop initialization
+            trailing_ok = (
+                position['trailing_stop']['status'] == 'inactive' and
+                position['trailing_stop']['current_stop'] == stop_loss
+            )
+            
+            # Check if position is stored
+            stored_ok = tpsl.get_position(position_id) is not None
+            
+            if structure_ok and data_ok and tp_hits_ok and trailing_ok and stored_ok:
+                self.log_result("TPSLManager Position Tracking", True, 
+                              f"Position created: {position_id}, qty={quantity}, "
+                              f"max_hold={position['max_hold_hours']}h")
+            else:
+                self.log_result("TPSLManager Position Tracking", False, 
+                              f"Structure: {structure_ok}, Data: {data_ok}, "
+                              f"TP hits: {tp_hits_ok}, Trailing: {trailing_ok}, Stored: {stored_ok}")
+                
+        except Exception as e:
+            self.log_result("TPSLManager Position Tracking", False, f"Exception: {str(e)}")
+    
+    def test_tpsl_manager_tp_hits(self):
+        """Test TPSLManager TP hit detection and reduction logic"""
+        try:
+            if not PHASE3_IMPORTS_OK:
+                self.log_result("TPSLManager TP Hits", False, "Phase 3 imports failed")
+                return
+            
+            tpsl = TPSLManager()
+            
+            # Create test position
+            position_id = "TEST_TP_001"
+            entry_price = 100.0
+            stop_loss = 95.0
+            side = 'long'
+            quantity = 10.0
+            
+            position = tpsl.create_position(
+                position_id, entry_price, stop_loss, side, quantity, 'normal', 2.0
+            )
+            
+            # Test TP1 hit (should be at 105.0 for long)
+            tp1_price = 105.0
+            tp1_result = tpsl.check_tp_hits(position_id, tp1_price)
+            
+            # Check TP1 hit detection
+            tp1_hit_ok = (
+                'TP1' in tp1_result['tp_hits'] and
+                len(tp1_result['reductions']) == 1 and
+                tp1_result['reductions'][0]['level'] == 'TP1' and
+                tp1_result['reductions'][0]['pct'] == 0.5 and  # 50% reduction
+                tp1_result['activate_trailing'] == True
+            )
+            
+            # Test TP2 hit (should be at 110.0 for long)
+            tp2_price = 110.0
+            tp2_result = tpsl.check_tp_hits(position_id, tp2_price)
+            
+            # Check TP2 hit detection (TP1 should still be marked as hit)
+            tp2_hit_ok = (
+                'TP2' in tp2_result['tp_hits'] and
+                len(tp2_result['reductions']) == 1 and  # Only TP2 reduction (TP1 already processed)
+                tp2_result['reductions'][0]['level'] == 'TP2' and
+                tp2_result['reductions'][0]['pct'] == 0.3  # 30% reduction
+            )
+            
+            # Test TP3 hit (should be at 115.0 for long)
+            tp3_price = 115.0
+            tp3_result = tpsl.check_tp_hits(position_id, tp3_price)
+            
+            # Check TP3 hit detection
+            tp3_hit_ok = (
+                'TP3' in tp3_result['tp_hits'] and
+                len(tp3_result['reductions']) == 1 and
+                tp3_result['reductions'][0]['level'] == 'TP3' and
+                tp3_result['reductions'][0]['pct'] == 0.2  # 20% reduction
+            )
+            
+            # Check position state after all hits
+            final_position = tpsl.get_position(position_id)
+            all_hits_marked = (
+                final_position['tp_hits']['tp1'] and
+                final_position['tp_hits']['tp2'] and
+                final_position['tp_hits']['tp3']
+            )
+            
+            if tp1_hit_ok and tp2_hit_ok and tp3_hit_ok and all_hits_marked:
+                self.log_result("TPSLManager TP Hits", True, 
+                              f"All TP levels detected: TP1@{tp1_price} (50%), "
+                              f"TP2@{tp2_price} (30%), TP3@{tp3_price} (20%)")
+            else:
+                self.log_result("TPSLManager TP Hits", False, 
+                              f"TP1: {tp1_hit_ok}, TP2: {tp2_hit_ok}, TP3: {tp3_hit_ok}, "
+                              f"All marked: {all_hits_marked}")
+                
+        except Exception as e:
+            self.log_result("TPSLManager TP Hits", False, f"Exception: {str(e)}")
+    
+    def test_tpsl_manager_trailing_stop(self):
+        """Test TPSLManager trailing stop activation and updates"""
+        try:
+            if not PHASE3_IMPORTS_OK:
+                self.log_result("TPSLManager Trailing Stop", False, "Phase 3 imports failed")
+                return
+            
+            tpsl = TPSLManager()
+            
+            # Create test position
+            position_id = "TEST_TRAIL_001"
+            entry_price = 100.0
+            stop_loss = 95.0
+            side = 'long'
+            atr = 2.0
+            
+            position = tpsl.create_position(
+                position_id, entry_price, stop_loss, side, 10.0, 'normal', atr
+            )
+            
+            # Test trailing before TP1 hit (should not activate)
+            trail_before = tpsl.update_trailing_stop(position_id, 102.0)
+            before_ok = not trail_before['updated']
+            
+            # Trigger TP1 hit first
+            tpsl.check_tp_hits(position_id, 105.0)
+            
+            # Test trailing activation (should move to breakeven)
+            trail_activate = tpsl.update_trailing_stop(position_id, 106.0)
+            activate_ok = (
+                trail_activate['updated'] and
+                trail_activate['new_stop'] == entry_price and  # Breakeven
+                trail_activate['status'] == 'breakeven'
+            )
+            
+            # Test trailing update (price moves higher)
+            higher_price = 108.0
+            trail_update = tpsl.update_trailing_stop(position_id, higher_price)
+            
+            # Calculate expected trailing stop
+            trail_distance = tpsl.trail_atr_mult * atr  # 0.5 * 2.0 = 1.0
+            expected_stop = higher_price - trail_distance  # 108.0 - 1.0 = 107.0
+            
+            update_ok = (
+                trail_update['updated'] and
+                abs(trail_update['new_stop'] - expected_stop) < 0.01 and
+                trail_update['status'] == 'active'
+            )
+            
+            # Test trailing doesn't move down (price drops)
+            lower_price = 106.0
+            trail_no_move = tpsl.update_trailing_stop(position_id, lower_price)
+            no_move_ok = not trail_no_move['updated']  # Should not update stop lower
+            
+            if before_ok and activate_ok and update_ok and no_move_ok:
+                self.log_result("TPSLManager Trailing Stop", True, 
+                              f"Activation: breakeven@{entry_price}, "
+                              f"Trail: {expected_stop:.1f} (price={higher_price}, trail={trail_distance})")
+            else:
+                self.log_result("TPSLManager Trailing Stop", False, 
+                              f"Before: {before_ok}, Activate: {activate_ok}, "
+                              f"Update: {update_ok}, No move: {no_move_ok}")
+                
+        except Exception as e:
+            self.log_result("TPSLManager Trailing Stop", False, f"Exception: {str(e)}")
+    
+    def test_comprehensive_risk_check(self):
+        """Test comprehensive entry risk check combining all risk factors"""
+        try:
+            if not PHASE3_IMPORTS_OK:
+                self.log_result("Comprehensive Risk Check", False, "Phase 3 imports failed")
+                return
+            
+            rm = RiskManager()
+            
+            # Test case 1: Good trade (should pass)
+            good_check = rm.check_entry_risk(
+                entry_price=100.0,
+                stop_loss=95.0,  # 5% stop
+                side='long',
+                tier='A',
+                leverage=3.0
+            )
+            
+            # Test case 2: Bad trade - insufficient liq-gap (should fail)
+            bad_check = rm.check_entry_risk(
+                entry_price=100.0,
+                stop_loss=95.0,  # 5% stop
+                side='long',
+                tier='A',
+                leverage=10.0  # Very high leverage
+            )
+            
+            # Check structure
+            required_fields = ['entry_allowed', 'liq_gap', 'position_sizing', 'warnings', 'reasons']
+            good_structure_ok = all(field in good_check for field in required_fields)
+            bad_structure_ok = all(field in bad_check for field in required_fields)
+            
+            # Check logic
+            good_logic_ok = (
+                good_check['entry_allowed'] == True and
+                good_check['liq_gap']['liq_gap_ok'] == True and
+                len(good_check['reasons']) == 0
+            )
+            
+            bad_logic_ok = (
+                bad_check['entry_allowed'] == False and
+                bad_check['liq_gap']['liq_gap_ok'] == False and
+                len(bad_check['reasons']) > 0
+            )
+            
+            if good_structure_ok and bad_structure_ok and good_logic_ok and bad_logic_ok:
+                self.log_result("Comprehensive Risk Check", True, 
+                              f"Good trade: PASS (liq_gap={good_check['liq_gap']['liq_gap_multiplier']:.1f}×), "
+                              f"Bad trade: FAIL ({bad_check['reasons'][0] if bad_check['reasons'] else 'unknown'})")
+            else:
+                self.log_result("Comprehensive Risk Check", False, 
+                              f"Structure: G={good_structure_ok}, B={bad_structure_ok}, "
+                              f"Logic: G={good_logic_ok}, B={bad_logic_ok}")
+                
+        except Exception as e:
+            self.log_result("Comprehensive Risk Check", False, f"Exception: {str(e)}")
+    
+    def test_edge_cases(self):
+        """Test edge cases and error handling"""
+        try:
+            if not PHASE3_IMPORTS_OK:
+                self.log_result("Edge Cases", False, "Phase 3 imports failed")
+                return
+            
+            # Test 1: Invalid tier handling
+            rm = RiskManager()
+            invalid_tier = rm.calculate_position_size('X', 100.0, 95.0, 3.0)
+            tier_handling_ok = invalid_tier['tier_multiplier'] == 0.5  # Should default to B-tier
+            
+            # Test 2: Zero stop distance
+            try:
+                zero_stop = rm.calculate_liq_gap(100.0, 100.0, 'long', 3.0)  # Same entry and stop
+                zero_handling_ok = zero_stop['liq_gap_multiplier'] == 0.0
+            except:
+                zero_handling_ok = False
+            
+            # Test 3: Non-existent position
+            tpsl = TPSLManager()
+            missing_pos = tpsl.check_tp_hits("NONEXISTENT", 100.0)
+            missing_handling_ok = 'error' in missing_pos
+            
+            # Test 4: Order manager with invalid order ID
+            om = OrderManager()
+            missing_order = om.get_order("NONEXISTENT")
+            order_handling_ok = missing_order is None
+            
+            edge_cases_ok = (
+                tier_handling_ok and
+                zero_handling_ok and
+                missing_handling_ok and
+                order_handling_ok
+            )
+            
+            if edge_cases_ok:
+                self.log_result("Edge Cases", True, 
+                              "Invalid tier, zero stop, missing position, missing order all handled correctly")
+            else:
+                self.log_result("Edge Cases", False, 
+                              f"Tier: {tier_handling_ok}, Zero: {zero_handling_ok}, "
+                              f"Missing pos: {missing_handling_ok}, Missing order: {order_handling_ok}")
+                
+        except Exception as e:
+            self.log_result("Edge Cases", False, f"Exception: {str(e)}")
+
     async def run_all_tests(self):
-        """Run Phase 2 Context & Macro Gates tests"""
-        print("🚀 Phase 2: Context & Macro Gates - Backend Testing")
+        """Run Phase 3 Order Management & TP/SL tests"""
+        print("🚀 Phase 3: Order Management & TP/SL - Backend Testing")
         print(f"📡 Backend URL: {BACKEND_URL}")
         print("=" * 80)
         
-        # Health check first
-        print("\n🏥 HEALTH CHECK")
-        self.test_health_endpoint()
+        # Phase 3 - Import and Initialization Testing
+        print("\n📦 PHASE 3: IMPORT AND INITIALIZATION TESTING")
+        print("Testing Phase 3 service imports and default parameters:")
+        print("  • OrderManager (Post-only, Unfilled Protocol)")
+        print("  • RiskManager (Liq-gap Guards)")
+        print("  • TPSLManager (3-Tier Ladder, Trailing)")
         
-        # Phase 2 - MTF Confluence Engine Testing
-        print("\n🧠 PHASE 2: MTF CONFLUENCE ENGINE")
-        print("Testing newly integrated Phase 2 services:")
-        print("  • Regime Detection (Squeeze/Normal/Wide) from 5m BBWidth percentiles")
-        print("  • Context Gates (15m/1h EMA alignment, pivot structure, oscillator)")
-        print("  • Macro Gates (4h/1D alignment for A/B tier determination)")
-        print("  • Enhanced Tier Determination with bottleneck logic")
+        # 1. Import Testing
+        print("\n🔍 IMPORT TESTING")
+        self.test_phase3_imports()
         
-        # 1. MTF Confluence Endpoint Testing
-        print("\n📊 MTF CONFLUENCE ENDPOINT TESTING")
-        self.test_mtf_confluence_baseline()
-        self.test_mtf_confluence_long_tier_b_phase2()
-        self.test_mtf_confluence_short_tier_a_phase2()
+        # 2. Initialization Testing
+        print("\n⚙️ INITIALIZATION TESTING")
+        self.test_order_manager_initialization()
+        self.test_risk_manager_initialization()
+        self.test_tpsl_manager_initialization()
         
-        # 2. Phase 2 Feature Verification
-        print("\n🔍 PHASE 2 FEATURE VERIFICATION")
-        self.test_regime_detection_verification()
-        self.test_context_gates_verification()
-        self.test_macro_gates_verification()
-        self.test_enhanced_tier_determination()
-        self.test_phase2_integration_status()
+        # 3. Core Functionality Testing
+        print("\n🧮 CORE FUNCTIONALITY TESTING")
+        self.test_order_manager_post_only_price()
+        self.test_risk_manager_liquidation_price()
+        self.test_risk_manager_liq_gap()
+        self.test_risk_manager_position_sizing()
         
-        # 3. MTF System Control
-        print("\n🔧 MTF SYSTEM CONTROL")
-        self.test_mtf_start()
-        time.sleep(2)  # Give system time to initialize
-        self.test_mtf_status()
+        # 4. TP/SL Logic Testing
+        print("\n🎯 TP/SL LOGIC TESTING")
+        self.test_tpsl_manager_tp_levels()
+        self.test_tpsl_manager_position_tracking()
+        self.test_tpsl_manager_tp_hits()
+        self.test_tpsl_manager_trailing_stop()
         
-        print("\n📊 MTF FEATURES & PROCESSING")
-        self.test_mtf_features_1m()
-        self.test_mtf_run_cycle()
-        self.test_mtf_stop()
+        # 5. Integration Logic Testing
+        print("\n🔗 INTEGRATION LOGIC TESTING")
+        self.test_comprehensive_risk_check()
         
-        # 4. Regression Testing
-        print("\n🔄 REGRESSION TESTING")
-        self.test_health_endpoint()
-        
-        # Additional working endpoints
-        print("\n🔧 ADDITIONAL BACKEND VERIFICATION")
-        self.test_mtf_system_data_availability()
+        # 6. Edge Case Testing
+        print("\n⚠️ EDGE CASE TESTING")
+        self.test_edge_cases()
         
         # Summary
         print("\n" + "=" * 80)
-        print("📊 PHASE 2 TEST SUMMARY")
+        print("📊 PHASE 3 TEST SUMMARY")
         print("=" * 80)
         
         total_tests = len(self.test_results)
@@ -1048,31 +1731,29 @@ class BackendTester:
             for test in self.failed_tests:
                 print(f"  - {test}")
         
-        # Phase 2 specific analysis
-        phase2_tests = [r for r in self.test_results if any(keyword in r['test'] for keyword in 
-                       ['Phase 2', 'Regime', 'Context Gates', 'Macro Gates', 'Enhanced Tier', 'Integration Status'])]
-        phase2_passed = sum(1 for r in phase2_tests if r['success'])
+        # Phase 3 specific analysis
+        phase3_tests = [r for r in self.test_results if any(keyword in r['test'] for keyword in 
+                       ['Phase 3', 'OrderManager', 'RiskManager', 'TPSLManager', 'Order', 'Risk', 'TPSL'])]
+        phase3_passed = sum(1 for r in phase3_tests if r['success'])
         
-        print(f"\n🧠 Phase 2 Specific Results:")
-        print(f"Phase 2 Tests: {len(phase2_tests)}")
-        print(f"Phase 2 Passed: {phase2_passed}")
+        print(f"\n🎯 Phase 3 Specific Results:")
+        print(f"Phase 3 Tests: {len(phase3_tests)}")
+        print(f"Phase 3 Passed: {phase3_passed}")
         
-        # Feature breakdown
-        regime_tests = [r for r in self.test_results if 'Regime' in r['test']]
-        context_tests = [r for r in self.test_results if 'Context' in r['test']]
-        macro_tests = [r for r in self.test_results if 'Macro' in r['test']]
-        tier_tests = [r for r in self.test_results if 'Tier' in r['test']]
+        # Service breakdown
+        order_tests = [r for r in self.test_results if 'OrderManager' in r['test'] or 'Order' in r['test']]
+        risk_tests = [r for r in self.test_results if 'RiskManager' in r['test'] or 'Risk' in r['test']]
+        tpsl_tests = [r for r in self.test_results if 'TPSLManager' in r['test'] or 'TPSL' in r['test']]
         
-        print(f"\n📈 Feature Breakdown:")
-        print(f"  • Regime Detection: {sum(1 for r in regime_tests if r['success'])}/{len(regime_tests)}")
-        print(f"  • Context Gates: {sum(1 for r in context_tests if r['success'])}/{len(context_tests)}")
-        print(f"  • Macro Gates: {sum(1 for r in macro_tests if r['success'])}/{len(macro_tests)}")
-        print(f"  • Enhanced Tier Logic: {sum(1 for r in tier_tests if r['success'])}/{len(tier_tests)}")
+        print(f"\n📈 Service Breakdown:")
+        print(f"  • Order Manager: {sum(1 for r in order_tests if r['success'])}/{len(order_tests)}")
+        print(f"  • Risk Manager: {sum(1 for r in risk_tests if r['success'])}/{len(risk_tests)}")
+        print(f"  • TP/SL Manager: {sum(1 for r in tpsl_tests if r['success'])}/{len(tpsl_tests)}")
         
         if failed_tests == 0:
-            print("\n🎉 ALL TESTS PASSED - PHASE 2 INTEGRATION SUCCESSFUL!")
-        elif len(phase2_tests) > 0 and phase2_passed == len(phase2_tests):
-            print("\n✅ PHASE 2 TESTS PASSED - Core functionality working!")
+            print("\n🎉 ALL TESTS PASSED - PHASE 3 IMPLEMENTATION SUCCESSFUL!")
+        elif len(phase3_tests) > 0 and phase3_passed == len(phase3_tests):
+            print("\n✅ PHASE 3 TESTS PASSED - Core functionality working!")
         else:
             print(f"\n⚠️  {failed_tests} test(s) failed - see details above")
         
