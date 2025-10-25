@@ -448,6 +448,14 @@ class BackendTester:
                                   f"{phase2_info} | {gates_info} | Regime: {regime_classification} | {final_info}")
                 else:
                     self.log_result("MTF Confluence Long B-tier (Phase 2)", False, f"Missing Phase 2 fields: {data}")
+            elif response.status_code == 500:
+                # Known issue with DataFrame boolean context in Phase 2 code
+                error_detail = response.json().get('detail', 'Unknown error')
+                if 'DataFrame is ambiguous' in error_detail:
+                    self.log_result("MTF Confluence Long B-tier (Phase 2)", False, 
+                                  f"KNOWN ISSUE: DataFrame boolean context error in Phase 2 code")
+                else:
+                    self.log_result("MTF Confluence Long B-tier (Phase 2)", False, f"HTTP 500: {error_detail}")
             else:
                 self.log_result("MTF Confluence Long B-tier (Phase 2)", False, f"HTTP {response.status_code}: {response.text}")
         except Exception as e:
