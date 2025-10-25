@@ -5,7 +5,7 @@ Start/stop Binance orderbook+trades worker and retrieve snapshots.
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 
-from ..workers.mexc_stream import start_mexc_worker, stop_mexc_worker
+from ..workers.mexc_stream import start_mexc_worker, stop_mexc_worker, is_worker_running
 from ..utils.micro_store import get_snapshot
 from ..services.microstructure import get_micro_summary
 from ..utils.logging import get_logger
