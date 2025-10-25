@@ -26,7 +26,7 @@ higher_tf_started: bool = False
 @router.post("/start")
 async def start_mtf(symbol: str = "SOLUSDT"):
     """
-    Start the MTF system (kline worker + state machine + higher TFs).
+    Start the MTF system (kline worker + state machine + higher TFs + Helius on-chain).
     
     Initiates:
     - 1-second kline WebSocket stream from Binance
@@ -34,6 +34,7 @@ async def start_mtf(symbol: str = "SOLUSDT"):
     - Higher timeframe data fetching (15m/1h/4h/1D)
     - MTF feature extraction
     - State machine for signal generation
+    - Helius on-chain monitoring (if API key configured)
     """
     global kline_worker, higher_tf_started
     
@@ -62,12 +63,16 @@ async def start_mtf(symbol: str = "SOLUSDT"):
             asyncio.create_task(multi_source_rest_client.start_all(symbol))
             higher_tf_started = True
         
+        # Start Helius on-chain monitoring
+        await confluence_engine.start_onchain_monitoring()
+        
         return {
             "success": True,
             "message": f"MTF system started for {symbol}",
             "symbol": symbol,
             "state": mtf_state_machine.state.value,
-            "higher_tf_started": higher_tf_started
+            "higher_tf_started": higher_tf_started,
+            "onchain_enabled": confluence_engine.onchain_monitor is not None
         }
     
     except Exception as e:
