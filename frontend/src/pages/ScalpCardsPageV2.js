@@ -209,7 +209,6 @@ SIZE: ${card.size}
                 onChange={(e) => setLeverage(e.target.value)}
                 type="number"
                 placeholder="Lev"
-                leftIcon="⚡"
               />
             </div>
           </div>
