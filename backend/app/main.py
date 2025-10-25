@@ -1,12 +1,16 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .routers import health, data, swings, signals, backtest
+from .config import settings
 
-app = FastAPI(title="EXTREMA API", version="0.1.0")
+app = FastAPI(title="EXTREMA API", version="0.1.0", docs_url="/docs", redoc_url="/redoc")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], allow_methods=["*"], allow_headers=["*"], allow_credentials=True
+    allow_origins=["*"] if settings.CORS_ORIGINS == "*" else settings.CORS_ORIGINS.split(","),
+    allow_methods=["*"],
+    allow_headers=["*"],
+    allow_credentials=True
 )
 
 app.include_router(health.router, prefix="/health", tags=["health"])
