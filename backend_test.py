@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 """
-Phase 2: Context & Macro Gates - Backend Testing
-Tests the newly integrated Phase 2 MTF Confluence Engine with:
-- Regime Detection (Squeeze/Normal/Wide) from 5m BBWidth percentiles
-- Context Gates (15m/1h EMA alignment, pivot structure, oscillator agreement)
-- Macro Gates (4h/1D alignment for A/B tier determination)
-- Enhanced Tier Determination with bottleneck logic
-- Phase 2 Integration Status verification
+Phase 3: Order Management & TP/SL - Backend Testing
+Tests the newly implemented Phase 3 services:
+- Order Manager (Post-only, Unfilled Protocol)
+- Risk Manager (Liq-gap Guards)
+- TP/SL Manager (3-Tier Ladder, Trailing)
+- Import and initialization testing
+- Core logic and calculations validation
+- Edge case handling
 """
 
 import asyncio
