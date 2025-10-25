@@ -95,7 +95,7 @@ async def stop_mtf():
         
         # Stop higher TF updates
         if higher_tf_started:
-            await binance_rest_client.stop_all()
+            await multi_source_rest_client.stop_all()
             higher_tf_started = False
         
         # Reset state machine
