@@ -19,7 +19,10 @@ from indicators import (
     calculate_volume_zscore,
 )
 from mtf_confirmation import MultiTimeframeAnalyzer
-from onchain_monitor import HeliusOnChainMonitor
+try:
+    from .onchain_monitor import HeliusOnChainMonitor
+except ImportError:
+    HeliusOnChainMonitor = None
 from signal_detection import TwoStageDetector
 
 logger = logging.getLogger(__name__)
