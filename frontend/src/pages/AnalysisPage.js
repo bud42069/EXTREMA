@@ -197,20 +197,26 @@ const AnalysisPage = () => {
                 step="0.1"
                 value={config.volume_multiplier}
                 onChange={(e) => setConfig({...config, volume_multiplier: parseFloat(e.target.value)})}
-                className="w-full bg-gray-800 text-white border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:border-blue-500"
+                className="w-full bg-slate-800 text-white border border-slate-700 rounded-lg px-4 py-2 focus:outline-none focus:border-emerald-500"
               />
             </div>
           </div>
         </div>
 
+        {/* Run Analysis Button */}
         <button
           onClick={handleAnalyze}
-          disabled={analyzing || !selectedDataset}
-          className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
+          disabled={analyzing || !dataLoaded}
+          className={`w-full py-4 rounded-xl font-bold text-lg transition-all ${
+            analyzing || !dataLoaded
+              ? 'bg-slate-700 text-slate-500 cursor-not-allowed'
+              : 'bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white shadow-lg shadow-emerald-500/25'
+          }`}
         >
-          {analyzing ? 'Analyzing...' : 'Run Analysis'}
+          {analyzing ? '⏳ Analyzing...' : '🚀 Run Analysis'}
         </button>
       </div>
+    </div>
 
       {/* Analysis Results */}
       {analysisResult && (
