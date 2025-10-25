@@ -145,12 +145,11 @@ export default function LandingPageV2() {
               color: theme.colors.accent.emerald
             }}
           >
-            <motion.span
+            <motion.div
               animate={{ scale: [1, 1.2, 1] }}
               transition={{ duration: 2, repeat: Infinity }}
-            >
-              ⚡
-            </motion.span>
+              className="w-2 h-2 rounded-full bg-emerald-500"
+            />
             <span>REAL-TIME SIGNAL DETECTION</span>
             <span className="text-gray-600">•</span>
             <span>POWERED BY MULTI-TIMEFRAME AI</span>
