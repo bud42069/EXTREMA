@@ -806,6 +806,45 @@ class BackendTester:
         except Exception as e:
             self.log_result("Phase 2 Integration Status", False, f"Exception: {str(e)}")
     
+    def test_mtf_system_data_availability(self):
+        """Test MTF system data availability for Phase 2 requirements"""
+        try:
+            response = requests.get(f"{API_BASE}/mtf/status", timeout=10)
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Check data stores for Phase 2 requirements
+                stores = data.get('stores', {})
+                
+                # Phase 2 data requirements
+                regime_data = stores.get('5m', 0)  # 5m for regime detection
+                context_data_15m = stores.get('15m', 0)  # 15m for context gates
+                context_data_1h = stores.get('1h', 0)  # 1h for context gates
+                macro_data_4h = stores.get('4h', 0)  # 4h for macro gates
+                macro_data_1d = stores.get('1d', 0)  # 1D for macro gates
+                
+                # Check if we have sufficient data for Phase 2 features
+                regime_sufficient = regime_data >= 90  # Need 90 bars for regime detection
+                context_sufficient = context_data_15m >= 50 and context_data_1h >= 50
+                macro_sufficient = macro_data_4h >= 50 and macro_data_1d >= 50
+                
+                data_info = f"5m: {regime_data}, 15m: {context_data_15m}, 1h: {context_data_1h}, 4h: {macro_data_4h}, 1D: {macro_data_1d}"
+                sufficiency_info = f"Regime: {regime_sufficient}, Context: {context_sufficient}, Macro: {macro_sufficient}"
+                
+                # Check state machine status
+                state_machine = data.get('state_machine', {})
+                state = state_machine.get('state', 'unknown')
+                running = data.get('running', False)
+                
+                system_info = f"Running: {running}, State: {state}"
+                
+                self.log_result("MTF System Data Availability", True, 
+                              f"{system_info} | Data: {data_info} | Sufficient: {sufficiency_info}")
+            else:
+                self.log_result("MTF System Data Availability", False, f"HTTP {response.status_code}")
+        except Exception as e:
+            self.log_result("MTF System Data Availability", False, f"Exception: {str(e)}")
+    
     def test_mtf_start(self):
         """Test MTF system startup (may fail if external services unavailable)"""
         try:
