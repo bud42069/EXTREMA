@@ -192,16 +192,17 @@ export default function OverviewPageV2() {
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 0.5 }}
         className="mb-10"
       >
-        <h2 className="text-2xl font-bold text-gray-200 mb-6 flex items-center gap-2">
-          <span>🚀</span> QUICK ACTIONS
+        <h2 className="text-2xl font-bold text-gray-200 mb-6 flex items-center gap-3">
+          <svg className="w-6 h-6 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+          </svg>
+          QUICK ACTIONS
         </h2>
         
         <div className="grid md:grid-cols-2 gap-6">
           <QuickActionCard
-            icon="📡"
             title="Live Signals Dashboard"
             description="Real-time swing detection with microstructure validation"
             color="cyan"
@@ -210,7 +211,6 @@ export default function OverviewPageV2() {
           />
           
           <QuickActionCard
-            icon="🎯"
             title="Generate Scalp Card"
             description="Manual execution sheet with complete trade specifications"
             color="emerald"
@@ -218,19 +218,17 @@ export default function OverviewPageV2() {
           />
           
           <QuickActionCard
-            icon="📁"
-            title="Upload Historical Data"
-            description="Import CSV data for backtesting and analysis"
+            title="Data Analysis Suite"
+            description="Upload data, run analysis, and backtest strategies"
             color="blue"
-            onClick={() => navigate('/upload')}
+            onClick={() => navigate('/data-analysis')}
           />
           
           <QuickActionCard
-            icon="📈"
-            title="Run Backtest"
-            description="Test strategy performance with TP/SL ladder simulation"
+            title="System Configuration"
+            description="Adjust parameters and monitor system health"
             color="amber"
-            onClick={() => navigate('/backtest')}
+            onClick={() => window.alert('Configuration panel coming soon')}
           />
         </div>
       </motion.div>
