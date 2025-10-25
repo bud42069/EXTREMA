@@ -115,7 +115,7 @@ def test_confirm_with_micro_gate_disabled():
     # Create test data
     df = create_test_df()
     df = compute_indicators(df)
-    df = detect_local_extrema(df)
+    df = mark_local_extrema(df)
     df = mark_candidates(df, atr_min=0.1, volz_min=0.0, bbw_min=0.0)
     
     # Find a candidate
