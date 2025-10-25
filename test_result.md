@@ -207,6 +207,42 @@ backend:
         agent: "main"
         comment: "Implemented GET /api/chart-data endpoint for OHLCV + indicators. Not tested yet."
 
+  - task: "WebSocket Signal Streaming"
+    implemented: true
+    working: "NA"
+    file: "app/routers/signals.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "NEW: Implemented /api/signals/stream WebSocket endpoint with client management, broadcast_signal() function, and keepalive. Needs testing with WebSocket client."
+
+  - task: "Live Monitoring API"
+    implemented: true
+    working: "NA"
+    file: "app/routers/live.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "NEW: Created complete live monitoring router with endpoints: /api/live/start, /api/live/stop, /api/live/status, /api/live/signals. Integrated with Pyth Network and WebSocket broadcasting. Needs full E2E testing."
+
+  - task: "Modular Backend Architecture"
+    implemented: true
+    working: true
+    file: "app/main.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Migrated from monolithic server.py to modular app/main.py structure. All routes prefixed with /api. Supervisor updated. Backend running successfully on port 8001."
+
 frontend:
   - task: "Dashboard Layout & Navigation"
     implemented: true
