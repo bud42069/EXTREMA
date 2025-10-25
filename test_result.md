@@ -330,47 +330,70 @@ test_plan:
 agent_communication:
   - agent: "main"
     message: |
-      **MAJOR REFACTOR COMPLETED - Production-Grade Modular Backend:**
+      **🚀 MICROSTRUCTURE INTEGRATION COMPLETE - PRIORITY 1 + PROMETHEUS**
       
-      ✅ **Linting & Code Quality**:
-      - Ran ruff --fix with --unsafe-fixes
-      - Fixed 70+ style issues automatically
-      - Remaining issues are domain-specific naming (R-multiples) - acceptable
+      ✅ **Microstructure Worker (MEXC)**:
+      - Created mexc_stream.py WebSocket worker
+      - Real-time orderbook depth (L2, top 20 levels)
+      - Trade stream with CVD calculation (tick rule)
+      - Ladder imbalance computation
+      - CVD slope tracking (linear regression)
+      - Global MicroSnapshot singleton in micro_store.py
       
-      ✅ **Modular Backend Structure Migration**:
-      - Migrated from monolithic server.py to app/main.py structure
-      - Created organized routers: health, data, swings, signals, backtest, live
-      - Updated supervisor config: server:app → app.main:app
-      - All routes now properly prefixed with /api for Kubernetes ingress
+      ✅ **Microstructure Service & Veto Logic**:
+      - micro_ok() function with comprehensive gates:
+        * Spread check (max 10 bps default)
+        * Depth check (bid/ask aggregates)
+        * Ladder imbalance alignment (±0.15 threshold)
+        * CVD slope alignment with trade direction
+      - Veto dict returned with failure reasons
+      - Confluence bonus (up to +0.10) for strong imbalance
       
-      ✅ **WebSocket Signal Streaming - PRIORITY 1 COMPLETE**:
-      - Implemented /api/signals/stream WebSocket endpoint
-      - Client connection management with auto-cleanup
-      - broadcast_signal() function for real-time signal distribution
-      - Ping/pong keepalive mechanism
+      ✅ **OBV-Cliff Veto**:
+      - Added OBV and OBV_z10 to indicators.py
+      - mark_candidates() now rejects on OBV z-score extremes
+      - Longs vetoed if OBV_z10 <= -2.0 (selling pressure)
+      - Shorts vetoed if OBV_z10 >= +2.0 (buying pressure)
       
-      ✅ **Live Monitoring Router - NEW**:
-      - POST /api/live/start - Start Pyth Network price monitoring
-      - POST /api/live/stop - Stop monitoring
-      - GET /api/live/status - Monitor stats (running, candles, signals, price)
-      - GET /api/live/signals - Fetch active signals
-      - Integrated with WebSocket broadcasting via signal_callback
+      ✅ **Signal Engine Integration**:
+      - micro_confirm() now accepts enable_micro_gate parameter
+      - After breakout+volume pass, checks microstructure
+      - Returns (confirm_idx, veto_dict) tuple
+      - /api/signals/latest endpoint updated with veto transparency
       
-      ✅ **Configuration Management**:
-      - Updated Settings class with MONGO_URL, DB_NAME, HELIUS_API_KEY
-      - Proper environment variable handling with defaults
-      - Added extra="allow" for flexibility
+      ✅ **Stream Control API** (/api/stream/*):
+      - POST /api/stream/start - Start MEXC worker
+      - POST /api/stream/stop - Stop worker
+      - GET /api/stream/snapshot - Current microstructure metrics
+      - GET /api/stream/health - Stream health check
       
-      **Backend Status**: Running successfully on port 8001
-      **API Docs**: Available at /api/docs
+      ✅ **Prometheus Metrics** (BONUS - PRIORITY 2):
+      - Installed prometheus-client + starlette-exporter
+      - /metrics endpoint with app counters
+      - Custom metrics utility (metrics.py) for:
+        * upload_total, signals_confirmed_total
+        * signals_veto_total (with reason labels)
+        * backtest_runs_total
+        * micro_snapshot_age, api_request_duration
       
-      **Pending Tasks** (Priority 2 & 3):
-      - Orderbook/tape/CVD/OI microstructure data integration
-      - Prometheus /metrics endpoint
-      - CSV backtest ledger download
-      - Veto checks (spread/depth/funding) in SignalOut model
+      ✅ **Configuration**:
+      - Added microstructure thresholds to Settings
+      - MICRO_IMB, SPREAD_BPS_MAX, OBV_Z_VETO, ENABLE_MICRO_GATE
+      - Updated .env.example with all new parameters
       
-      **Next**: Run comprehensive backend testing, then move to Priority 2 features.
+      ✅ **Comprehensive Tests** (22/22 passing):
+      - test_micro_store.py (3 tests)
+      - test_microstructure_rules.py (8 tests)
+      - test_confirm_with_microstructure.py (4 tests)
+      - test_metrics.py (4 tests)
+      - All existing tests updated for /api prefix
+      
+      **API Summary**:
+      - /api/stream/start, /api/stream/stop, /api/stream/snapshot, /api/stream/health
+      - /api/signals/latest now returns veto dict
+      - /metrics (Prometheus endpoint)
+      
+      **Next**: Run comprehensive backend testing, then wire frontend WS panel for visualization.
 
   - agent: "testing"
     message: |
