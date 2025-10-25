@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-toastify';
 import { useWebSocket } from '../hooks/useWebSocket';
 import { Card, Button, Badge, MetricCard, StatusIndicator, Input, Tooltip } from '../components/UIComponents';
-import theme from '../design-system';
+import theme from '../design-system.js';
 
 const API = process.env.REACT_APP_BACKEND_URL || '';
 
