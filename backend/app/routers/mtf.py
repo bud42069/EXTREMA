@@ -26,15 +26,16 @@ higher_tf_started: bool = False
 @router.post("/start")
 async def start_mtf(symbol: str = "SOLUSDT"):
     """
-    Start the MTF system (kline worker + state machine).
+    Start the MTF system (kline worker + state machine + higher TFs).
     
     Initiates:
     - 1-second kline WebSocket stream from Binance
     - Automatic resampling to 5s/15s/30s/1m
+    - Higher timeframe data fetching (15m/1h/4h/1D)
     - MTF feature extraction
     - State machine for signal generation
     """
-    global kline_worker
+    global kline_worker, higher_tf_started
     
     try:
         if kline_worker and kline_worker.running:
@@ -43,7 +44,7 @@ async def start_mtf(symbol: str = "SOLUSDT"):
                 "message": "MTF system already running"
             }
         
-        # Start kline worker
+        # Start kline worker (1s stream)
         kline_worker = BinanceKlineWorker(symbol=symbol, interval="1s")
         
         # Register callbacks for resampled data
@@ -56,11 +57,17 @@ async def start_mtf(symbol: str = "SOLUSDT"):
         import asyncio
         asyncio.create_task(kline_worker.start())
         
+        # Start higher timeframe data fetching
+        if not higher_tf_started:
+            asyncio.create_task(binance_rest_client.start_all(symbol))
+            higher_tf_started = True
+        
         return {
             "success": True,
             "message": f"MTF system started for {symbol}",
             "symbol": symbol,
-            "state": mtf_state_machine.state.value
+            "state": mtf_state_machine.state.value,
+            "higher_tf_started": higher_tf_started
         }
     
     except Exception as e:
