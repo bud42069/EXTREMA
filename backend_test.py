@@ -305,7 +305,8 @@ class BackendTester:
                     else:
                         self.log_result("Signals Latest (Veto)", False, "Signal missing veto dict")
                 elif 'message' in data:
-                    self.log_result("Signals Latest (Veto)", True, "No signal found (expected)")
+                    # No signal found but endpoint structure is correct
+                    self.log_result("Signals Latest (Veto)", True, "Endpoint working, no signal available (expected)")
                 else:
                     self.log_result("Signals Latest (Veto)", False, f"Unexpected response: {data}")
             else:
