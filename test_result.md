@@ -625,8 +625,10 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Chart Data API - needs migration to modular structure"
-    - "MTF Confluence Engine backend endpoints - 500 errors need resolution"
+    - "Phase 1: 1m Impulse Detection (RSI-12, BOS, Volume)"
+    - "Phase 1: Tape Filters (CVD z-score, OBI, VWAP Proximity)"
+    - "Phase 1: Comprehensive Veto System"
+    - "Phase 1: MTF Confluence Enhancement"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
