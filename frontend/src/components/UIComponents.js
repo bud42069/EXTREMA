@@ -5,7 +5,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import theme from './design-system';
+import theme from '../design-system.js';
 
 // ============================================================================
 // CARD COMPONENT
