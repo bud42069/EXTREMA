@@ -15,6 +15,7 @@ import UploadPage from './pages/UploadPage';
 import AnalysisPage from './pages/AnalysisPage';
 import AnalysisPageV2 from './pages/AnalysisPageV2';
 import BacktestPage from './pages/BacktestPage';
+import BacktestPageV2 from './pages/BacktestPageV2';
 
 // Modern Sidebar Component
 const Sidebar = () => {
