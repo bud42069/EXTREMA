@@ -849,3 +849,90 @@ agent_communication:
       **Conclusion**: AnalysisPage.js is fully functional and correctly displays all data structures from the backend API. No bugs found.
       
       **Recommendation**: If user is still experiencing issues, need specific error message or screenshot to identify the problem.
+
+  - agent: "main"
+    message: |
+      **🚀 PHASE 1: ENHANCED DETECTION ENGINE - IMPLEMENTATION COMPLETE**
+      
+      **Implementation Summary**:
+      Successfully integrated Phase 1 components from SOLUSDT Swing-Capture Playbook v1.0 into the MTF Confluence Engine.
+      
+      **Phase 1 Services Integrated:**
+      
+      1. **impulse_detector.py (1m Impulse Requirements)**:
+         - ✅ RSI-12 computation and hold check (≥2 consecutive bars on trade side)
+         - ✅ 1m BOS detection (body close beyond prior micro HL/LH by ≥0.1×ATR)
+         - ✅ 1m volume gate (≥1.5× vol_med50 for B-tier, ≥2.0× for A-tier)
+         - ✅ Comprehensive check_1m_impulse() function with detailed results
+      
+      2. **tape_filters.py (1s/5s Microstructure)**:
+         - ✅ CVD z-score computation (20s window, ±0.5σ threshold)
+         - ✅ OBI ratio computation (10s window, 1.25:1 long / 0.80:1 short)
+         - ✅ VWAP proximity check (±0.02×ATR(5m) or reclaim/loss detection)
+         - ✅ Comprehensive check_tape_filters() with all three gates
+         - ✅ Debounce logic (n-of-m anti-spoofing)
+      
+      3. **veto_system.py (Comprehensive Veto Checks)**:
+         - ✅ OBV/CVD cliff veto (10s z-score ≥2σ against direction)
+         - ✅ Spread veto (>0.10%)
+         - ✅ Depth veto (<50% of 30-day median)
+         - ✅ Mark-last deviation veto (≥0.15%)
+         - ✅ Funding rate veto (>3× median)
+         - ✅ ADL warning veto
+         - ✅ Liquidation shock veto (≥10× baseline)
+         - ✅ run_comprehensive_veto_checks() with detailed breakdown
+      
+      **MTF Confluence Engine Updates:**
+      
+      ✅ **Enhanced compute_micro_confluence()**:
+      - Accepts df_1m, df_tape, side, tier, atr_5m parameters
+      - Uses check_1m_impulse() for 1m impulse scoring (15% weight)
+      - Uses check_tape_filters() for tape micro scoring (10% weight)
+      - Uses run_comprehensive_veto_checks() for veto hygiene (3% weight)
+      - Returns detailed breakdown with Phase 1 results
+      - Fallback to simplified logic if DataFrames not available
+      
+      ✅ **Enhanced evaluate() Method**:
+      - Updated signature to accept Phase 1 parameters
+      - Passes DataFrames through to micro confluence computation
+      - Maintains backward compatibility with feature-only mode
+      
+      ✅ **Updated MTF Router** (/api/mtf/confluence):
+      - Enhanced endpoint with side and tier query parameters
+      - Prepares df_1m and df_tape from kline stores
+      - Computes atr_5m for VWAP proximity checks
+      - Returns phase1_enabled status for transparency
+      - Full integration with existing MTF infrastructure
+      
+      **Scoring Breakdown (Micro Confluence - 50% total):**
+      - trigger_5m: 20% (5m volume + BOS)
+      - impulse_1m: 15% (RSI-12 hold + BOS + volume) ← **ENHANCED**
+      - tape_micro: 10% (CVD z-score + OBI + VWAP) ← **ENHANCED**
+      - veto_hygiene: 3% (7 comprehensive veto checks) ← **ENHANCED**
+      - onchain_veto: 2% (Helius integration)
+      
+      **Files Modified**:
+      1. backend/app/services/mtf_confluence.py - Enhanced with Phase 1 imports and logic
+      2. backend/app/routers/mtf.py - Updated /confluence endpoint
+      
+      **Files Created (Phase 1)**:
+      1. backend/app/services/impulse_detector.py
+      2. backend/app/services/tape_filters.py
+      3. backend/app/services/veto_system.py
+      
+      **Testing Requirements**:
+      - Backend API testing for /api/mtf/confluence endpoint
+      - Test with side='long' and side='short' parameters
+      - Test with tier='A' and tier='B' parameters
+      - Verify impulse detection logic with actual 1m data
+      - Verify tape filter logic with 1s/5s data
+      - Verify veto system triggers correctly
+      - Check detailed breakdown in response
+      
+      **Next Steps (Phase 2)**:
+      - Integrate regime_detector.py for squeeze/normal/wide classification
+      - Integrate context_gates.py for 15m/1h EMA alignment
+      - Integrate macro_gates.py for 4h/1D alignment and tier determination
+      - Update MTF confluence scoring with regime adjustments
+      
+      **Status**: ✅ Phase 1 implementation complete. Ready for backend testing.
