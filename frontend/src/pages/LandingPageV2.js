@@ -536,7 +536,7 @@ export default function LandingPageV2() {
             SWING MATRIX v1.0 • Production-Grade Trading Intelligence Platform
           </p>
           <p className="text-gray-700 text-xs">
-            ⚠️ Manual execution only • Not financial advice • Trade at your own risk
+            Manual execution only • Not financial advice • Trade at your own risk
           </p>
         </div>
       </div>
