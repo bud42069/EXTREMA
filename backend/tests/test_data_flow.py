@@ -16,10 +16,10 @@ CSV = pd.DataFrame({
 def test_upload_and_swings():
     c = TestClient(app)
     buf = io.BytesIO(CSV.to_csv(index=False).encode())
-    r = c.post("/data/upload", files={"file": ("tiny.csv", buf, "text/csv")})
+    r = c.post("/api/data/upload", files={"file": ("tiny.csv", buf, "text/csv")})
     assert r.status_code == 200
     meta = r.json()
     assert meta["rows"] == 10
-    r2 = c.get("/swings/")
+    r2 = c.get("/api/swings/")
     assert r2.status_code == 200
     assert "rows" in r2.json()
