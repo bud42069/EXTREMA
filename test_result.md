@@ -101,3 +101,202 @@
 #====================================================================================================
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
+
+user_problem_statement: |
+  Build a trading signal detection system for SOLUSDT with two-stage swing detection methodology.
+  Target: Capture >10% swings on 5-minute timeframe
+  Stage 1: Candidate detection using ATR14, volume z-score, BB width at local extrema
+  Stage 2: Micro confirmation with breakout candle + volume spike
+  Features: CSV upload, signal analysis, backtesting with TP/SL ladder, dashboard visualization
+  User has Helius API key for future on-chain integration
+
+backend:
+  - task: "CSV Data Upload & Storage"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Implemented POST /api/upload-data endpoint. Parses CSV, validates columns, stores in MongoDB. Tested with curl - successfully uploaded 21,484 bars."
+
+  - task: "Technical Indicators Calculation"
+    implemented: true
+    working: true
+    file: "indicators.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Implemented ATR14, RSI14, Bollinger Bands, EMA, volume z-score calculations. All indicators correctly calculated on dataset."
+
+  - task: "Local Extrema Detection"
+    implemented: true
+    working: true
+    file: "extrema_detection.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Implemented local minima/maxima detection using ±12 bars window. Successfully detects swing start points."
+
+  - task: "Two-Stage Signal Detection"
+    implemented: true
+    working: true
+    file: "signal_detection.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Implemented candidate detection (Stage 1) and micro confirmation (Stage 2). Found 291 candidates and 98 confirmed signals on test data."
+
+  - task: "Backtesting Engine"
+    implemented: true
+    working: true
+    file: "backtesting.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Implemented full backtesting with TP/SL ladder, trailing stop, position sizing. Results: 98 trades, 62.2% win rate, 41.7% total P&L, 1.66 profit factor. Fixed df reference bug in close_trade method."
+
+  - task: "Analysis API Endpoint"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Implemented POST /api/analyze endpoint. Runs full analysis pipeline: indicators → extrema → candidates → confirmed signals. Returns detailed summary."
+
+  - task: "Backtest API Endpoint"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Implemented POST /api/backtest endpoint. Fetches analysis, runs backtest engine, stores results. Returns statistics and trade history."
+
+  - task: "Chart Data API"
+    implemented: true
+    working: "NA"
+    file: "server.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Implemented GET /api/chart-data endpoint for OHLCV + indicators. Not tested yet."
+
+frontend:
+  - task: "Dashboard Layout & Navigation"
+    implemented: true
+    working: true
+    file: "App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Implemented sidebar navigation with routes for Dashboard, Upload, Analysis, Backtest pages. UI compiled successfully and loads correctly."
+
+  - task: "Dashboard Page"
+    implemented: true
+    working: true
+    file: "pages/DashboardPage.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Implemented dashboard with stats cards, getting started guide, recent datasets table, methodology info. Shows 0 datasets initially as expected."
+
+  - task: "Upload Page"
+    implemented: true
+    working: "NA"
+    file: "pages/UploadPage.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Implemented CSV file upload with drag-drop area, validation, upload button. UI looks good. Needs E2E testing with actual file upload."
+
+  - task: "Analysis Page"
+    implemented: true
+    working: "NA"
+    file: "pages/AnalysisPage.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Implemented analysis configuration form with Stage 1 & 2 parameters, dataset selection, results display. Needs E2E testing."
+
+  - task: "Backtest Page"
+    implemented: true
+    working: "NA"
+    file: "pages/BacktestPage.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Implemented backtest config form, TP/SL parameters, results display with trade table. Needs E2E testing."
+
+metadata:
+  created_by: "main_agent"
+  version: "1.0"
+  test_sequence: 0
+  run_ui: true
+
+test_plan:
+  current_focus:
+    - "Full E2E workflow: Upload CSV → Analyze → Backtest"
+    - "Upload Page - file selection and upload"
+    - "Analysis Page - run analysis and view results"
+    - "Backtest Page - run backtest and view performance"
+  stuck_tasks: []
+  test_all: true
+  test_priority: "sequential"
+
+agent_communication:
+  - agent: "main"
+    message: |
+      Backend implementation complete and tested with curl:
+      - CSV upload: ✅ Working (21,484 bars uploaded)
+      - Analysis: ✅ Working (98 confirmed signals found)
+      - Backtest: ✅ Working (62.2% win rate, 41.7% P&L)
+      
+      Frontend pages implemented:
+      - Dashboard: ✅ Loads correctly
+      - Upload: ⏳ Needs E2E testing
+      - Analysis: ⏳ Needs E2E testing  
+      - Backtest: ⏳ Needs E2E testing
+      
+      Ready for full frontend testing workflow.
+      User should test manually or request automated testing agent.
