@@ -812,9 +812,11 @@ export default function LiveSignalsDashboardV2() {
                                 initial={{ rotate: -45, scale: 0 }}
                                 animate={{ rotate: 0, scale: 1 }}
                                 transition={{ type: "spring", stiffness: 300 }}
-                                className={`text-3xl ${signal.side === 'long' ? 'text-cyan-400' : 'text-pink-400'}`}
+                                className={signal.side === 'long' ? 'text-cyan-400' : 'text-pink-400'}
                               >
-                                {signal.side === 'long' ? '↗️' : '↘️'}
+                                <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={signal.side === 'long' ? "M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" : "M13 17h8m0 0v-8m0 8l-8-8-4 4-6-6"} />
+                                </svg>
                               </motion.div>
                               <div>
                                 <div className={`text-base font-bold uppercase tracking-wide ${
