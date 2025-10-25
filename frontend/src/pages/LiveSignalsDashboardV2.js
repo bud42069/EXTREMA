@@ -447,7 +447,7 @@ export default function LiveSignalsDashboardV2() {
       if (results.stream.success) stopped.push('Stream');
       
       if (stopped.length > 0) {
-        toast.info(`⏸️ ${stopped.join(' • ')} stopped`, { position: 'top-right', autoClose: 2000 });
+        toast.info(`${stopped.join(' • ')} stopped`, { position: 'top-right', autoClose: 2000 });
       }
       
       fetchMonitorStatus();
