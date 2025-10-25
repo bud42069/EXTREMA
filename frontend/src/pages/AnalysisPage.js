@@ -219,70 +219,116 @@ const AnalysisPage = () => {
     </div>
 
       {/* Analysis Results */}
-      {analysisResult && (
-        <div className="max-w-7xl mx-auto space-y-6">
-          {/* Summary Stats */}
+      {analysisResult && !analysisResult.message && (
+        <div className="max-w-7xl mx-auto">
           <div className="relative overflow-hidden rounded-2xl">
             <div className="absolute inset-0 bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-xl"></div>
             <div className="absolute inset-0 border border-slate-700/50 rounded-2xl"></div>
             <div className="relative p-8">
-            <h2 className="text-2xl font-bold text-white mb-6">Analysis Results</h2>
-            
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-              <div className="bg-gray-800 rounded-lg p-4">
-                <p className="text-gray-400 text-sm mb-1">Total Extrema</p>
-                <p className="text-3xl font-bold text-white">{analysisResult.summary.total_extrema}</p>
-              </div>
+              <h2 className="text-2xl font-bold text-white mb-6">Latest Confirmed Signal</h2>
               
-              <div className="bg-gray-800 rounded-lg p-4">
-                <p className="text-gray-400 text-sm mb-1">Candidates</p>
-                <p className="text-3xl font-bold text-yellow-400">{analysisResult.summary.total_candidates}</p>
+              {/* Signal Card */}
+              <div className="grid md:grid-cols-2 gap-6">
+                {/* Trade Details */}
+                <div className="space-y-4">
+                  <div className="flex items-center space-x-3 mb-4">
+                    <span className={`px-4 py-2 rounded-lg text-lg font-bold ${
+                      analysisResult.side === 'long' 
+                        ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' 
+                        : 'bg-red-500/20 text-red-400 border border-red-500/30'
+                    }`}>
+                      {analysisResult.side?.toUpperCase() || 'N/A'}
+                    </span>
+                    <div className="text-sm text-slate-400">
+                      Extremum: {analysisResult.extremum_index} • Confirm: {analysisResult.confirm_index}
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center p-3 bg-slate-800/50 rounded-lg">
+                      <span className="text-slate-400">Entry</span>
+                      <span className="text-white font-bold text-lg">${analysisResult.entry?.toFixed(2)}</span>
+                    </div>
+                    
+                    <div className="flex justify-between items-center p-3 bg-red-900/20 rounded-lg border border-red-500/20">
+                      <span className="text-slate-400">Stop Loss</span>
+                      <span className="text-red-400 font-bold">${analysisResult.sl?.toFixed(2)}</span>
+                    </div>
+                    
+                    <div className="flex justify-between items-center p-3 bg-emerald-900/20 rounded-lg border border-emerald-500/20">
+                      <span className="text-slate-400">TP1 (1R)</span>
+                      <span className="text-emerald-400 font-bold">${analysisResult.tp1?.toFixed(2)}</span>
+                    </div>
+                    
+                    <div className="flex justify-between items-center p-3 bg-emerald-900/20 rounded-lg border border-emerald-500/20">
+                      <span className="text-slate-400">TP2 (2R)</span>
+                      <span className="text-emerald-400 font-bold">${analysisResult.tp2?.toFixed(2)}</span>
+                    </div>
+                    
+                    <div className="flex justify-between items-center p-3 bg-emerald-900/20 rounded-lg border border-emerald-500/20">
+                      <span className="text-slate-400">TP3 (3R)</span>
+                      <span className="text-emerald-400 font-bold">${analysisResult.tp3?.toFixed(2)}</span>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Risk Management */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-emerald-400">Risk Management</h3>
+                  
+                  <div className="p-4 bg-slate-800/50 rounded-lg space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">Trail Rule</span>
+                      <span className="text-white">{analysisResult.trail_atr_mult}× ATR</span>
+                    </div>
+                    
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">Position Sizing</span>
+                      <span className="text-white">1% risk per trade</span>
+                    </div>
+                  </div>
+                  
+                  {analysisResult.veto && Object.keys(analysisResult.veto).length > 0 && (
+                    <div className="p-4 bg-red-900/20 border border-red-500/30 rounded-lg">
+                      <div className="text-sm text-red-400 font-semibold mb-2">Veto Reasons</div>
+                      {Object.entries(analysisResult.veto).map(([key, value]) => (
+                        <div key={key} className="text-xs text-red-300">
+                          • {key}: {JSON.stringify(value)}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  
+                  <button
+                    onClick={() => navigate('/scalp-cards')}
+                    className="w-full py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 rounded-lg text-white font-semibold transition-all"
+                  >
+                    Generate Scalp Card →
+                  </button>
+                </div>
               </div>
-              
-              <div className="bg-gray-800 rounded-lg p-4">
-                <p className="text-gray-400 text-sm mb-1">Confirmed Signals</p>
-                <p className="text-3xl font-bold text-green-400">{analysisResult.summary.total_confirmed_signals}</p>
-              </div>
-              
-              <div className="bg-gray-800 rounded-lg p-4">
-                <p className="text-gray-400 text-sm mb-1">Confirmation Rate</p>
-                <p className="text-3xl font-bold text-blue-400">
-                  {analysisResult.summary.total_candidates > 0 
-                    ? ((analysisResult.summary.total_confirmed_signals / analysisResult.summary.total_candidates) * 100).toFixed(1)
-                    : 0}%
-                </p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="bg-gradient-to-br from-green-900/30 to-green-800/30 border border-green-700 rounded-lg p-4">
-                <p className="text-green-400 font-semibold mb-2">Long Signals</p>
-                <p className="text-2xl font-bold text-white">{analysisResult.summary.long_signals}</p>
-              </div>
-              
-              <div className="bg-gradient-to-br from-red-900/30 to-red-800/30 border border-red-700 rounded-lg p-4">
-                <p className="text-red-400 font-semibold mb-2">Short Signals</p>
-                <p className="text-2xl font-bold text-white">{analysisResult.summary.short_signals}</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Next Step */}
-          <div className="bg-gray-900 rounded-lg p-8">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-xl font-bold text-white mb-2">Ready for Backtesting</h3>
-                <p className="text-gray-400">Test these signals with your trading strategy parameters</p>
-              </div>
-              <button
-                onClick={() => navigate('/backtest', { state: { analysisId: analysisResult.analysis_id } })}
-                className="bg-green-600 text-white px-8 py-3 rounded-lg hover:bg-green-700 transition-colors font-semibold"
-              >
-                Run Backtest →
-              </button>
             </div>
           </div>
         </div>
+      )}
+      
+      {analysisResult && analysisResult.message && (
+        <div className="max-w-7xl mx-auto">
+          <div className="relative overflow-hidden rounded-2xl">
+            <div className="absolute inset-0 bg-gradient-to-br from-yellow-900/20 to-slate-900/40 backdrop-blur-xl"></div>
+            <div className="absolute inset-0 border border-yellow-500/30 rounded-2xl"></div>
+            <div className="relative p-12 text-center">
+              <div className="text-6xl mb-4">📊</div>
+              <h3 className="text-2xl font-bold text-white mb-2">No Confirmed Signals</h3>
+              <p className="text-slate-400 mb-6">{analysisResult.message}</p>
+              <button
+                onClick={() => navigate('/upload')}
+                className="px-6 py-3 bg-emerald-500 hover:bg-emerald-600 rounded-lg text-white font-medium transition-all"
+              >
+                Try Different Data
+              </button>
+            </div>
+          </div>
         </div>
       )}
       </div>
