@@ -529,3 +529,54 @@ agent_communication:
       - Prometheus metrics properly configured with starlette-exporter
       
       ✅ **CONCLUSION**: Microstructure integration and Prometheus monitoring are production-ready. All API endpoints respond correctly, error handling is robust, and the system gracefully handles external service unavailability.
+
+  - agent: "main"
+    message: |
+      **✅ ANALYSIS PAGE VERIFICATION COMPLETE - ALL SCENARIOS WORKING**
+      
+      **Context**: User reported issue with AnalysisPage when "RUN ANALYSIS" is clicked.
+      
+      **Investigation Results**:
+      
+      ✅ **Backend API Testing**:
+      - `/api/signals/latest` endpoint working correctly
+      - Returns proper signal structure: side, extremum_index, confirm_index, entry, sl, tp1/tp2/tp3, trail_atr_mult, veto
+      - Handles "no signal" case with {"message": "no confirmed signal"}
+      
+      ✅ **Frontend Testing - 3 Scenarios**:
+      
+      1. **No Data Loaded**:
+         - ✅ Shows "No Data Loaded" message
+         - ✅ "Upload Data" button displayed
+         - ✅ "Run Analysis" button disabled
+         - ✅ Handles 400 error from /api/swings/ gracefully
+      
+      2. **Signal Found**:
+         - ✅ Displays "Latest Confirmed Signal" card
+         - ✅ Shows LONG/SHORT badge with proper styling
+         - ✅ Entry, SL, TP1/TP2/TP3 values displayed correctly
+         - ✅ Extremum and confirm indices shown
+         - ✅ Risk Management section with trail rule and position sizing
+         - ✅ "Generate Scalp Card →" button present
+         - ✅ Veto dict handling (empty veto displayed correctly)
+      
+      3. **No Signal Found**:
+         - ✅ Shows "No Confirmed Signals" message with icon
+         - ✅ Displays backend message "no confirmed signal"
+         - ✅ "Try Different Data" button present
+      
+      **Test Data Used**:
+      - Uploaded data.csv with 21,484 candles
+      - Test 1: Default parameters (atr_min=0.6, volz_min=0.5) → Signal found at index 21192
+      - Test 2: Extreme parameters (atr_min=10.0) → No signal found
+      
+      **Technical Details**:
+      - Page correctly interprets single signal object from backend
+      - No references to old `analysisResult.summary` structure
+      - Proper error handling with try-catch blocks
+      - Toast notifications working for success/error states
+      - Navigation integration working (to /upload and /scalp-cards)
+      
+      **Conclusion**: AnalysisPage.js is fully functional and correctly displays all data structures from the backend API. No bugs found.
+      
+      **Recommendation**: If user is still experiencing issues, need specific error message or screenshot to identify the problem.
