@@ -389,7 +389,9 @@ export default function LandingPageV2() {
                   borderColor: theme.colors.border.default
                 }}
               >
-                <div className="text-5xl mb-4">{feature.icon}</div>
+                <div className="flex items-center justify-start mb-4 text-cyan-400">
+                  {feature.icon}
+                </div>
                 <h3 className="text-xl font-bold text-gray-200 mb-3">{feature.title}</h3>
                 <p className="text-gray-500 leading-relaxed">{feature.description}</p>
               </div>
