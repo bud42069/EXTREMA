@@ -18,8 +18,24 @@ def latest_signal(
     bbw_min: float = 0.005,
     breakout_atr_mult: float = 0.5,
     vol_mult: float = 1.5,
-    confirm_window: int = 6
+    confirm_window: int = 6,
+    enable_micro_gate: bool = True
 ):
+    """
+    Get the latest confirmed signal from historical data.
+    
+    Args:
+        atr_min: Minimum ATR14 for candidates
+        volz_min: Minimum volume z-score
+        bbw_min: Minimum Bollinger Band width
+        breakout_atr_mult: Breakout ATR multiplier
+        vol_mult: Volume confirmation multiplier
+        confirm_window: Bars to search for confirmation
+        enable_micro_gate: Enable microstructure gating
+    
+    Returns:
+        Signal dict with entry, SL, TPs, and veto info (if any)
+    """
     df = get_df()
     if df is None:
         raise HTTPException(400, "No data loaded")
@@ -31,9 +47,16 @@ def latest_signal(
         side = "long" if is_long else ("short" if is_short else None)
         if not side:
             continue
-        j = micro_confirm(df2, i, side, confirm_window, breakout_atr_mult, vol_mult)
+        
+        # Get confirmation with veto dict
+        j, veto = micro_confirm(
+            df2, i, side, confirm_window,
+            breakout_atr_mult, vol_mult, enable_micro_gate
+        )
+        
         if j is None:
             continue
+        
         entry = float(df2.at[j, "close"])
         atr5 = float(df2.at[i, "ATR14"] * (5/14))
         if side == "long":
@@ -44,6 +67,7 @@ def latest_signal(
             sl = float(max(df2.at[i, "high"], entry + 0.9*atr5))
             r = sl - entry
             tp1, tp2, tp3 = entry - 1.0*r, entry - 2.0*r, entry - 3.0*r
+        
         return {
             "side": side,
             "extremum_index": i,
@@ -53,8 +77,10 @@ def latest_signal(
             "tp1": float(tp1),
             "tp2": float(tp2),
             "tp3": float(tp3),
-            "trail_atr_mult": 0.5
+            "trail_atr_mult": 0.5,
+            "veto": veto  # Empty if confirmed, populated if micro-vetoed
         }
+    
     return {"message": "no confirmed signal"}
 
 
