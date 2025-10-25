@@ -377,7 +377,10 @@ function ParametersTab({ card, riskPercent, rewardPercent, rrRatio }) {
       {/* Right: Risk Analysis */}
       <div className="space-y-4">
         <h3 className="text-sm font-bold text-amber-400 uppercase tracking-wider mb-4 flex items-center gap-2">
-          <span>⚖️</span> RISK ANALYSIS
+          <svg className="w-5 h-5 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
+          </svg>
+          RISK ANALYSIS
         </h3>
         
         <MetricCard
