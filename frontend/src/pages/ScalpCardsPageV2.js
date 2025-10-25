@@ -201,7 +201,6 @@ SIZE: ${card.size}
                 onChange={(e) => setOrderSize(e.target.value)}
                 type="number"
                 placeholder="Size"
-                leftIcon="💰"
               />
             </div>
             <div className="w-24">
