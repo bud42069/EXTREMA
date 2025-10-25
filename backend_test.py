@@ -23,6 +23,19 @@ import requests
 import websockets
 from websockets.exceptions import ConnectionClosedError
 
+# Add backend path for Phase 3 service imports
+sys.path.append('/app/backend')
+
+# Import Phase 3 services for testing
+try:
+    from app.services.order_manager import OrderManager, OrderSide, OrderType, OrderStatus
+    from app.services.risk_manager import RiskManager
+    from app.services.tp_sl_manager import TPSLManager, TPLevel, TrailingStopStatus
+    PHASE3_IMPORTS_OK = True
+except ImportError as e:
+    print(f"⚠️ Phase 3 import error: {e}")
+    PHASE3_IMPORTS_OK = False
+
 # Backend URL from frontend environment
 BACKEND_URL = "https://solana-impulse.preview.emergentagent.com"
 API_BASE = f"{BACKEND_URL}/api"
