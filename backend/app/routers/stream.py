@@ -37,7 +37,7 @@ async def start_stream(symbol: str = "SOLUSDT"):
             "symbol": symbol
         })
     except Exception as e:
-        logger.error(f"Error starting MEXC stream: {e}")
+        logger.error(f"Error starting Binance stream: {e}")
         return JSONResponse({
             "success": False,
             "error": str(e)
