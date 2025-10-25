@@ -80,7 +80,7 @@ async def stop_mtf():
     """
     Stop the MTF system.
     """
-    global kline_worker
+    global kline_worker, higher_tf_started
     
     try:
         if not kline_worker or not kline_worker.running:
@@ -89,8 +89,14 @@ async def stop_mtf():
                 "message": "MTF system not running"
             }
         
+        # Stop kline worker
         kline_worker.stop()
         kline_worker = None
+        
+        # Stop higher TF updates
+        if higher_tf_started:
+            await binance_rest_client.stop_all()
+            higher_tf_started = False
         
         # Reset state machine
         mtf_state_machine.state = MTFState.SCAN
