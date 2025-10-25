@@ -73,9 +73,25 @@ export default function ScalpCardsPage() {
     <div className="p-6 space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-green-400">
-          Scalp Card — Manual Execution
-        </h1>
+        <div>
+          <h1 className="text-2xl font-semibold text-green-400">
+            Scalp Card — Manual Execution
+          </h1>
+          <div className="flex items-center gap-3 mt-2">
+            <span className={`text-xs px-2 py-1 rounded ${wsConnected ? 'bg-green-900/30 text-green-400' : 'bg-yellow-900/30 text-yellow-400'}`}>
+              {wsConnected ? "🟢 WebSocket Live" : "🟡 Polling Mode"}
+            </span>
+            <label className="flex items-center gap-2 text-sm text-neutral-400 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={demoMode}
+                onChange={(e) => setDemoMode(e.target.checked)}
+                className="rounded"
+              />
+              Demo Mode (force generate)
+            </label>
+          </div>
+        </div>
         <div className="flex gap-2">
           <button
             className="px-4 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50"
