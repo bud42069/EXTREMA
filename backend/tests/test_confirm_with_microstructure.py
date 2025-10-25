@@ -152,7 +152,7 @@ def test_obv_cliff_veto_in_candidates():
     # Create test data
     df = create_test_df()
     df = compute_indicators(df)
-    df = detect_local_extrema(df)
+    df = mark_local_extrema(df)
     
     # Artificially set OBV_z10 to trigger veto
     df['OBV_z10'] = 0.0
