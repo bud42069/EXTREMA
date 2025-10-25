@@ -129,6 +129,12 @@ const CVDSlopeChart = ({ data }) => {
     value: value || 0
   }));
   
+  // Calculate domain with padding for better visibility
+  const values = chartData.map(d => d.value);
+  const minVal = Math.min(...values);
+  const maxVal = Math.max(...values);
+  const padding = Math.abs(maxVal - minVal) * 0.2 || 0.1;
+  
   return (
     <div className="w-full h-32">
       <ResponsiveContainer width="100%" height="100%">
@@ -139,12 +145,13 @@ const CVDSlopeChart = ({ data }) => {
               <stop offset="100%" stopColor="#06b6d4" stopOpacity={0.05} />
             </linearGradient>
           </defs>
-          <YAxis hide domain={['dataMin', 'dataMax']} />
+          <XAxis dataKey="index" hide />
+          <YAxis hide domain={[minVal - padding, maxVal + padding]} />
           <Area
             type="monotone"
             dataKey="value"
             stroke="#06b6d4"
-            strokeWidth={2.5}
+            strokeWidth={4}
             fill="url(#cvdSlopeGradient)"
             animationDuration={300}
             isAnimationActive={true}
