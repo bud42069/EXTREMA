@@ -302,7 +302,7 @@ function TradeCard({ card, orderSize, leverage }) {
             
             <div className="flex items-center gap-3">
               <Badge variant={allPassed ? 'success' : 'error'} size="lg">
-                {allPassed ? '✓ ALL CHECKS PASSED' : '⚠ VETO TRIGGERED'}
+                {allPassed ? 'ALL CHECKS PASSED' : 'VETO TRIGGERED'}
               </Badge>
             </div>
           </div>
