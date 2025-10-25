@@ -704,11 +704,11 @@ backend:
 
   - task: "Phase 3: TP/SL Manager (3-Tier Ladder, Trailing)"
     implemented: true
-    working: "NA"
+    working: true
     file: "app/services/tp_sl_manager.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
@@ -724,6 +724,44 @@ backend:
           - Trailing: Breakeven first, then 0.5×ATR trail
           - Regime adjustments: Squeeze TP2/TP3 extended (2.5R/4.0R)
           Needs backend testing with price movement scenarios.
+      - working: true
+        agent: "testing"
+        comment: |
+          ✅ COMPREHENSIVE BACKEND TESTING COMPLETE: TP/SL Manager working excellently.
+          
+          **Initialization Testing (1/1 PASS)**:
+          - ✅ TPSLManager initialization: All defaults correct (TP ladder 1.0/2.0/3.0R, trail=0.5×ATR, time_stops=24h/12h)
+          - ✅ Position tracking: positions dict initialized properly
+          
+          **TP/SL Level Calculations (1/1 PASS)**:
+          - ✅ Normal regime: TP1=105.0 (1.0R), TP2=110.0 (2.0R), TP3=115.0 (3.0R)
+          - ✅ Squeeze regime: TP2=112.5 (2.5R), TP3=120.0 (4.0R) - extended targets
+          - ✅ R-multiple calculations: Accurate risk-based TP placement
+          - ✅ Regime adjustments: Squeeze extends TP2/TP3 correctly
+          
+          **Position Tracking (1/1 PASS)**:
+          - ✅ Position creation: TEST_POS_001 created with qty=10.0, max_hold=24h
+          - ✅ Position structure: All required fields (levels, tp_hits, trailing_stop, timing)
+          - ✅ Position storage: get_position() retrieval working
+          
+          **TP Hit Detection (1/1 PASS)**:
+          - ✅ TP1 hit @105.0: 50% reduction triggered, trailing stop activated
+          - ✅ TP2 hit @110.0: 30% reduction triggered
+          - ✅ TP3 hit @115.0: 20% reduction triggered
+          - ✅ Sequential hits: All TP levels marked correctly, proper reduction percentages
+          
+          **Trailing Stop Logic (1/1 PASS)**:
+          - ✅ Activation: Only after TP1 hit (before TP1: no update)
+          - ✅ Breakeven move: First moves to entry price (100.0)
+          - ✅ Trailing updates: Price 108.0 → trail stop 107.0 (108.0 - 1.0 ATR trail)
+          - ✅ Direction lock: Only moves favorably (doesn't move down for longs)
+          
+          **Edge Case Handling (1/1 PASS)**:
+          - ✅ Missing position: check_tp_hits() returns error for non-existent positions
+          - ✅ Invalid tier: Defaults to B-tier (0.5×) for invalid tier inputs
+          - ✅ Zero stop distance: Handled gracefully (liq_gap_multiplier = 0.0)
+          
+          **CONCLUSION**: TPSLManager is production-ready. All TP/SL calculations accurate, 3-tier ladder working, trailing stop logic operational, regime adjustments functional. Ready for live trading integration.
 
   - task: "MEXC WebSocket Worker"
     implemented: true
