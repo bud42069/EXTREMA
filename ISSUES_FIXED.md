@@ -80,7 +80,7 @@ Price Range: $172.87 - $252.67
 
 ### 1. Open Live Signals Page
 ```
-URL: https://swingcapture.preview.emergentagent.com/live
+URL: https://swingmatrix.preview.emergentagent.com/live
 or
 URL: http://localhost:3000/live
 ```
@@ -93,7 +93,7 @@ URL: http://localhost:3000/live
 
 ### 3. Generate Scalp Cards  
 ```
-URL: https://swingcapture.preview.emergentagent.com/scalp-cards
+URL: https://swingmatrix.preview.emergentagent.com/scalp-cards
 or
 URL: http://localhost:3000/scalp-cards
 ```
@@ -103,7 +103,7 @@ URL: http://localhost:3000/scalp-cards
 
 ### 4. Upload More Data (Optional)
 ```
-URL: https://swingcapture.preview.emergentagent.com/upload
+URL: https://swingmatrix.preview.emergentagent.com/upload
 ```
 - Your 21,484 rows are already loaded
 - Can upload additional CSV files if needed
@@ -196,13 +196,13 @@ axios.post(`${API}/live/start`)   ✅
 ## Next Steps 🚀
 
 1. **Test Live Signals Page**
-   - Go to: https://swingcapture.preview.emergentagent.com/live
+   - Go to: https://swingmatrix.preview.emergentagent.com/live
    - Click "START MONITOR"
    - Should see: "✅ Live monitor started!"
    - Monitor status should show: 🟢 LIVE
 
 2. **Test Scalp Cards**
-   - Go to: https://swingcapture.preview.emergentagent.com/scalp-cards
+   - Go to: https://swingmatrix.preview.emergentagent.com/scalp-cards
    - Click "Generate Card"
    - Should see complete trade card
    - Try toggling "Demo Mode"
