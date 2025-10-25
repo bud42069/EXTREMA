@@ -832,32 +832,54 @@ export default function LiveSignalsDashboardV2() {
         <div className="space-y-4">
           
           {/* CVD Slope Chart */}
-          <div className="bg-gray-900/30 rounded-2xl border border-gray-800/50 p-6">
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5 }}
+            className="bg-gradient-to-br from-gray-900/50 to-gray-950/50 rounded-2xl border border-gray-800/50 p-6 backdrop-blur-xl"
+          >
             <div className="flex items-center justify-between mb-4">
-              <h4 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">CVD Slope</h4>
-              <span className="text-xs text-gray-600 font-mono">30s Rolling</span>
+              <h4 className="text-sm font-bold text-gray-300 uppercase tracking-wider">CVD Slope</h4>
+              <span className="text-xs text-gray-600 font-mono bg-gray-800/50 px-2 py-1 rounded">30s Rolling</span>
             </div>
-            <div className="h-32 bg-black/30 rounded-lg overflow-hidden">
+            <div className="h-32 bg-black/40 rounded-xl overflow-hidden border border-gray-800/30">
               <CVDSlopeChart data={cvdHistory} />
             </div>
-          </div>
+          </motion.div>
 
           {/* CVD Gauge */}
-          <div className="bg-gray-900/30 rounded-2xl border border-gray-800/50 p-6">
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className="bg-gradient-to-br from-gray-900/50 to-gray-950/50 rounded-2xl border border-gray-800/50 p-6 backdrop-blur-xl"
+          >
             <div className="flex items-center justify-between mb-4">
-              <h4 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">CVD</h4>
-              <span className="text-xs text-gray-600 font-mono">{microSnap?.available ? 'LIVE' : 'OFFLINE'}</span>
+              <h4 className="text-sm font-bold text-gray-300 uppercase tracking-wider">CVD</h4>
+              <span className={`text-xs font-mono px-2 py-1 rounded border ${
+                microSnap?.available 
+                  ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' 
+                  : 'bg-gray-800/50 border-gray-700 text-gray-600'
+              }`}>
+                {microSnap?.available ? '● LIVE' : '○ OFFLINE'}
+              </span>
             </div>
-            <div className={`text-4xl font-bold mb-2 ${
-              microSnap?.cvd 
-                ? microSnap.cvd > 0 ? 'text-emerald-400' : 'text-rose-400'
-                : 'text-gray-600'
-            }`}>
+            <motion.div 
+              key={microSnap?.cvd}
+              initial={{ scale: 1.1 }}
+              animate={{ scale: 1 }}
+              transition={{ type: "spring", stiffness: 300 }}
+              className={`text-5xl font-black mb-3 ${
+                microSnap?.cvd 
+                  ? microSnap.cvd > 0 ? 'text-emerald-400' : 'text-rose-400'
+                  : 'text-gray-600'
+              }`}
+            >
               {microSnap?.cvd ? formatNumber(microSnap.cvd, 0) : '--'}
-            </div>
-            <div className="flex items-center gap-2 text-xs">
-              <span className="text-gray-500">Slope</span>
-              <span className={`font-mono ${
+            </motion.div>
+            <div className="flex items-center gap-3 text-xs bg-black/30 rounded-lg p-2 border border-gray-800/30">
+              <span className="text-gray-500 font-semibold">Slope</span>
+              <span className={`font-mono font-bold ${
                 microSnap?.cvd_slope
                   ? microSnap.cvd_slope > 0 ? 'text-emerald-400' : 'text-rose-400'
                   : 'text-gray-600'
@@ -865,96 +887,138 @@ export default function LiveSignalsDashboardV2() {
                 {microSnap?.cvd_slope ? formatNumber(microSnap.cvd_slope, 4) : '--'}
               </span>
             </div>
-          </div>
+          </motion.div>
 
           {/* Spread Dial */}
-          <div className="bg-gray-900/30 rounded-2xl border border-gray-800/50 p-6">
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="bg-gradient-to-br from-gray-900/50 to-gray-950/50 rounded-2xl border border-gray-800/50 p-6 backdrop-blur-xl"
+          >
             <div className="flex items-center justify-between mb-4">
-              <h4 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Spread</h4>
-              <span className={`text-xs font-mono ${
+              <h4 className="text-sm font-bold text-gray-300 uppercase tracking-wider">Spread</h4>
+              <span className={`text-xs font-mono font-bold px-2 py-1 rounded border ${
                 microSnap?.spread_bps 
-                  ? microSnap.spread_bps < 1 ? 'text-emerald-500' : 'text-amber-500'
-                  : 'text-gray-600'
+                  ? microSnap.spread_bps < 1 
+                    ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' 
+                    : 'bg-amber-500/10 border-amber-500/30 text-amber-400'
+                  : 'bg-gray-800/50 border-gray-700 text-gray-600'
               }`}>
                 {microSnap?.spread_bps ? `${formatNumber(microSnap.spread_bps, 2)} bps` : '-- bps'}
               </span>
             </div>
-            <div className="relative h-3 bg-gray-800/50 rounded-full overflow-hidden">
-              <div 
-                className={`absolute left-0 top-0 h-full rounded-full transition-all ${
+            <div className="relative h-4 bg-gray-800/50 rounded-full overflow-hidden border border-gray-800/30">
+              <motion.div 
+                initial={{ width: 0 }}
+                animate={{ 
+                  width: microSnap?.spread_bps ? `${Math.min((microSnap.spread_bps / 10) * 100, 100)}%` : '0%'
+                }}
+                transition={{ type: "spring", stiffness: 100, damping: 20 }}
+                className={`absolute left-0 top-0 h-full rounded-full ${
                   microSnap?.spread_bps
                     ? microSnap.spread_bps < 1 ? 'bg-emerald-500' : 'bg-amber-500'
                     : 'bg-gray-700'
                 }`}
-                style={{ width: microSnap?.spread_bps ? `${Math.min((microSnap.spread_bps / 10) * 100, 100)}%` : '0%' }}
-              ></div>
+              />
             </div>
-          </div>
+            <div className="mt-3 flex items-center justify-between text-xs text-gray-600 font-mono">
+              <span>0 bps</span>
+              <span>10+ bps</span>
+            </div>
+          </motion.div>
 
           {/* Depth Imbalance */}
-          <div className="bg-gray-900/30 rounded-2xl border border-gray-800/50 p-6">
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+            className="bg-gradient-to-br from-gray-900/50 to-gray-950/50 rounded-2xl border border-gray-800/50 p-6 backdrop-blur-xl"
+          >
             <div className="flex items-center justify-between mb-4">
-              <h4 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Depth Imbalance</h4>
-              <span className="text-xs text-gray-600 font-mono">
+              <h4 className="text-sm font-bold text-gray-300 uppercase tracking-wider">Depth Imbalance</h4>
+              <span className="text-xs text-gray-500 font-mono bg-gray-800/50 px-2 py-1 rounded border border-gray-800/30">
                 {microSnap?.ladder_imbalance ? formatNumber(microSnap.ladder_imbalance, 3) : '--'}
               </span>
             </div>
             
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <div className="text-xs text-blue-400 w-12">BID</div>
-                <div className="flex-1 h-3 bg-gray-800/50 rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-blue-500 rounded-full transition-all"
-                    style={{ width: microSnap?.bid_depth ? `${Math.min((microSnap.bid_depth / (microSnap.bid_depth + microSnap.ask_depth)) * 100, 100)}%` : '50%' }}
-                  ></div>
+            <div className="space-y-3">
+              <div className="flex items-center gap-3">
+                <div className="text-xs text-blue-400 font-bold w-12">BID</div>
+                <div className="flex-1 h-4 bg-gray-800/50 rounded-full overflow-hidden border border-gray-800/30">
+                  <motion.div 
+                    initial={{ width: '50%' }}
+                    animate={{ 
+                      width: microSnap?.bid_depth 
+                        ? `${Math.min((microSnap.bid_depth / (microSnap.bid_depth + microSnap.ask_depth)) * 100, 100)}%` 
+                        : '50%'
+                    }}
+                    transition={{ type: "spring", stiffness: 100, damping: 20 }}
+                    className="h-full bg-gradient-to-r from-blue-600 to-blue-500 rounded-full"
+                  />
                 </div>
-                <div className="text-xs text-gray-500 font-mono w-16 text-right">
+                <div className="text-xs text-gray-400 font-mono font-bold w-16 text-right">
                   {microSnap?.bid_depth ? formatNumber(microSnap.bid_depth / 1000, 0) + 'k' : '--'}
                 </div>
               </div>
               
-              <div className="flex items-center gap-2">
-                <div className="text-xs text-rose-400 w-12">ASK</div>
-                <div className="flex-1 h-3 bg-gray-800/50 rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-rose-500 rounded-full transition-all"
-                    style={{ width: microSnap?.ask_depth ? `${Math.min((microSnap.ask_depth / (microSnap.bid_depth + microSnap.ask_depth)) * 100, 100)}%` : '50%' }}
-                  ></div>
+              <div className="flex items-center gap-3">
+                <div className="text-xs text-rose-400 font-bold w-12">ASK</div>
+                <div className="flex-1 h-4 bg-gray-800/50 rounded-full overflow-hidden border border-gray-800/30">
+                  <motion.div 
+                    initial={{ width: '50%' }}
+                    animate={{ 
+                      width: microSnap?.ask_depth 
+                        ? `${Math.min((microSnap.ask_depth / (microSnap.bid_depth + microSnap.ask_depth)) * 100, 100)}%` 
+                        : '50%'
+                    }}
+                    transition={{ type: "spring", stiffness: 100, damping: 20 }}
+                    className="h-full bg-gradient-to-r from-rose-600 to-rose-500 rounded-full"
+                  />
                 </div>
-                <div className="text-xs text-gray-500 font-mono w-16 text-right">
+                <div className="text-xs text-gray-400 font-mono font-bold w-16 text-right">
                   {microSnap?.ask_depth ? formatNumber(microSnap.ask_depth / 1000, 0) + 'k' : '--'}
                 </div>
               </div>
             </div>
-          </div>
+          </motion.div>
 
           {/* System Health */}
-          <div className="bg-gray-900/30 rounded-2xl border border-gray-800/50 p-6">
-            <h4 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">System Health</h4>
-            <div className="space-y-2 text-xs font-mono">
-              <div className="flex justify-between">
-                <span className="text-gray-500">API</span>
-                <span className="text-emerald-400">✓ OK</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-500">WebSocket</span>
-                <span className={microSnap?.available ? 'text-emerald-400' : 'text-gray-600'}>
-                  {microSnap?.available ? '✓ OK' : '○ OFFLINE'}
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+            className="bg-gradient-to-br from-gray-900/50 to-gray-950/50 rounded-2xl border border-gray-800/50 p-6 backdrop-blur-xl"
+          >
+            <h4 className="text-sm font-bold text-gray-300 uppercase tracking-wider mb-4">System Health</h4>
+            <div className="space-y-3 text-xs font-mono">
+              <div className="flex justify-between items-center p-2 bg-black/20 rounded-lg border border-gray-800/30">
+                <span className="text-gray-500 font-semibold">API</span>
+                <span className="text-emerald-400 flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse"></span>
+                  OK
                 </span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-gray-500">MTF Engine</span>
-                <span className={mtfStatus?.running ? 'text-emerald-400' : 'text-gray-600'}>
-                  {mtfStatus?.running ? '✓ OK' : '○ OFFLINE'}
+              <div className="flex justify-between items-center p-2 bg-black/20 rounded-lg border border-gray-800/30">
+                <span className="text-gray-500 font-semibold">WebSocket</span>
+                <span className={`flex items-center gap-1.5 ${microSnap?.available ? 'text-emerald-400' : 'text-gray-600'}`}>
+                  <span className={`w-1.5 h-1.5 rounded-full ${microSnap?.available ? 'bg-emerald-400 animate-pulse' : 'bg-gray-600'}`}></span>
+                  {microSnap?.available ? 'OK' : 'OFFLINE'}
                 </span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-gray-500">Candles</span>
-                <span className="text-gray-300">{monitorStatus.candles_count}</span>
+              <div className="flex justify-between items-center p-2 bg-black/20 rounded-lg border border-gray-800/30">
+                <span className="text-gray-500 font-semibold">MTF Engine</span>
+                <span className={`flex items-center gap-1.5 ${mtfStatus?.running ? 'text-emerald-400' : 'text-gray-600'}`}>
+                  <span className={`w-1.5 h-1.5 rounded-full ${mtfStatus?.running ? 'bg-emerald-400 animate-pulse' : 'bg-gray-600'}`}></span>
+                  {mtfStatus?.running ? 'OK' : 'OFFLINE'}
+                </span>
+              </div>
+              <div className="flex justify-between items-center p-2 bg-black/20 rounded-lg border border-gray-800/30">
+                <span className="text-gray-500 font-semibold">Candles</span>
+                <span className="text-cyan-400 font-bold">{monitorStatus.candles_count}</span>
               </div>
             </div>
-          </div>
+          </motion.div>
         </div>
       </div>
 
