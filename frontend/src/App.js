@@ -143,7 +143,7 @@ function App() {
             <Route path="/scalp-cards" element={<ScalpCardsPageV2 />} />
             <Route path="/upload" element={<UploadPage />} />
             <Route path="/analysis" element={<AnalysisPageV2 />} />
-            <Route path="/backtest" element={<BacktestPage />} />
+            <Route path="/backtest" element={<BacktestPageV2 />} />
           </Routes>
         </Layout>
       </BrowserRouter>
