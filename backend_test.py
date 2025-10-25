@@ -643,7 +643,7 @@ class BackendTester:
     def test_macro_gates_verification(self):
         """Test macro gates (4h/1D alignment, tier clearance)"""
         try:
-            response = requests.get(f"{API_BASE}/mtf/confluence?side=short&tier=A", timeout=15)
+            response = requests.get(f"{API_BASE}/mtf/confluence", timeout=15)
             if response.status_code == 200:
                 data = response.json()
                 
