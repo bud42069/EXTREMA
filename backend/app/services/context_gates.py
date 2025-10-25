@@ -274,7 +274,7 @@ def check_oscillator_agreement(
             result['extreme'] = bool(current_rsi < 30)
             result['oscillator_ok'] = not result['extreme']
         else:  # short
-            result['extreme'] = current_rsi > 70
+            result['extreme'] = bool(current_rsi > 70)
             result['oscillator_ok'] = not result['extreme']
         
         logger.info(
