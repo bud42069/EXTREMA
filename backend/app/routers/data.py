@@ -23,7 +23,7 @@ async def upload_csv(file: UploadFile = File(...)):
     Upload CSV data for analysis.
     For large files (>10K rows), processes a sample immediately and full dataset in background.
     """
-    if not file.filename.endsWith(".csv"):
+    if not file.filename.endswith(".csv"):
         raise HTTPException(400, "Please upload a CSV file.")
     
     logger.info(f"Starting upload: {file.filename}")
