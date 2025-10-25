@@ -387,6 +387,171 @@ async def get_chart_data(dataset_id: str, start: Optional[int] = None, limit: in
         logger.error(f"Error fetching chart data: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
+
+# ============= Live Monitoring & Signal Generation =============
+
+# Global live monitor instance
+live_monitor: Optional[LiveMonitor] = None
+websocket_clients: List[WebSocket] = []
+
+
+async def signal_callback(signal_card):
+    """Callback to broadcast signals to all WebSocket clients."""
+    signal_dict = signal_card.__dict__ if hasattr(signal_card, '__dict__') else signal_card
+    
+    # Store signal in database
+    await db.live_signals.insert_one({
+        **signal_dict,
+        '_id': signal_dict['signal_id']
+    })
+    
+    # Broadcast to all connected clients
+    disconnected_clients = []
+    for client in websocket_clients:
+        try:
+            await client.send_json({
+                'type': 'new_signal',
+                'data': signal_dict
+            })
+        except Exception as e:
+            logger.error(f"Error sending to WebSocket client: {e}")
+            disconnected_clients.append(client)
+    
+    # Remove disconnected clients
+    for client in disconnected_clients:
+        websocket_clients.remove(client)
+
+
+@api_router.post("/live-monitor/start")
+async def start_live_monitor():
+    """Start the live price monitoring and signal generation."""
+    global live_monitor
+    
+    try:
+        if live_monitor and live_monitor.running:
+            return JSONResponse({'success': True, 'message': 'Monitor already running'})
+        
+        # Create monitor instance
+        live_monitor = LiveMonitor(
+            candle_window=500,
+            atr_threshold=0.6,
+            vol_z_threshold=0.5,
+            bb_width_threshold=0.005
+        )
+        
+        # Register signal callback
+        live_monitor.register_signal_callback(signal_callback)
+        
+        # Start monitor in background task
+        asyncio.create_task(live_monitor.start())
+        
+        return JSONResponse({
+            'success': True,
+            'message': 'Live monitor started'
+        })
+    
+    except Exception as e:
+        logger.error(f"Error starting live monitor: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/live-monitor/stop")
+async def stop_live_monitor():
+    """Stop the live monitoring."""
+    global live_monitor
+    
+    try:
+        if live_monitor:
+            live_monitor.stop()
+            return JSONResponse({'success': True, 'message': 'Monitor stopped'})
+        else:
+            return JSONResponse({'success': False, 'message': 'Monitor not running'})
+    
+    except Exception as e:
+        logger.error(f"Error stopping monitor: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.get("/live-monitor/status")
+async def get_monitor_status():
+    """Get live monitor status."""
+    global live_monitor
+    
+    if live_monitor:
+        return JSONResponse({
+            'running': live_monitor.running,
+            'candles_count': len(live_monitor.candles),
+            'active_signals_count': len(live_monitor.active_signals),
+            'last_price': live_monitor.last_price
+        })
+    else:
+        return JSONResponse({
+            'running': False,
+            'candles_count': 0,
+            'active_signals_count': 0,
+            'last_price': 0.0
+        })
+
+
+@api_router.get("/live-signals")
+async def get_live_signals():
+    """Get all active live signals."""
+    global live_monitor
+    
+    try:
+        if live_monitor:
+            signals = live_monitor.get_active_signals()
+            return JSONResponse({'signals': signals})
+        else:
+            # Fetch from database if monitor not running
+            signals = await db.live_signals.find({}, {'_id': 0}).to_list(100)
+            return JSONResponse({'signals': signals})
+    
+    except Exception as e:
+        logger.error(f"Error fetching live signals: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.websocket("/ws/signals")
+async def websocket_signals(websocket: WebSocket):
+    """
+    WebSocket endpoint for real-time signal streaming.
+    """
+    await websocket.accept()
+    websocket_clients.append(websocket)
+    
+    try:
+        # Send initial state
+        if live_monitor:
+            active_signals = live_monitor.get_active_signals()
+            await websocket.send_json({
+                'type': 'init',
+                'data': {
+                    'running': live_monitor.running,
+                    'signals': active_signals
+                }
+            })
+        
+        # Keep connection alive
+        while True:
+            try:
+                # Receive any messages from client (ping/pong)
+                data = await websocket.receive_text()
+                
+                # Echo back for ping
+                if data == 'ping':
+                    await websocket.send_text('pong')
+            
+            except WebSocketDisconnect:
+                break
+            except Exception as e:
+                logger.error(f"WebSocket error: {e}")
+                break
+    
+    finally:
+        if websocket in websocket_clients:
+            websocket_clients.remove(websocket)
+
 # Include the router in the main app
 app.include_router(api_router)
 
