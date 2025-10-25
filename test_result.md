@@ -297,6 +297,94 @@ backend:
         agent: "testing"
         comment: "✅ FULLY TESTED: GET /metrics endpoint working correctly via backend direct access. Starlette metrics with 'extrema' app name present, Python runtime metrics available. Custom metrics infrastructure in place."
 
+  - task: "Phase 1: 1m Impulse Detection (RSI-12, BOS, Volume)"
+    implemented: true
+    working: "NA"
+    file: "app/services/impulse_detector.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: |
+          NEW: Phase 1 implementation complete. Created impulse_detector.py with:
+          - compute_rsi_12(): RSI-12 computation for 1m timeframe
+          - detect_bos_1m(): Break of Structure detection (body close beyond prior micro HL/LH by ≥0.1×ATR)
+          - check_rsi_hold(): RSI-12 hold check (≥2 consecutive bars on trade side)
+          - check_volume_gate_1m(): Volume gate (≥1.5× vol_med50 for B-tier, ≥2.0× for A-tier)
+          - check_1m_impulse(): Comprehensive impulse check with detailed results
+          - compute_1m_features(): Feature computation for full DataFrame
+          Integrated into mtf_confluence.py compute_micro_confluence() method.
+          Needs backend testing with actual 1m data.
+
+  - task: "Phase 1: Tape Filters (CVD z-score, OBI, VWAP Proximity)"
+    implemented: true
+    working: "NA"
+    file: "app/services/tape_filters.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: |
+          NEW: Phase 1 implementation complete. Created tape_filters.py with:
+          - compute_cvd_zscore(): CVD z-score over 20s rolling window
+          - compute_obi_ratio(): Orderbook Imbalance ratio (size_bid/size_ask) over 10s window
+          - compute_vwap(): Volume Weighted Average Price
+          - check_vwap_proximity(): VWAP proximity check (±0.02×ATR(5m) or reclaim/loss)
+          - check_tape_filters(): Comprehensive tape filter check (CVD ≥±0.5σ, OBI 1.25:1/0.80:1, VWAP)
+          - compute_tape_features(): Feature computation for full DataFrame
+          - debounce_tape_signal(): Anti-spoofing n-of-m logic
+          Integrated into mtf_confluence.py compute_micro_confluence() method.
+          Needs backend testing with 1s/5s data.
+
+  - task: "Phase 1: Comprehensive Veto System"
+    implemented: true
+    working: "NA"
+    file: "app/services/veto_system.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: |
+          NEW: Phase 1 implementation complete. Created veto_system.py with 7 comprehensive veto checks:
+          - check_obv_cliff_veto(): OBV/CVD cliff (10s z-score ≥2σ against direction)
+          - check_spread_veto(): Spread too wide (>0.10%)
+          - check_depth_veto(): Depth insufficient (<50% of 30-day median)
+          - check_mark_last_veto(): Mark-last deviation (≥0.15%)
+          - check_funding_veto(): Funding rate extreme (>3× median)
+          - check_adl_veto(): ADL warning
+          - check_liquidation_shock_veto(): Liquidation shock (≥10× baseline)
+          - run_comprehensive_veto_checks(): All-in-one comprehensive veto runner
+          Integrated into mtf_confluence.py compute_micro_confluence() method.
+          Needs backend testing with microstructure snapshot.
+
+  - task: "Phase 1: MTF Confluence Enhancement"
+    implemented: true
+    working: "NA"
+    file: "app/services/mtf_confluence.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: |
+          NEW: Phase 1 MTF confluence engine enhanced:
+          - Updated compute_micro_confluence() to accept df_1m, df_tape, side, tier, atr_5m
+          - Integrated check_1m_impulse() for impulse_1m scoring (15% weight)
+          - Integrated check_tape_filters() for tape_micro scoring (10% weight)
+          - Integrated run_comprehensive_veto_checks() for veto_hygiene (3% weight)
+          - Returns detailed breakdown with Phase 1 results
+          - Fallback to simplified logic if DataFrames unavailable
+          - Updated evaluate() method signature
+          - Enhanced /api/mtf/confluence endpoint with side and tier parameters
+          Needs comprehensive backend testing.
+
   - task: "MEXC WebSocket Worker"
     implemented: true
     working: true
