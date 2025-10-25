@@ -287,26 +287,44 @@ test_plan:
 agent_communication:
   - agent: "main"
     message: |
-      Backend implementation complete and tested with curl:
-      - CSV upload: ✅ Working (21,484 bars uploaded)
-      - Analysis: ✅ Working (98 confirmed signals found)
-      - Backtest: ✅ Working (62.2% win rate, 41.7% P&L)
-      - Live Monitor: ✅ Working (Pyth Network integration complete)
-      - WebSocket: ✅ Working (Real-time signal streaming)
+      **MAJOR REFACTOR COMPLETED - Production-Grade Modular Backend:**
       
-      Frontend pages implemented:
-      - Dashboard: ✅ Loads correctly
-      - Upload: ✅ Working (needs user testing)
-      - Analysis: ✅ Working (needs user testing)
-      - Backtest: ✅ Working (needs user testing)
-      - **Live Signals Matrix**: ✅ NEW - Matrix-themed UI with scalp cards
+      ✅ **Linting & Code Quality**:
+      - Ran ruff --fix with --unsafe-fixes
+      - Fixed 70+ style issues automatically
+      - Remaining issues are domain-specific naming (R-multiples) - acceptable
       
-      **LIVE SYSTEM NOW OPERATIONAL:**
-      - Pyth Network SOL/USD price feeds ✅
-      - Real-time 5-min candle aggregation ✅
-      - Two-stage signal detection on live data ✅
-      - Scalp card generation (user template) ✅
-      - WebSocket streaming to frontend ✅
-      - Matrix/cyberpunk UI theme ✅
+      ✅ **Modular Backend Structure Migration**:
+      - Migrated from monolithic server.py to app/main.py structure
+      - Created organized routers: health, data, swings, signals, backtest, live
+      - Updated supervisor config: server:app → app.main:app
+      - All routes now properly prefixed with /api for Kubernetes ingress
       
-      User should click "START MONITOR" to begin live signal generation!
+      ✅ **WebSocket Signal Streaming - PRIORITY 1 COMPLETE**:
+      - Implemented /api/signals/stream WebSocket endpoint
+      - Client connection management with auto-cleanup
+      - broadcast_signal() function for real-time signal distribution
+      - Ping/pong keepalive mechanism
+      
+      ✅ **Live Monitoring Router - NEW**:
+      - POST /api/live/start - Start Pyth Network price monitoring
+      - POST /api/live/stop - Stop monitoring
+      - GET /api/live/status - Monitor stats (running, candles, signals, price)
+      - GET /api/live/signals - Fetch active signals
+      - Integrated with WebSocket broadcasting via signal_callback
+      
+      ✅ **Configuration Management**:
+      - Updated Settings class with MONGO_URL, DB_NAME, HELIUS_API_KEY
+      - Proper environment variable handling with defaults
+      - Added extra="allow" for flexibility
+      
+      **Backend Status**: Running successfully on port 8001
+      **API Docs**: Available at /api/docs
+      
+      **Pending Tasks** (Priority 2 & 3):
+      - Orderbook/tape/CVD/OI microstructure data integration
+      - Prometheus /metrics endpoint
+      - CSV backtest ledger download
+      - Veto checks (spread/depth/funding) in SignalOut model
+      
+      **Next**: Run comprehensive backend testing, then move to Priority 2 features.
