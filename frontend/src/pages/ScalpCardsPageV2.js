@@ -496,14 +496,12 @@ function ExecutionTab({ card, notionalValue, riskAmount, side }) {
             label="Notional Value"
             value={`$${notionalValue.toFixed(2)}`}
             size="sm"
-            icon="💰"
           />
           <MetricCard
             label="Risk Amount"
             value={`$${riskAmount.toFixed(2)}`}
             color="rose"
             size="sm"
-            icon="🛡️"
           />
         </div>
       </div>
