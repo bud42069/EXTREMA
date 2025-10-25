@@ -497,6 +497,11 @@ class LiveMonitor:
         
         while self.running:
             try:
+                # Fetch current price first to update last_price
+                current_price = await self.fetch_pyth_price()
+                if current_price:
+                    self.last_price = current_price
+                
                 # Build 5-min candle
                 new_candle = await self.build_5min_candle()
                 
@@ -506,6 +511,13 @@ class LiveMonitor:
                     
                     # Check for signals on new candle
                     await self.check_for_signals()
+                else:
+                    # Update existing candle with current price
+                    if self.candles and current_price:
+                        last_candle = self.candles[-1]
+                        last_candle.high = max(last_candle.high, current_price)
+                        last_candle.low = min(last_candle.low, current_price)
+                        last_candle.close = current_price
                 
                 # Update every 10 seconds
                 await asyncio.sleep(10)
