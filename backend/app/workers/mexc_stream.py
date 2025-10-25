@@ -121,25 +121,29 @@ class MexcStreamWorker:
         elif "channel" in data and "deal" in data["channel"]:
             await self._handle_trade(data)
     
+    
     async def _handle_depth(self, data: dict):
-        """Process orderbook depth update."""
+        """Process Binance orderbook depth update."""
         try:
-            depth_data = data.get("data", {})
+            # Binance depth update format:
+            # {"e":"depthUpdate","E":timestamp,"s":"SOLUSDT","U":firstUpdateId,"u":finalUpdateId,
+            #  "b":[["price","qty"]],"a":[["price","qty"]]}
             
-            # Update bids and asks
-            bids = depth_data.get("bids", [])
-            asks = depth_data.get("asks", [])
+            # Update bids (remove zero-qty levels, update others)
+            for price_str, qty_str in data.get("b", []):
+                price, qty = float(price_str), float(qty_str)
+                if qty == 0:
+                    self.bids.pop(price, None)
+                else:
+                    self.bids[price] = qty
             
-            self.bids.clear()
-            self.asks.clear()
-            
-            for bid in bids[:self.depth_levels]:
-                price, qty = float(bid[0]), float(bid[1])
-                self.bids[price] = qty
-            
-            for ask in asks[:self.depth_levels]:
-                price, qty = float(ask[0]), float(ask[1])
-                self.asks[price] = qty
+            # Update asks (remove zero-qty levels, update others)
+            for price_str, qty_str in data.get("a", []):
+                price, qty = float(price_str), float(qty_str)
+                if qty == 0:
+                    self.asks.pop(price, None)
+                else:
+                    self.asks[price] = qty
             
             # Calculate metrics
             self._calculate_depth_metrics()
@@ -151,29 +155,26 @@ class MexcStreamWorker:
             logger.error(f"Depth processing error: {e}")
     
     async def _handle_trade(self, data: dict):
-        """Process trade update and update CVD."""
+        """Process Binance trade update and update CVD."""
         try:
-            trade_data = data.get("data", {})
+            # Binance trade format:
+            # {"e":"trade","E":timestamp,"s":"SOLUSDT","t":tradeId,
+            #  "p":"price","q":"quantity","T":tradeTime,"m":isBuyerMaker}
             
-            price = float(trade_data.get("p", 0))
-            qty = float(trade_data.get("v", 0))
-            side = trade_data.get("S", 0)  # 1=buy, 2=sell
+            price = float(data.get("p", 0))
+            qty = float(data.get("q", 0))
+            is_buyer_maker = data.get("m", False)  # True if buyer is maker (sell aggressor)
             
             # Update last mid
             if self.best_bid > 0 and self.best_ask > 0:
                 self.last_mid = (self.best_bid + self.best_ask) / 2
             
-            # Tick rule CVD: +qty if buy, -qty if sell
-            if side == 1:  # Buy
-                delta = qty
-            elif side == 2:  # Sell
-                delta = -qty
+            # Binance: m=True means buyer is maker -> sell market order (-)
+            #          m=False means buyer is taker -> buy market order (+)
+            if is_buyer_maker:
+                delta = -qty  # Sell aggressor
             else:
-                # Fallback tick rule
-                if price >= self.last_mid:
-                    delta = qty
-                else:
-                    delta = -qty
+                delta = qty  # Buy aggressor
             
             self.cvd += delta
             self.cvd_history.append(self.cvd)
