@@ -93,7 +93,7 @@ SL: ${card.sl.toFixed(4)}
 🎁 TP2: ${card.tp2.toFixed(4)} (30%)
 🎁 TP3: ${card.tp3.toFixed(4)} (20%)
 📏 TRAIL: ${card.trail_rule}
-⚖️ SIZE: ${card.size}
+SIZE: ${card.size}
     `;
     navigator.clipboard.writeText(orderText);
     toast.success('📋 Copied to clipboard', { position: 'top-right', autoClose: 1500 });
