@@ -3,17 +3,15 @@ Hybrid Swing Detection System - Combines Two Methodologies
 Tier 1: Macro Filter (EMA/SAR/FVG context for directional bias)
 Tier 2: Micro Trigger (ATR/BB/Vol-Z + breakout confirmation)
 """
-import pandas as pd
-import numpy as np
-from typing import Dict, List, Optional, Tuple
-from dataclasses import dataclass, asdict
-from datetime import datetime, timezone
+from dataclasses import dataclass
+from datetime import datetime
 
+import numpy as np
+import pandas as pd
 from methodology_detector import (
-    calculate_sar, 
-    detect_ema_crossover, 
+    calculate_sar,
+    check_fvg_bounce,
     detect_fvg_levels,
-    check_fvg_bounce
 )
 
 
@@ -35,7 +33,7 @@ class HybridSignal:
     sar_aligned: bool
     sar_level: float
     fvg_aligned: bool
-    fvg_price: Optional[float]
+    fvg_price: float | None
     
     # Tier 2: Micro Trigger (Empirical Methodology)
     extrema_detected: bool
@@ -100,7 +98,7 @@ class HybridDetector:
         self.breakout_atr_mult = breakout_atr_mult
         self.volume_multiplier = volume_multiplier
     
-    def calculate_macro_bias(self, df: pd.DataFrame, idx: int) -> Dict:
+    def calculate_macro_bias(self, df: pd.DataFrame, idx: int) -> dict:
         """
         TIER 1: Calculate macro bias using EMA/SAR/FVG.
         
@@ -167,7 +165,7 @@ class HybridDetector:
             'macro_score': macro_score
         }
     
-    def check_micro_trigger(self, df: pd.DataFrame, idx: int, direction: str) -> Dict:
+    def check_micro_trigger(self, df: pd.DataFrame, idx: int, direction: str) -> dict:
         """
         TIER 2: Check micro trigger conditions (ATR/BB/Vol-Z + breakout).
         
@@ -239,7 +237,7 @@ class HybridDetector:
             'micro_score': micro_score
         }
     
-    def detect_signals(self, df: pd.DataFrame) -> List[HybridSignal]:
+    def detect_signals(self, df: pd.DataFrame) -> list[HybridSignal]:
         """
         Run complete hybrid detection:
         1. Calculate macro bias (EMA/SAR/FVG)

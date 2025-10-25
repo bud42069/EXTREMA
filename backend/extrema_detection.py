@@ -2,13 +2,13 @@
 Local extrema detection for swing identification.
 Detects local minima and maxima using a rolling window approach.
 """
-import pandas as pd
+
 import numpy as np
-from typing import List, Dict, Tuple
+import pandas as pd
 from scipy.signal import argrelextrema
 
 
-def detect_local_extrema(df: pd.DataFrame, window: int = 12, column: str = 'close') -> Tuple[pd.Series, pd.Series]:
+def detect_local_extrema(df: pd.DataFrame, window: int = 12, column: str = 'close') -> tuple[pd.Series, pd.Series]:
     """
     Detect local minima and maxima using rolling window.
     
@@ -65,7 +65,7 @@ def get_extrema_features(df: pd.DataFrame, extrema_mask: pd.Series) -> pd.DataFr
 
 
 def check_future_swing(df: pd.DataFrame, start_idx: int, is_long: bool, 
-                       swing_threshold: float = 10.0, lookahead_bars: int = 288) -> Dict:
+                       swing_threshold: float = 10.0, lookahead_bars: int = 288) -> dict:
     """
     Check if a future swing of >= threshold% occurs within lookahead period.
     
@@ -118,7 +118,7 @@ def check_future_swing(df: pd.DataFrame, start_idx: int, is_long: bool,
 
 
 def label_extrema_with_swings(df: pd.DataFrame, minima_mask: pd.Series, maxima_mask: pd.Series,
-                              swing_threshold: float = 10.0, lookahead_bars: int = 288) -> Tuple[pd.DataFrame, pd.DataFrame]:
+                              swing_threshold: float = 10.0, lookahead_bars: int = 288) -> tuple[pd.DataFrame, pd.DataFrame]:
     """
     Label each extrema with whether a swing occurred in the future.
     

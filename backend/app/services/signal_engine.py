@@ -1,5 +1,6 @@
+
 import pandas as pd
-from typing import Optional
+
 
 def mark_candidates(df: pd.DataFrame, atr_min=0.6, volz_min=0.5, bbw_min=0.005) -> pd.DataFrame:
     df = df.copy()
@@ -8,7 +9,7 @@ def mark_candidates(df: pd.DataFrame, atr_min=0.6, volz_min=0.5, bbw_min=0.005) 
     return df
 
 def micro_confirm(df: pd.DataFrame, i: int, side: str,
-                  confirm_window=6, breakout_atr_mult=0.5, vol_mult=1.5) -> Optional[int]:
+                  confirm_window=6, breakout_atr_mult=0.5, vol_mult=1.5) -> int | None:
     """Return index j of confirmation bar, else None."""
     if side == "long":
         base = df.at[i,"high"]

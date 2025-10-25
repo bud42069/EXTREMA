@@ -2,11 +2,9 @@
 Backtesting engine for swing trading strategy.
 Simulates trades with stop loss/take profit ladder and trailing stop.
 """
-import pandas as pd
-import numpy as np
-from typing import Dict, List, Optional
 from dataclasses import dataclass, field
-from datetime import datetime
+
+import pandas as pd
 
 
 @dataclass
@@ -27,10 +25,10 @@ class Trade:
     
     # Trade state
     status: str = 'open'  # 'open', 'closed'
-    exit_idx: Optional[int] = None
-    exit_timestamp: Optional[any] = None
-    exit_price: Optional[float] = None
-    exit_reason: Optional[str] = None
+    exit_idx: int | None = None
+    exit_timestamp: any | None = None
+    exit_price: float | None = None
+    exit_reason: str | None = None
     
     # Position sizing
     position_remaining: float = 1.0  # Percentage remaining (0.0 to 1.0)
@@ -41,7 +39,7 @@ class Trade:
     bars_held: int = 0
     
     # Partial exits
-    partial_exits: List[Dict] = field(default_factory=list)
+    partial_exits: list[dict] = field(default_factory=list)
     
     def add_partial_exit(self, price: float, pct_closed: float, reason: str):
         """Record a partial position exit."""
@@ -90,8 +88,8 @@ class BacktestEngine:
         self.trail_atr_multiplier = trail_atr_multiplier
         
         self.capital = initial_capital
-        self.trades: List[Trade] = []
-        self.open_trades: List[Trade] = []
+        self.trades: list[Trade] = []
+        self.open_trades: list[Trade] = []
     
     def calculate_stop_loss(self, df: pd.DataFrame, entry_idx: int, 
                            entry_price: float, direction: str,
@@ -119,7 +117,7 @@ class BacktestEngine:
         
         return sl
     
-    def calculate_take_profits(self, entry_price: float, sl_price: float, direction: str) -> Dict[str, float]:
+    def calculate_take_profits(self, entry_price: float, sl_price: float, direction: str) -> dict[str, float]:
         """
         Calculate TP levels based on R multiples.
         
@@ -144,7 +142,7 @@ class BacktestEngine:
         
         return {'tp1': tp1, 'tp2': tp2, 'tp3': tp3}
     
-    def open_trade(self, df: pd.DataFrame, signal: Dict) -> Trade:
+    def open_trade(self, df: pd.DataFrame, signal: dict) -> Trade:
         """
         Open a new trade based on confirmed signal.
         
@@ -216,7 +214,7 @@ class BacktestEngine:
             if new_sl < trade.current_sl:
                 trade.current_sl = new_sl
     
-    def check_exit(self, df: pd.DataFrame, trade: Trade, bar_idx: int) -> Optional[str]:
+    def check_exit(self, df: pd.DataFrame, trade: Trade, bar_idx: int) -> str | None:
         """
         Check if trade should be exited on current bar.
         
@@ -353,7 +351,7 @@ class BacktestEngine:
         if trade in self.open_trades:
             self.open_trades.remove(trade)
     
-    def run_backtest(self, df: pd.DataFrame, confirmed_signals: List[Dict]) -> Dict:
+    def run_backtest(self, df: pd.DataFrame, confirmed_signals: list[dict]) -> dict:
         """
         Run complete backtest on confirmed signals.
         
@@ -404,7 +402,7 @@ class BacktestEngine:
         # Calculate statistics
         return self.calculate_statistics()
     
-    def calculate_statistics(self) -> Dict:
+    def calculate_statistics(self) -> dict:
         """
         Calculate backtest performance statistics.
         

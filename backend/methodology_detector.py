@@ -2,10 +2,10 @@
 Enhanced swing detection based on proven SOLUSDT methodology.
 Uses EMA crossovers, SAR flips, and FVG levels as per historical analysis.
 """
-import pandas as pd
-import numpy as np
-from typing import Dict, List, Optional, Tuple
 from dataclasses import dataclass
+
+import numpy as np
+import pandas as pd
 
 
 @dataclass
@@ -97,7 +97,7 @@ def calculate_sar(df: pd.DataFrame, acceleration: float = 0.02, maximum: float =
     return pd.Series(sar, index=df.index)
 
 
-def detect_ema_crossover(df: pd.DataFrame, fast_period: int = 9, slow_period: int = 21) -> Tuple[pd.Series, pd.Series]:
+def detect_ema_crossover(df: pd.DataFrame, fast_period: int = 9, slow_period: int = 21) -> tuple[pd.Series, pd.Series]:
     """
     Detect EMA crossovers (Fast crossing Slow).
     
@@ -119,7 +119,7 @@ def detect_ema_crossover(df: pd.DataFrame, fast_period: int = 9, slow_period: in
     return bullish_cross, bearish_cross
 
 
-def detect_fvg_levels(df: pd.DataFrame, threshold: float = 0.002) -> List[Dict]:
+def detect_fvg_levels(df: pd.DataFrame, threshold: float = 0.002) -> list[dict]:
     """
     Detect Fair Value Gaps (FVG) - imbalances in price action.
     FVG occurs when gap between candles leaves unfilled area.
@@ -161,7 +161,7 @@ def detect_fvg_levels(df: pd.DataFrame, threshold: float = 0.002) -> List[Dict]:
     return fvgs
 
 
-def check_fvg_bounce(df: pd.DataFrame, idx: int, direction: str, fvgs: List[Dict], 
+def check_fvg_bounce(df: pd.DataFrame, idx: int, direction: str, fvgs: list[dict], 
                      lookback: int = 20) -> bool:
     """
     Check if price bounced off a nearby FVG level.
@@ -198,7 +198,7 @@ def check_fvg_bounce(df: pd.DataFrame, idx: int, direction: str, fvgs: List[Dict
     return False
 
 
-def detect_swing_signals_methodology(df: pd.DataFrame) -> List[SwingSignal]:
+def detect_swing_signals_methodology(df: pd.DataFrame) -> list[SwingSignal]:
     """
     Detect swing signals using the proven SOLUSDT methodology:
     - EMA crossover (Fast vs Slow)
@@ -284,7 +284,7 @@ def detect_swing_signals_methodology(df: pd.DataFrame) -> List[SwingSignal]:
     return signals
 
 
-def calculate_sar_exit(df: pd.DataFrame, entry_idx: int, direction: str) -> Dict:
+def calculate_sar_exit(df: pd.DataFrame, entry_idx: int, direction: str) -> dict:
     """
     Calculate exit based on SAR flip (trailing stop method).
     

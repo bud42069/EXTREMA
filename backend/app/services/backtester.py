@@ -1,6 +1,8 @@
+
 import pandas as pd
-from typing import Dict, List
+
 from .signal_engine import mark_candidates, micro_confirm
+
 
 def _place_trade(df, i_ext, j_conf, side, breakout_atr_mult=0.5):
     entry = df.at[j_conf, "close"]
@@ -19,9 +21,9 @@ def _place_trade(df, i_ext, j_conf, side, breakout_atr_mult=0.5):
 
 def run_backtest(df: pd.DataFrame,
                  atr_min=0.6, volz_min=1.0, bbw_min=0.005,
-                 breakout_atr_mult=0.5, vol_mult=1.5, confirm_window=6) -> Dict:
+                 breakout_atr_mult=0.5, vol_mult=1.5, confirm_window=6) -> dict:
     df = mark_candidates(df, atr_min, volz_min, bbw_min)
-    trades: List[dict] = []
+    trades: list[dict] = []
 
     for i, row in df.iterrows():
         side = None

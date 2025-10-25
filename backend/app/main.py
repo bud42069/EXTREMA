@@ -1,7 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from .routers import health, data, swings, signals, backtest
+
 from .config import settings
+from .routers import backtest, data, health, signals, swings
 
 app = FastAPI(title="EXTREMA API", version="0.1.0", docs_url="/docs", redoc_url="/redoc")
 

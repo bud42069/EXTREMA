@@ -2,13 +2,12 @@
 On-chain monitoring using Helius API for Solana.
 Detects whale transfers, CEX flows, and staking activity.
 """
-import aiohttp
 import asyncio
-import os
-from typing import Dict, List, Optional
-from datetime import datetime, timezone, timedelta
-from dataclasses import dataclass
 import logging
+from dataclasses import dataclass
+from datetime import UTC, datetime, timedelta
+
+import aiohttp
 
 logger = logging.getLogger(__name__)
 
@@ -18,8 +17,8 @@ class OnChainSignal:
     """On-chain signal detected."""
     signal_type: str  # whale_transfer | cex_inflow | cex_outflow | staking_spike
     amount: float
-    from_address: Optional[str] = None
-    to_address: Optional[str] = None
+    from_address: str | None = None
+    to_address: str | None = None
     timestamp: int = 0
     significance: str = "medium"  # low | medium | high
     bias: str = "neutral"  # bullish | bearish | neutral
@@ -38,7 +37,7 @@ class HeliusOnChainMonitor:
             api_key: Helius API key
         """
         self.api_key = api_key
-        self.base_url = f"https://api.helius.xyz/v0"
+        self.base_url = "https://api.helius.xyz/v0"
         
         # Known CEX addresses (sample - expand as needed)
         self.cex_addresses = {
@@ -53,10 +52,10 @@ class HeliusOnChainMonitor:
         self.whale_threshold = 10000  # 10k SOL
         
         # Recent activity cache
-        self.recent_activity: List[OnChainSignal] = []
+        self.recent_activity: list[OnChainSignal] = []
         self.max_cache_size = 100
     
-    async def fetch_token_accounts(self, mint: str = "So11111111111111111111111111111111111111112") -> Dict:
+    async def fetch_token_accounts(self, mint: str = "So11111111111111111111111111111111111111112") -> dict:
         """
         Fetch token accounts for SOL.
         
@@ -82,7 +81,7 @@ class HeliusOnChainMonitor:
             logger.error(f"Error fetching token accounts: {e}")
             return {}
     
-    async def get_address_transactions(self, address: str, limit: int = 10) -> List[Dict]:
+    async def get_address_transactions(self, address: str, limit: int = 10) -> list[dict]:
         """
         Get recent transactions for an address.
         
@@ -112,7 +111,7 @@ class HeliusOnChainMonitor:
             logger.error(f"Error fetching transactions: {e}")
             return []
     
-    async def detect_whale_transfers(self) -> List[OnChainSignal]:
+    async def detect_whale_transfers(self) -> list[OnChainSignal]:
         """
         Detect large SOL transfers (whale activity).
         
@@ -145,7 +144,7 @@ class HeliusOnChainMonitor:
                             amount=tx['amount'],
                             from_address=tx.get('from'),
                             to_address=tx.get('to'),
-                            timestamp=tx.get('timestamp', int(datetime.now(timezone.utc).timestamp())),
+                            timestamp=tx.get('timestamp', int(datetime.now(UTC).timestamp())),
                             significance='high',
                             bias='neutral'  # Determine based on context
                         )
@@ -156,7 +155,7 @@ class HeliusOnChainMonitor:
         
         return signals
     
-    def is_cex_address(self, address: str) -> Optional[str]:
+    def is_cex_address(self, address: str) -> str | None:
         """
         Check if address belongs to a CEX.
         
@@ -171,7 +170,7 @@ class HeliusOnChainMonitor:
                 return cex_name
         return None
     
-    async def detect_cex_flows(self) -> List[OnChainSignal]:
+    async def detect_cex_flows(self) -> list[OnChainSignal]:
         """
         Detect CEX inflows/outflows.
         Large inflows = potentially bearish (selling pressure)
@@ -198,7 +197,7 @@ class HeliusOnChainMonitor:
                                     amount=tx['amount'],
                                     from_address=tx.get('from'),
                                     to_address=address,
-                                    timestamp=tx.get('timestamp', int(datetime.now(timezone.utc).timestamp())),
+                                    timestamp=tx.get('timestamp', int(datetime.now(UTC).timestamp())),
                                     significance='high',
                                     bias='bearish'  # Selling pressure
                                 )
@@ -211,7 +210,7 @@ class HeliusOnChainMonitor:
                                     amount=tx['amount'],
                                     from_address=address,
                                     to_address=tx.get('to'),
-                                    timestamp=tx.get('timestamp', int(datetime.now(timezone.utc).timestamp())),
+                                    timestamp=tx.get('timestamp', int(datetime.now(UTC).timestamp())),
                                     significance='high',
                                     bias='bullish'  # Accumulation
                                 )
@@ -222,7 +221,7 @@ class HeliusOnChainMonitor:
         
         return signals
     
-    async def detect_staking_activity(self) -> List[OnChainSignal]:
+    async def detect_staking_activity(self) -> list[OnChainSignal]:
         """
         Detect unusual staking activity.
         Large staking = bullish (locking up supply)
@@ -243,7 +242,7 @@ class HeliusOnChainMonitor:
         
         return signals
     
-    async def get_on_chain_confluence(self, direction: str, lookback_minutes: int = 60) -> Dict:
+    async def get_on_chain_confluence(self, direction: str, lookback_minutes: int = 60) -> dict:
         """
         Get on-chain confluence for a signal direction.
         
@@ -254,7 +253,7 @@ class HeliusOnChainMonitor:
         Returns:
             Dict with confluence information
         """
-        cutoff_time = datetime.now(timezone.utc) - timedelta(minutes=lookback_minutes)
+        cutoff_time = datetime.now(UTC) - timedelta(minutes=lookback_minutes)
         cutoff_timestamp = int(cutoff_time.timestamp())
         
         # Filter recent signals
@@ -329,7 +328,7 @@ class HeliusOnChainMonitor:
                 logger.error(f"Error in on-chain monitor loop: {e}")
                 await asyncio.sleep(60)
     
-    def enhance_signal_with_onchain(self, signal: Dict) -> Dict:
+    def enhance_signal_with_onchain(self, signal: dict) -> dict:
         """
         Enhance a signal with on-chain confluence data.
         

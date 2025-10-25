@@ -2,9 +2,8 @@
 Technical indicator calculations for trading signals.
 Implements ATR14, RSI14, Bollinger Bands, EMA slope, and volume z-score.
 """
+
 import pandas as pd
-import numpy as np
-from typing import Tuple
 
 
 def calculate_atr(df: pd.DataFrame, period: int = 14) -> pd.Series:
@@ -59,7 +58,7 @@ def calculate_rsi(df: pd.DataFrame, period: int = 14) -> pd.Series:
     return rsi
 
 
-def calculate_bollinger_bands(df: pd.DataFrame, period: int = 20, std_dev: float = 2.0) -> Tuple[pd.Series, pd.Series, pd.Series]:
+def calculate_bollinger_bands(df: pd.DataFrame, period: int = 20, std_dev: float = 2.0) -> tuple[pd.Series, pd.Series, pd.Series]:
     """
     Calculate Bollinger Bands.
     

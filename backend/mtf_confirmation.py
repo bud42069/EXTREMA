@@ -2,10 +2,9 @@
 Multi-timeframe confirmation for higher quality signals.
 Checks 1H and 4H alignment for A-tier signal validation.
 """
-import pandas as pd
-import numpy as np
-from typing import Dict, Optional
 from dataclasses import dataclass
+
+import pandas as pd
 
 
 @dataclass
@@ -30,7 +29,7 @@ class MultiTimeframeAnalyzer:
         self.h1_candles = []
         self.h4_candles = []
     
-    def build_higher_tf_candles(self, df_5m: pd.DataFrame) -> Dict[str, pd.DataFrame]:
+    def build_higher_tf_candles(self, df_5m: pd.DataFrame) -> dict[str, pd.DataFrame]:
         """
         Build 1H and 4H candles from 5-minute data.
         
@@ -188,7 +187,7 @@ class MultiTimeframeAnalyzer:
         
         return confirmation
     
-    def enhance_signal_with_mtf(self, signal: Dict, df_5m: pd.DataFrame) -> Dict:
+    def enhance_signal_with_mtf(self, signal: dict, df_5m: pd.DataFrame) -> dict:
         """
         Enhance a signal with multi-timeframe confirmation data.
         

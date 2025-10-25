@@ -1,9 +1,11 @@
 import io
+
 import pandas as pd
-from fastapi import APIRouter, UploadFile, File, HTTPException
-from ..utils.store import set_df
-from ..services.indicators import compute_indicators
+from fastapi import APIRouter, File, HTTPException, UploadFile
+
 from ..services.extrema import mark_local_extrema
+from ..services.indicators import compute_indicators
+from ..utils.store import set_df
 
 router = APIRouter()
 

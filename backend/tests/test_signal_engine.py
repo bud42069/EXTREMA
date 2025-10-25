@@ -1,6 +1,9 @@
-import io, pandas as pd
-from fastapi.testclient import TestClient
+import io
+
+import pandas as pd
 from app.main import app
+from fastapi.testclient import TestClient
+
 
 def make_series(n=120):
     # rising then break, enough for indicators to compute

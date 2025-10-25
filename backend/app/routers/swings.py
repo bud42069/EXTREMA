@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException
-from ..utils.store import get_df
+
 from ..services.extrema import label_swings
+from ..utils.store import get_df
 
 router = APIRouter()
 

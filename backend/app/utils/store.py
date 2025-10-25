@@ -1,11 +1,11 @@
-import pandas as pd
-from typing import Optional
 
-DF: Optional[pd.DataFrame] = None
+import pandas as pd
+
+DF: pd.DataFrame | None = None
 
 def set_df(df: pd.DataFrame):
     global DF
     DF = df
 
-def get_df() -> Optional[pd.DataFrame]:
+def get_df() -> pd.DataFrame | None:
     return DF

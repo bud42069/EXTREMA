@@ -1,6 +1,8 @@
-import io, pandas as pd
-from fastapi.testclient import TestClient
+import io
+
+import pandas as pd
 from app.main import app
+from fastapi.testclient import TestClient
 
 CSV = pd.DataFrame({
     "time":[1,2,3,4,5,6,7,8,9,10],

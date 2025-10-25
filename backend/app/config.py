@@ -1,5 +1,6 @@
+from pydantic import ConfigDict, Field
 from pydantic_settings import BaseSettings
-from pydantic import Field, ConfigDict
+
 
 class Settings(BaseSettings):
     model_config = ConfigDict(env_file=".env")

@@ -1,5 +1,5 @@
 import pandas as pd
-import numpy as np
+
 
 def mark_local_extrema(df: pd.DataFrame, window: int = 12) -> pd.DataFrame:
     df = df.copy()

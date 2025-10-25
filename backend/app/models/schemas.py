@@ -1,5 +1,6 @@
+
 from pydantic import BaseModel
-from typing import Optional, List
+
 
 class Candle(BaseModel):
     time: int
@@ -27,7 +28,7 @@ class SignalOut(BaseModel):
     tp2: float
     tp3: float
     trail_atr_mult: float = 0.5
-    veto: Optional[str] = None
+    veto: str | None = None
 
 class BacktestSummary(BaseModel):
     trades: int

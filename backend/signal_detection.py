@@ -3,9 +3,8 @@ Two-stage swing detection methodology.
 Stage 1: Candidate detection using ATR/volume/BB filters at extrema
 Stage 2: Micro confirmation using breakout candle + volume spike
 """
+
 import pandas as pd
-import numpy as np
-from typing import Dict, List, Optional, Tuple
 
 
 class CandidateDetector:
@@ -65,7 +64,7 @@ class CandidateDetector:
         
         return all(conditions)
     
-    def detect_candidates(self, df: pd.DataFrame, minima_mask: pd.Series, maxima_mask: pd.Series) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    def detect_candidates(self, df: pd.DataFrame, minima_mask: pd.Series, maxima_mask: pd.Series) -> tuple[pd.DataFrame, pd.DataFrame]:
         """
         Detect all candidates in the dataset.
         
@@ -144,7 +143,7 @@ class MicroConfirmation:
         self.volume_multiplier = volume_multiplier
     
     def check_long_confirmation(self, df: pd.DataFrame, candidate_idx: int, 
-                               local_high: float, atr5: float) -> Optional[Dict]:
+                               local_high: float, atr5: float) -> dict | None:
         """
         Check if a long candidate gets confirmed within the window.
         
@@ -192,7 +191,7 @@ class MicroConfirmation:
         return None
     
     def check_short_confirmation(self, df: pd.DataFrame, candidate_idx: int,
-                                local_low: float, atr5: float) -> Optional[Dict]:
+                                local_low: float, atr5: float) -> dict | None:
         """
         Check if a short candidate gets confirmed within the window.
         
@@ -241,7 +240,7 @@ class MicroConfirmation:
     
     def confirm_candidates(self, df: pd.DataFrame, 
                           long_candidates: pd.DataFrame,
-                          short_candidates: pd.DataFrame) -> Tuple[pd.DataFrame, pd.DataFrame]:
+                          short_candidates: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
         """
         Process all candidates and return confirmed signals.
         
@@ -316,7 +315,7 @@ class TwoStageDetector:
     
     def detect_signals(self, df: pd.DataFrame, 
                       minima_mask: pd.Series, 
-                      maxima_mask: pd.Series) -> Dict:
+                      maxima_mask: pd.Series) -> dict:
         """
         Run complete two-stage detection.
         

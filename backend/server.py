@@ -1,28 +1,34 @@
-from fastapi import FastAPI, APIRouter, UploadFile, File, HTTPException, WebSocket, WebSocketDisconnect
-from fastapi.responses import JSONResponse
-from dotenv import load_dotenv
-from starlette.middleware.cors import CORSMiddleware
-from motor.motor_asyncio import AsyncIOMotorClient
-import os
-import logging
-from pathlib import Path
-from pydantic import BaseModel, Field, ConfigDict
-from typing import List, Dict, Optional, Any
-import uuid
-from datetime import datetime, timezone
-import pandas as pd
-import numpy as np
-import json
-import io
 import asyncio
+import io
+import logging
+import os
+import uuid
+from datetime import UTC, datetime
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
+from backtesting import BacktestEngine
+from dotenv import load_dotenv
+from extrema_detection import detect_local_extrema, label_extrema_with_swings
+from fastapi import (
+    APIRouter,
+    FastAPI,
+    File,
+    HTTPException,
+    UploadFile,
+    WebSocket,
+    WebSocketDisconnect,
+)
+from fastapi.responses import JSONResponse
 
 # Import our trading modules
 from indicators import add_all_indicators
-from extrema_detection import detect_local_extrema, label_extrema_with_swings
-from signal_detection import TwoStageDetector
-from backtesting import BacktestEngine
 from live_monitor import LiveMonitor
-
+from motor.motor_asyncio import AsyncIOMotorClient
+from pydantic import BaseModel, ConfigDict, Field
+from signal_detection import TwoStageDetector
+from starlette.middleware.cors import CORSMiddleware
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -45,7 +51,7 @@ class StatusCheck(BaseModel):
     
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     client_name: str
-    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
 class StatusCheckCreate(BaseModel):
     client_name: str
@@ -67,7 +73,7 @@ async def create_status_check(input: StatusCheckCreate):
     _ = await db.status_checks.insert_one(doc)
     return status_obj
 
-@api_router.get("/status", response_model=List[StatusCheck])
+@api_router.get("/status", response_model=list[StatusCheck])
 async def get_status_checks():
     # Exclude MongoDB's _id field from the query results
     status_checks = await db.status_checks.find({}, {"_id": 0}).to_list(1000)
@@ -129,7 +135,7 @@ async def upload_csv_data(file: UploadFile = File(...)):
         dataset_doc = {
             'id': dataset_id,
             'filename': file.filename,
-            'uploaded_at': datetime.now(timezone.utc).isoformat(),
+            'uploaded_at': datetime.now(UTC).isoformat(),
             'total_bars': len(df),
             'start_time': int(df['time'].iloc[0]),
             'end_time': int(df['time'].iloc[-1]),
@@ -203,7 +209,7 @@ async def analyze_data(dataset_id: str, config: AnalysisRequest):
         analysis_doc = {
             'id': analysis_id,
             'dataset_id': dataset_id,
-            'analyzed_at': datetime.now(timezone.utc).isoformat(),
+            'analyzed_at': datetime.now(UTC).isoformat(),
             'config': config.model_dump(),
             'total_bars': len(df),
             'total_minima': int(total_minima),
@@ -307,7 +313,7 @@ async def run_backtest(config: BacktestRequest):
             'id': backtest_id,
             'analysis_id': config.analysis_id,
             'dataset_id': analysis['dataset_id'],
-            'backtested_at': datetime.now(timezone.utc).isoformat(),
+            'backtested_at': datetime.now(UTC).isoformat(),
             'config': config.model_dump(),
             'statistics': backtest_stats,
             'trades': trades_df.to_dict('records') if not trades_df.empty else []
@@ -355,7 +361,7 @@ async def list_datasets():
 
 
 @api_router.get("/chart-data/{dataset_id}")
-async def get_chart_data(dataset_id: str, start: Optional[int] = None, limit: int = 500):
+async def get_chart_data(dataset_id: str, start: int | None = None, limit: int = 500):
     """
     Get chart data for visualization.
     Returns OHLCV data with indicators for charting.
@@ -391,8 +397,8 @@ async def get_chart_data(dataset_id: str, start: Optional[int] = None, limit: in
 # ============= Live Monitoring & Signal Generation =============
 
 # Global live monitor instance
-live_monitor: Optional[LiveMonitor] = None
-websocket_clients: List[WebSocket] = []
+live_monitor: LiveMonitor | None = None
+websocket_clients: list[WebSocket] = []
 
 
 async def signal_callback(signal_card):

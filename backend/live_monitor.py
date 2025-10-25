@@ -3,20 +3,24 @@ Live price monitoring and signal generation using Pyth Network.
 Monitors SOL/USD and generates real-time swing signals.
 """
 import asyncio
+import logging
+from collections import deque
+from dataclasses import asdict, dataclass
+from datetime import UTC, datetime
+
 import aiohttp
 import pandas as pd
-import numpy as np
-from datetime import datetime, timezone
-from typing import Dict, List, Optional, Deque
-from collections import deque
-import logging
-from dataclasses import dataclass, asdict
-
-from indicators import calculate_atr, calculate_rsi, calculate_bollinger_bands, calculate_ema, calculate_volume_zscore
 from extrema_detection import detect_local_extrema
-from signal_detection import TwoStageDetector
+from indicators import (
+    calculate_atr,
+    calculate_bollinger_bands,
+    calculate_ema,
+    calculate_rsi,
+    calculate_volume_zscore,
+)
 from mtf_confirmation import MultiTimeframeAnalyzer
 from onchain_monitor import HeliusOnChainMonitor
+from signal_detection import TwoStageDetector
 
 logger = logging.getLogger(__name__)
 
@@ -91,7 +95,7 @@ class LiveMonitor:
                  atr_threshold: float = 0.6,
                  vol_z_threshold: float = 0.5,
                  bb_width_threshold: float = 0.005,
-                 helius_api_key: Optional[str] = None):
+                 helius_api_key: str | None = None):
         """
         Initialize live monitor.
         
@@ -103,7 +107,7 @@ class LiveMonitor:
             helius_api_key: Optional Helius API key for on-chain monitoring
         """
         self.candle_window = candle_window
-        self.candles: Deque[Candle] = deque(maxlen=candle_window)
+        self.candles: deque[Candle] = deque(maxlen=candle_window)
         
         # Pyth price feed ID for SOL/USD
         # https://pyth.network/price-feeds
@@ -129,8 +133,8 @@ class LiveMonitor:
             logger.info("Helius on-chain monitor initialized")
         
         # Signal storage
-        self.active_signals: List[SignalCard] = []
-        self.signal_callbacks: List[callable] = []
+        self.active_signals: list[SignalCard] = []
+        self.signal_callbacks: list[callable] = []
         
         # State
         self.running = False
@@ -140,7 +144,7 @@ class LiveMonitor:
         """Register callback to be called when new signal is generated."""
         self.signal_callbacks.append(callback)
     
-    async def fetch_pyth_price(self) -> Optional[float]:
+    async def fetch_pyth_price(self) -> float | None:
         """
         Fetch current SOL/USD price from Pyth Network Hermes API.
         
@@ -171,7 +175,7 @@ class LiveMonitor:
             logger.error(f"Error fetching Pyth price: {e}")
             return None
     
-    async def build_5min_candle(self) -> Optional[Candle]:
+    async def build_5min_candle(self) -> Candle | None:
         """
         Build a 5-minute candle from tick data.
         In production, you'd aggregate ticks. For now, we'll use current price.
@@ -190,7 +194,7 @@ class LiveMonitor:
             self.last_price = price
             
             # Get current 5-min timestamp (round down to nearest 5 min)
-            now = datetime.now(timezone.utc)
+            now = datetime.now(UTC)
             timestamp = int(now.timestamp())
             timestamp = (timestamp // 300) * 300  # Round to 5-min
             
@@ -309,7 +313,7 @@ class LiveMonitor:
         else:
             return "N"
     
-    def calculate_confluence(self, row: pd.Series, direction: str) -> Dict:
+    def calculate_confluence(self, row: pd.Series, direction: str) -> dict:
         """
         Calculate confluence score and component checks.
         
@@ -349,7 +353,7 @@ class LiveMonitor:
         
         return {**checks, 'confluence_score': score}
     
-    def create_signal_card(self, signal: Dict, df: pd.DataFrame) -> SignalCard:
+    def create_signal_card(self, signal: dict, df: pd.DataFrame) -> SignalCard:
         """
         Create a scalp card from detected signal.
         Enhanced with MTF and on-chain data.
@@ -432,7 +436,7 @@ class LiveMonitor:
             rsi14=row.get('RSI14', 50),
             bb_width=row.get('BB_Width', 0),
             volume_zscore=row.get('Volume_ZScore', 0),
-            signal_time=datetime.now(timezone.utc).isoformat(),
+            signal_time=datetime.now(UTC).isoformat(),
             signal_id=f"SOL-{int(datetime.now().timestamp())}-{direction[:1].upper()}"
         )
         
@@ -531,6 +535,6 @@ class LiveMonitor:
         self.running = False
         logger.info("Live monitor stopped")
     
-    def get_active_signals(self) -> List[Dict]:
+    def get_active_signals(self) -> list[dict]:
         """Get all active signals as dictionaries."""
         return [asdict(card) for card in self.active_signals]

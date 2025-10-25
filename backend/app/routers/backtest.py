@@ -1,7 +1,8 @@
 from fastapi import APIRouter, HTTPException
-from ..utils.store import get_df
+
 from ..models.schemas import BacktestParams
 from ..services.backtester import run_backtest
+from ..utils.store import get_df
 
 router = APIRouter()
 
