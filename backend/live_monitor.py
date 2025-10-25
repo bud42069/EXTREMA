@@ -349,6 +349,7 @@ class LiveMonitor:
     def create_signal_card(self, signal: Dict, df: pd.DataFrame) -> SignalCard:
         """
         Create a scalp card from detected signal.
+        Enhanced with MTF and on-chain data.
         
         Args:
             signal: Signal dictionary from detector
@@ -359,6 +360,13 @@ class LiveMonitor:
         """
         direction = signal['direction']
         entry_price = signal['entry_price']
+        
+        # Enhance signal with MTF confirmation
+        signal = self.mtf_analyzer.enhance_signal_with_mtf(signal, df)
+        
+        # Enhance signal with on-chain data
+        if self.onchain_monitor:
+            signal = self.onchain_monitor.enhance_signal_with_onchain(signal)
         
         # Get indicator values
         signal_idx = df.index.get_loc(signal['index'])
@@ -388,9 +396,14 @@ class LiveMonitor:
         play_type = self.determine_play_type(df, signal_idx, direction)
         regime = self.determine_regime(row.get('BB_Width', 0.01))
         
-        # Calculate confluence
+        # Calculate confluence (now includes MTF and on-chain)
         confluence = self.calculate_confluence(row, direction)
-        tier = "A" if confluence['confluence_score'] >= 60 else "B"
+        
+        # Update confluence with enhancements
+        if signal.get('mtf_tier_upgrade'):
+            confluence['confluence_score'] = min(100, confluence['confluence_score'] + 20)
+        
+        tier = signal.get('tier', 'B')
         
         # Create signal card
         card = SignalCard(
@@ -405,7 +418,7 @@ class LiveMonitor:
             tp1_price=tp1,
             tp2_price=tp2,
             tp3_price=tp3,
-            ema_alignment=confluence['ema_alignment'],
+            ema_alignment=confluence['ema_alignment'] or signal.get('mtf_1h_ema', False),
             oscillator_agreement=confluence['oscillator_agreement'],
             supply_demand_valid=confluence['supply_demand_valid'],
             vwap_structure=confluence['vwap_structure'],
