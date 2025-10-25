@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Comprehensive Backend Testing for SOLUSDT Swing Detection System
-Tests WebSocket Signal Streaming, Live Monitoring, and existing endpoints
+Tests Microstructure Integration, Prometheus Metrics, WebSocket Signal Streaming, and existing endpoints
 """
 
 import asyncio
@@ -20,6 +20,7 @@ from websockets.exceptions import ConnectionClosedError
 # Backend URL from frontend environment
 BACKEND_URL = "https://swingcapture.preview.emergentagent.com"
 API_BASE = f"{BACKEND_URL}/api"
+METRICS_URL = f"{BACKEND_URL}/metrics"
 
 class BackendTester:
     def __init__(self):
