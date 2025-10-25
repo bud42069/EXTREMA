@@ -131,9 +131,11 @@ class LiveMonitor:
         
         # On-chain monitor (if API key provided)
         self.onchain_monitor = None
-        if helius_api_key:
+        if helius_api_key and HeliusOnChainMonitor is not None:
             self.onchain_monitor = HeliusOnChainMonitor(helius_api_key)
             logger.info("Helius on-chain monitor initialized")
+        elif helius_api_key and HeliusOnChainMonitor is None:
+            logger.warning("Helius API key provided but HeliusOnChainMonitor not available")
         
         # Signal storage
         self.active_signals: list[SignalCard] = []
