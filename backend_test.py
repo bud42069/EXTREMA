@@ -2227,7 +2227,7 @@ class BackendTester:
         
         # Summary
         print("\n" + "=" * 80)
-        print("📊 PHASE 3 TEST SUMMARY")
+        print("📊 PHASE 4 & 3 TEST SUMMARY")
         print("=" * 80)
         
         total_tests = len(self.test_results)
@@ -2242,6 +2242,11 @@ class BackendTester:
             print(f"\n🔍 Failed Tests:")
             for test in self.failed_tests:
                 print(f"  - {test}")
+        
+        # Phase 4 specific analysis
+        phase4_tests = [r for r in self.test_results if any(keyword in r['test'] for keyword in 
+                       ['Phase 4', 'ConfigManager', 'TradeLogger', 'KPITracker', 'Config', 'Trade', 'KPI'])]
+        phase4_passed = sum(1 for r in phase4_tests if r['success'])
         
         # Phase 3 specific analysis
         phase3_tests = [r for r in self.test_results if any(keyword in r['test'] for keyword in 
