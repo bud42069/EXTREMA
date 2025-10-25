@@ -37,9 +37,10 @@ class MexcStreamWorker:
         self.update_interval = update_interval
         
         # Binance WebSocket URLs - Using combined streams
+        # Try data-stream endpoint for market data access
         depth_stream = f"{self.symbol}@depth@100ms"
         trade_stream = f"{self.symbol}@trade"
-        self.ws_url = f"wss://stream.binance.com:9443/stream?streams={depth_stream}/{trade_stream}"
+        self.ws_url = f"wss://data-stream.binance.vision/stream?streams={depth_stream}/{trade_stream}"
         
         # State
         self.running = False
