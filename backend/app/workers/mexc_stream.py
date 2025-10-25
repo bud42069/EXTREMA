@@ -82,7 +82,15 @@ class MexcStreamWorker:
     def stop(self):
         """Stop the WebSocket stream worker."""
         self.running = False
+        # Close the websocket if it's open
+        if self.ws:
+            import asyncio
+            try:
+                asyncio.create_task(self.ws.close())
+            except:
+                pass
         reset_snapshot()
+        logger.info("Binance stream worker stop requested")
     
     async def _connect_and_stream(self):
         """Connect to Binance WebSocket and stream data."""
