@@ -533,11 +533,11 @@ backend:
 
   - task: "Phase 2: Macro Gates (4h/1D A/B Tiering)"
     implemented: true
-    working: "NA"
+    working: false
     file: "app/services/macro_gates.py"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
@@ -553,6 +553,18 @@ backend:
           A-tier: Context ≥75 AND Micro ≥80 with macro aligned
           B-tier: Context ≥60 AND Micro ≥70 with macro neutral/mixed
           Needs backend testing with 4h/1D data.
+      - working: false
+        agent: "testing"
+        comment: |
+          ❌ BLOCKED BY CRITICAL ISSUE: Same DataFrame boolean context error prevents testing.
+          
+          **Data Availability**: PARTIAL for macro gates testing
+          - 4h data: 200 bars ✅ (need ~50 bars)
+          - 1D data: 0 bars ❌ (need ~50 bars)
+          
+          **Expected Functionality**: Macro gates should work with 4h data and gracefully handle missing 1D data, but cannot test due to upstream error.
+          
+          **Implementation Status**: Code appears complete based on review, but integration with MTF confluence has DataFrame boolean context bug.
 
   - task: "Phase 2: MTF Confluence Enhancement (Context & Macro)"
     implemented: true
