@@ -507,15 +507,21 @@ export default function LandingPageV2() {
 
             <div className="mt-8 flex items-center justify-center gap-8 text-sm text-gray-600">
               <div className="flex items-center gap-2">
-                <span className="text-emerald-400">✓</span>
+                <svg className="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
                 <span>Free to use</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-emerald-400">✓</span>
+                <svg className="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
                 <span>Real-time data</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-emerald-400">✓</span>
+                <svg className="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
                 <span>Manual execution only</span>
               </div>
             </div>
