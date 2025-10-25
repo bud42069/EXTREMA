@@ -10,6 +10,8 @@ export default function LiveSignalsPage() {
   const [signals, setSignals] = useState([]);
   const [loading, setLoading] = useState(true);
   const [microSnap, setMicroSnap] = useState(null);
+  const [mtfStatus, setMtfStatus] = useState(null);
+  const [mtfConfluence, setMtfConfluence] = useState(null);
   const wsRef = useRef(null);
 
   useEffect(() => {
@@ -17,10 +19,12 @@ export default function LiveSignalsPage() {
     
     const statusInterval = setInterval(fetchMonitorStatus, 3000);
     const snapInterval = setInterval(fetchMicroSnapshot, 2000);
+    const mtfInterval = setInterval(fetchMtfData, 5000);
 
     return () => {
       clearInterval(statusInterval);
       clearInterval(snapInterval);
+      clearInterval(mtfInterval);
       if (wsRef.current) {
         wsRef.current.close();
       }
@@ -29,13 +33,15 @@ export default function LiveSignalsPage() {
 
   const fetchInitialData = async () => {
     try {
-      const [statusRes, signalsRes] = await Promise.all([
+      const [statusRes, signalsRes, mtfRes] = await Promise.all([
         axios.get(`${API}/live/status`),
-        axios.get(`${API}/live/signals`)
+        axios.get(`${API}/live/signals`),
+        axios.get(`${API}/mtf/status`)
       ]);
       
       setMonitorStatus(statusRes.data);
       setSignals(signalsRes.data.signals || []);
+      setMtfStatus(mtfRes.data);
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
@@ -61,12 +67,31 @@ export default function LiveSignalsPage() {
     }
   };
 
+  const fetchMtfData = async () => {
+    try {
+      const [statusRes, confluenceRes] = await Promise.all([
+        axios.get(`${API}/mtf/status`),
+        axios.get(`${API}/mtf/confluence`)
+      ]);
+      setMtfStatus(statusRes.data);
+      setMtfConfluence(confluenceRes.data);
+    } catch (error) {
+      console.error('Error fetching MTF data:', error);
+    }
+  };
+
   const handleStartMonitor = async () => {
     try {
-      const response = await axios.post(`${API}/live/start`);
-      if (response.data.success) {
-        toast.success('🚀 Live monitor started!', { position: 'top-right' });
+      // Start both live monitor and MTF system
+      const [liveRes, mtfRes] = await Promise.all([
+        axios.post(`${API}/live/start`),
+        axios.post(`${API}/mtf/start`)
+      ]);
+      
+      if (liveRes.data.success && mtfRes.data.success) {
+        toast.success('🚀 Live monitor + MTF system started!', { position: 'top-right' });
         fetchMonitorStatus();
+        fetchMtfData();
       }
     } catch (error) {
       console.error('Error starting monitor:', error);
@@ -76,8 +101,12 @@ export default function LiveSignalsPage() {
 
   const handleStopMonitor = async () => {
     try {
-      const response = await axios.post(`${API}/live/stop`);
-      if (response.data.success) {
+      const [liveRes, mtfRes] = await Promise.all([
+        axios.post(`${API}/live/stop`),
+        axios.post(`${API}/mtf/stop`)
+      ]);
+      
+      if (liveRes.data.success && mtfRes.data.success) {
         toast.info('Monitor stopped', { position: 'top-right' });
         fetchMonitorStatus();
       }
