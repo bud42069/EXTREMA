@@ -413,7 +413,6 @@ class MTFConfluenceEngine:
         }
 
 
-# Global instance - initialize with Helius API key from environment
-import os
-helius_key = os.environ.get('HELIUS_API_KEY')
-confluence_engine = MTFConfluenceEngine(helius_api_key=helius_key)
+# Global instance - initialize with Helius API key from config
+from ..config import settings
+confluence_engine = MTFConfluenceEngine(helius_api_key=settings.HELIUS_API_KEY)
