@@ -195,7 +195,7 @@ def check_pivot_structure(
             result['pivot_ok'] = bool(current_price > pivot) if pivot else False
         else:  # short
             # For short: prefer close below pivot or below R1
-            result['pivot_ok'] = current_price < pivot if pivot else False
+            result['pivot_ok'] = bool(current_price < pivot) if pivot else False
         
         # Check VWAP if available
         if 'vwap' in df.columns:
