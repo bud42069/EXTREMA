@@ -130,28 +130,26 @@ const CVDSlopeChart = ({ data }) => {
   }));
   
   return (
-    <div className="w-full h-full min-h-[128px]">
-      <ResponsiveContainer width="100%" height={128}>
-        <AreaChart data={chartData} margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
-          <defs>
-            <linearGradient id="cvdGradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#06b6d4" stopOpacity={0.4} />
-              <stop offset="100%" stopColor="#06b6d4" stopOpacity={0} />
-            </linearGradient>
-          </defs>
-          <YAxis hide domain={['dataMin', 'dataMax']} />
-          <Area
-            type="monotone"
-            dataKey="value"
-            stroke="#06b6d4"
-            strokeWidth={2}
-            fill="url(#cvdGradient)"
-            animationDuration={300}
-            isAnimationActive={true}
-          />
-        </AreaChart>
-      </ResponsiveContainer>
-    </div>
+    <ResponsiveContainer width="100%" height={128}>
+      <AreaChart data={chartData} margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
+        <defs>
+          <linearGradient id="cvdSlopeGradient" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#06b6d4" stopOpacity={0.6} />
+            <stop offset="100%" stopColor="#06b6d4" stopOpacity={0.05} />
+          </linearGradient>
+        </defs>
+        <YAxis hide domain={['dataMin', 'dataMax']} />
+        <Area
+          type="monotone"
+          dataKey="value"
+          stroke="#06b6d4"
+          strokeWidth={2.5}
+          fill="url(#cvdSlopeGradient)"
+          animationDuration={300}
+          isAnimationActive={true}
+        />
+      </AreaChart>
+    </ResponsiveContainer>
   );
 };
 
