@@ -45,7 +45,7 @@ def run_backtest(df: pd.DataFrame,
         k = j+1
         outcome = None
         while k < len(df):
-            px = df.at[k, "low"] if side=="long" else df.at[k, "high"]
+            df.at[k, "low"] if side=="long" else df.at[k, "high"]
             high = df.at[k, "high"]; low = df.at[k, "low"]
             if side=="long":
                 if low <= t["sl"]:

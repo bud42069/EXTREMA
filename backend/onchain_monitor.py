@@ -183,7 +183,7 @@ class HeliusOnChainMonitor:
         
         try:
             # Monitor known CEX addresses
-            for cex_name, addresses in self.cex_addresses.items():
+            for _cex_name, addresses in self.cex_addresses.items():
                 for address in addresses:
                     txs = await self.get_address_transactions(address, limit=5)
                     

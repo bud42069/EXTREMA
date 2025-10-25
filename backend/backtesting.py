@@ -233,7 +233,6 @@ class BacktestEngine:
         close = bar['close']
         atr5 = bar.get('ATR5', 0)
         
-        tp1_hit = False
         
         if trade.direction == 'long':
             # Check stop loss
@@ -248,7 +247,6 @@ class BacktestEngine:
                 trade.add_partial_exit(trade.tp1, self.tp1_scale, 'TP1')
                 # Move SL to breakeven + fees
                 trade.current_sl = trade.entry_price * 1.001  # BE + 0.1% for fees
-                tp1_hit = True
             
             # Check TP2
             if high >= trade.tp2 and trade.position_remaining > (1.0 - self.tp1_scale) and trade.position_remaining < 1.0:
@@ -278,7 +276,6 @@ class BacktestEngine:
                 trade.add_partial_exit(trade.tp1, self.tp1_scale, 'TP1')
                 # Move SL to breakeven + fees
                 trade.current_sl = trade.entry_price * 0.999
-                tp1_hit = True
             
             # Check TP2
             if low <= trade.tp2 and trade.position_remaining > (1.0 - self.tp1_scale) and trade.position_remaining < 1.0:

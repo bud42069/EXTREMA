@@ -35,7 +35,7 @@ def calculate_sar(df: pd.DataFrame, acceleration: float = 0.02, maximum: float =
     """
     high = df['high'].values
     low = df['low'].values
-    close = df['close'].values
+    df['close'].values
     
     sar = np.zeros(len(df))
     ep = np.zeros(len(df))
@@ -231,7 +231,7 @@ def detect_swing_signals_methodology(df: pd.DataFrame) -> list[SwingSignal]:
     
     # Scan for signals
     for i in range(50, len(df)):
-        idx = df.index[i]
+        df.index[i]
         row = df.iloc[i]
         
         # Volume spike check
@@ -296,7 +296,7 @@ def calculate_sar_exit(df: pd.DataFrame, entry_idx: int, direction: str) -> dict
     Returns:
         Dict with exit info
     """
-    entry_sar = df['SAR'].iloc[entry_idx]
+    df['SAR'].iloc[entry_idx]
     
     for i in range(entry_idx + 1, len(df)):
         current_sar = df['SAR'].iloc[i]
