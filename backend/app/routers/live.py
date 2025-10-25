@@ -8,10 +8,11 @@ from fastapi import APIRouter, HTTPException
 from fastapi.responses import JSONResponse
 
 from ..services.live_monitor import LiveMonitor
-from ..utils.logging import logger
+from ..utils.logging import get_logger
 from .signals import broadcast_signal
 
 router = APIRouter()
+logger = get_logger(__name__)
 
 # Global live monitor instance
 live_monitor: LiveMonitor | None = None
