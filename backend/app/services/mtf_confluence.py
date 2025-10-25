@@ -1,14 +1,17 @@
 """
 Multi-Timeframe Confluence Engine.
 Computes context and micro confluence scores based on TF alignment.
+Includes Helius on-chain data integration.
 """
 from typing import Optional
 import pandas as pd
+import asyncio
 
 from ..utils.logging import get_logger
 from ..utils.mtf_store import get_klines
 from .mtf_features import extract_mtf_features, compute_vwap_deviation
 from ..utils.micro_store import get_snapshot
+from .onchain_monitor import HeliusOnChainMonitor
 
 logger = get_logger(__name__)
 
@@ -17,15 +20,17 @@ class MTFConfluenceEngine:
     """
     Computes confluence scores for MTF signal validation.
     Uses weighted scoring for context (15m/1h/4h/1D) and micro (1s→1m→5m).
+    Integrates Helius on-chain data for enhanced validation.
     """
     
-    def __init__(self):
+    def __init__(self, helius_api_key: Optional[str] = None):
         # Context weights (total 50%)
         self.context_weights = {
-            'ema_alignment': 0.20,      # 20% - EMA alignment across 15m/1h/4h
+            'ema_alignment': 0.15,      # 15% - EMA alignment across 15m/1h/4h
             'oscillator_agreement': 0.10,  # 10% - RSI/MACD agreement
             'pivot_structure': 0.10,    # 10% - Pivot/VWAP structure
-            'macro_gate': 0.10          # 10% - 4h/1D with 15m/1h
+            'macro_gate': 0.10,         # 10% - 4h/1D with 15m/1h
+            'onchain_confluence': 0.05  # 5% - On-chain alignment (NEW!)
         }
         
         # Micro weights (total 50%)
@@ -33,11 +38,26 @@ class MTFConfluenceEngine:
             'trigger_5m': 0.20,         # 20% - 5m trigger (price & volume)
             'impulse_1m': 0.15,         # 15% - 1m impulse (RSI + BOS + vol)
             'tape_micro': 0.10,         # 10% - 1s/5s tape (CVD/OB + VWAP)
-            'veto_hygiene': 0.05        # 5% - No vetoes (OBV-cliff, spoof)
+            'veto_hygiene': 0.03,       # 3% - No vetoes (OBV-cliff, spoof)
+            'onchain_veto': 0.02        # 2% - On-chain veto check (NEW!)
         }
+        
+        # Helius integration
+        self.onchain_monitor = None
+        if helius_api_key:
+            self.onchain_monitor = HeliusOnChainMonitor(helius_api_key)
+            logger.info("Helius on-chain monitoring enabled")
+        else:
+            logger.info("Helius on-chain monitoring disabled (no API key)")
         
         # Feature cache
         self.features_cache = {}
+    
+    async def start_onchain_monitoring(self):
+        """Start the Helius on-chain monitoring loop in background."""
+        if self.onchain_monitor:
+            asyncio.create_task(self.onchain_monitor.monitor_loop())
+            logger.info("Helius on-chain monitor loop started")
     
     def compute_context_confluence(
         self,
