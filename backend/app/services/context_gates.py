@@ -95,7 +95,7 @@ def check_ema_alignment(
         
         result['aligned_count'] = aligned_count
         result['alignment_ratio'] = aligned_count / (len(ema_spans) - 1)
-        result['aligned'] = aligned_count >= min_aligned
+        result['aligned'] = bool(aligned_count >= min_aligned)
         
         logger.info(
             f"EMA alignment ({side}): {aligned_count}/{len(ema_spans)-1} aligned "
