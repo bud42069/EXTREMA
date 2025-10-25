@@ -188,7 +188,6 @@ SIZE: ${card.size}
                 variant="ghost"
                 size="lg"
                 onClick={copyToClipboard}
-                leftIcon="📋"
               >
                 COPY TO CLIPBOARD
               </Button>
