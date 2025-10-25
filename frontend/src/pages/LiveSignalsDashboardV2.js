@@ -422,7 +422,7 @@ export default function LiveSignalsDashboardV2() {
       ]);
       
       if (liveRes.data.success && mtfRes.data.success && streamRes.data.success) {
-        toast.success('🚀 System online', { position: 'top-right', autoClose: 2000 });
+        toast.success('System online', { position: 'top-right', autoClose: 2000 });
         playNotificationSound('success');
         fetchMonitorStatus();
         fetchMtfData();
