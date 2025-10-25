@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from starlette_exporter import PrometheusMiddleware, handle_metrics
 
 from .config import settings
-from .routers import backtest, data, health, live, signals, stream, swings
+from .routers import backtest, data, health, live, scalp_card, signals, stream, swings
 
 app = FastAPI(
     title="SOLUSDT Swing Detection API",
@@ -37,3 +37,4 @@ app.include_router(signals.router, prefix="/api/signals", tags=["signals"])
 app.include_router(backtest.router, prefix="/api/backtest", tags=["backtest"])
 app.include_router(live.router, prefix="/api/live", tags=["live-monitoring"])
 app.include_router(stream.router, prefix="/api/stream", tags=["microstructure"])
+app.include_router(scalp_card.router, prefix="/api/scalp", tags=["scalp-cards"])
