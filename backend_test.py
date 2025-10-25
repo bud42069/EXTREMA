@@ -120,7 +120,7 @@ class BackendTester:
         try:
             ws_url = f"wss://swingcapture.preview.emergentagent.com/api/signals/stream"
             
-            async with websockets.connect(ws_url, timeout=10) as websocket:
+            async with websockets.connect(ws_url) as websocket:
                 # Test initial connection
                 try:
                     # Wait for initial connection message
