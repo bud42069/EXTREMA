@@ -51,6 +51,8 @@ class MTFConfluenceEngine:
     Computes confluence scores for MTF signal validation.
     Uses weighted scoring for context (15m/1h/4h/1D) and micro (1s→1m→5m).
     Integrates Helius on-chain data for enhanced validation.
+    
+    Phase 2: Includes regime detection, context gates, and macro gates.
     """
     
     def __init__(self, helius_api_key: Optional[str] = None):
@@ -72,6 +74,13 @@ class MTFConfluenceEngine:
             'onchain_veto': 0.02        # 2% - On-chain veto check (NEW!)
         }
         
+        # Phase 2: Initialize regime detector
+        self.regime_detector = RegimeDetector(
+            squeeze_threshold=30.0,
+            wide_threshold=70.0,
+            window=90
+        )
+        
         # Helius integration
         self.onchain_monitor = None
         if helius_api_key and HELIUS_AVAILABLE:
@@ -85,6 +94,8 @@ class MTFConfluenceEngine:
         
         # Feature cache
         self.features_cache = {}
+        
+        logger.info("✅ Phase 2: Regime detector, context gates, and macro gates initialized")
     
     async def start_onchain_monitoring(self):
         """Start the Helius on-chain monitoring loop in background."""
