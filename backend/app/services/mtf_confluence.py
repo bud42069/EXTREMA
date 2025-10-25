@@ -213,15 +213,38 @@ class MTFConfluenceEngine:
         features_5s: Optional[dict],
         features_1m: Optional[dict],
         features_5m: Optional[dict],
-        micro_snapshot: Optional[dict]
+        micro_snapshot: Optional[dict],
+        df_1m: Optional[pd.DataFrame] = None,
+        df_tape: Optional[pd.DataFrame] = None,
+        side: Optional[str] = None,
+        tier: str = 'B',
+        atr_5m: Optional[float] = None
     ) -> dict:
         """
-        Compute micro confluence score (1s→1m→5m).
+        Compute micro confluence score (1s→1m→5m) with Phase 1 integration.
+        
+        Phase 1 Enhancements:
+        - Uses impulse_detector for 1m impulse requirements
+        - Uses tape_filters for 1s/5s microstructure
+        - Uses veto_system for comprehensive veto checks
+        
+        Args:
+            features_1s: 1-second features (optional)
+            features_5s: 5-second features (optional)
+            features_1m: 1-minute features (optional)
+            features_5m: 5-minute features (required for trigger)
+            micro_snapshot: Microstructure snapshot
+            df_1m: 1-minute DataFrame for impulse detection
+            df_tape: 1s or 5s DataFrame for tape filters
+            side: Trade direction ('long' or 'short')
+            tier: Tier for volume threshold ('A' or 'B')
+            atr_5m: 5-minute ATR for VWAP proximity check
         
         Returns:
             Dict with score breakdown and total
         """
         scores = {}
+        details = {}
         
         # 5m Trigger (20%)
         trigger_score = 0.0
@@ -235,69 +258,174 @@ class MTFConfluenceEngine:
                 trigger_score += self.micro_weights['trigger_5m'] * 50  # 10%
         
         scores['trigger_5m'] = trigger_score
+        details['trigger_5m'] = features_5m or {}
         
-        # 1m Impulse (15%)
+        # 1m Impulse (15%) - ENHANCED WITH PHASE 1
         impulse_score = 0.0
-        if features_1m:
-            # RSI cross through 50
+        impulse_details = {}
+        
+        if df_1m is not None and side:
+            # Use comprehensive impulse detector
+            impulse_result = check_1m_impulse(
+                df_1m=df_1m,
+                side=side,
+                tier=tier,
+                rsi_hold_bars=2,
+                bos_atr_mult=0.1,
+                vol_mult=1.5,
+                vol_mult_tier_a=2.0
+            )
+            
+            impulse_details = impulse_result
+            
+            # Score based on comprehensive check
+            if impulse_result['impulse_ok']:
+                impulse_score = self.micro_weights['impulse_1m'] * 100  # Full 15%
+            else:
+                # Partial credit for passing components
+                component_score = 0.0
+                if impulse_result['rsi_hold_ok']:
+                    component_score += 33.3
+                if impulse_result['bos_ok']:
+                    component_score += 33.3
+                if impulse_result['volume_ok']:
+                    component_score += 33.3
+                impulse_score = self.micro_weights['impulse_1m'] * component_score
+        
+        elif features_1m:
+            # Fallback to simplified logic if DataFrame not available
             if features_1m.get('rsi_crossed_50'):
-                impulse_score += self.micro_weights['impulse_1m'] * 33.3  # 5%
-            
-            # BOS detected
+                impulse_score += self.micro_weights['impulse_1m'] * 33.3
             if features_1m.get('bos_detected'):
-                impulse_score += self.micro_weights['impulse_1m'] * 33.3  # 5%
-            
-            # Volume gate
+                impulse_score += self.micro_weights['impulse_1m'] * 33.3
             if features_1m.get('volume_sufficient'):
-                impulse_score += self.micro_weights['impulse_1m'] * 33.3  # 5%
+                impulse_score += self.micro_weights['impulse_1m'] * 33.3
+            impulse_details = features_1m
         
         scores['impulse_1m'] = impulse_score
+        details['impulse_1m'] = impulse_details
         
-        # Tape Micro (10%)
+        # Tape Micro (10%) - ENHANCED WITH PHASE 1
         tape_score = 0.0
-        if micro_snapshot and micro_snapshot.ok:
-            # CVD check - assume positive CVD for longs, negative for shorts
-            # For now, give points if CVD magnitude is significant
-            cvd = micro_snapshot.cvd or 0
-            if abs(cvd) > 10:  # Threshold for significant CVD
-                tape_score += self.micro_weights['tape_micro'] * 50  # 5%
+        tape_details = {}
+        
+        if df_tape is not None and side and atr_5m:
+            # Use comprehensive tape filters
+            tape_result = check_tape_filters(
+                df_tape=df_tape,
+                side=side,
+                atr_5m=atr_5m,
+                cvd_z_threshold=0.5,
+                obi_long_threshold=1.25,
+                obi_short_threshold=0.80,
+                vwap_tolerance=0.02
+            )
             
-            # Ladder imbalance check
+            tape_details = tape_result
+            
+            # Score based on comprehensive check
+            if tape_result['tape_ok']:
+                tape_score = self.micro_weights['tape_micro'] * 100  # Full 10%
+            else:
+                # Partial credit for passing components
+                component_score = 0.0
+                if tape_result['cvd_ok']:
+                    component_score += 33.3
+                if tape_result['obi_ok']:
+                    component_score += 33.3
+                if tape_result['vwap_ok']:
+                    component_score += 33.3
+                tape_score = self.micro_weights['tape_micro'] * component_score
+        
+        elif micro_snapshot and micro_snapshot.ok:
+            # Fallback to simplified logic
+            cvd = micro_snapshot.cvd or 0
+            if abs(cvd) > 10:
+                tape_score += self.micro_weights['tape_micro'] * 50
+            
             ladder_imb = micro_snapshot.ladder_imbalance or 0
-            if abs(ladder_imb) > 0.15:  # Threshold for imbalance
-                tape_score += self.micro_weights['tape_micro'] * 50  # 5%
+            if abs(ladder_imb) > 0.15:
+                tape_score += self.micro_weights['tape_micro'] * 50
+            tape_details = {'micro_snapshot': 'simplified_fallback'}
         
         scores['tape_micro'] = tape_score
+        details['tape_micro'] = tape_details
         
-        # Veto Hygiene (3%)
+        # Veto Hygiene (3%) - ENHANCED WITH PHASE 1
         veto_score = self.micro_weights['veto_hygiene'] * 100  # Default full points
+        veto_details = {}
         
-        # Check for vetoes
-        if micro_snapshot and micro_snapshot.ok:
-            # OBV cliff veto (large negative CVD slope)
-            cvd_slope = micro_snapshot.cvd_slope or 0
-            if abs(cvd_slope) > 2.0:  # Threshold for cliff
-                veto_score = 0.0  # Veto triggered
+        if df_tape is not None and micro_snapshot and side:
+            # Use comprehensive veto system
+            veto_config = {
+                'obv_cliff_z': 2.0,
+                'max_spread_pct': 0.10,
+                'min_depth_ratio': 0.50,
+                'max_mark_last_pct': 0.15,
+                'max_funding_mult': 3.0,
+                'liq_shock_mult': 10.0
+            }
             
-            # Spread veto (too wide)
+            # Additional market data (if available)
+            market_data = {}
+            if micro_snapshot.ok:
+                market_data['last_price'] = getattr(micro_snapshot, 'last_price', None)
+                market_data['mark_price'] = getattr(micro_snapshot, 'mark_price', None)
+            
+            veto_result = run_comprehensive_veto_checks(
+                df_tape=df_tape,
+                micro_snap=micro_snapshot,
+                side=side,
+                config=veto_config,
+                market_data=market_data
+            )
+            
+            veto_details = veto_result
+            
+            # If any veto triggered, score = 0
+            if veto_result['any_veto']:
+                veto_score = 0.0
+                logger.warning(
+                    f"Veto triggered: {veto_result['veto_count']} checks failed - "
+                    f"{', '.join(veto_result.get('veto_reasons', []))}"
+                )
+        
+        elif micro_snapshot and micro_snapshot.ok:
+            # Fallback to simplified veto checks
+            cvd_slope = micro_snapshot.cvd_slope or 0
+            if abs(cvd_slope) > 2.0:
+                veto_score = 0.0
+            
             spread = micro_snapshot.spread_bps or 0
-            if spread > 10.0:  # 10 bps threshold
-                veto_score = 0.0  # Veto triggered
+            if spread > 10.0:
+                veto_score = 0.0
+            veto_details = {'simplified_fallback': True}
         
         scores['veto_hygiene'] = veto_score
+        details['veto_hygiene'] = veto_details
         
-        # On-Chain Veto (2%) - NEW!
-        onchain_veto_score = self.micro_weights['onchain_veto'] * 100  # Default full points
+        # On-Chain Veto (2%)
+        onchain_veto_score = self.micro_weights['onchain_veto'] * 100
         scores['onchain_veto'] = onchain_veto_score
+        details['onchain_veto'] = {'enabled': False}
         
         # Total micro score
         total = sum(scores.values())
         
-        return {
+        result = {
             'scores': scores,
             'total': total,
-            'tier': 'A' if total >= 80 else ('B' if total >= 70 else 'C')
+            'tier': 'A' if total >= 80 else ('B' if total >= 70 else 'C'),
+            'details': details
         }
+        
+        logger.info(
+            f"Micro confluence: total={total:.1f}, tier={result['tier']}, "
+            f"trigger={scores['trigger_5m']:.1f}, impulse={scores['impulse_1m']:.1f}, "
+            f"tape={scores['tape_micro']:.1f}, veto={scores['veto_hygiene']:.1f}"
+        )
+        
+        return result
     
     async def compute_micro_confluence_async(
         self,
