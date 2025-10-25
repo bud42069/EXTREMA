@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
 """
-Comprehensive Backend Testing for SOLUSDT Swing Detection System
-Tests Microstructure Integration, Prometheus Metrics, WebSocket Signal Streaming, and existing endpoints
+Phase 1 Enhanced Detection Engine - Backend Testing
+Tests the newly integrated Phase 1 MTF Confluence Engine with:
+- 1m Impulse Detection (RSI-12, BOS, Volume)
+- Tape Filters (CVD z-score, OBI, VWAP Proximity)  
+- Comprehensive Veto System
+- Enhanced MTF Confluence Endpoint
 """
 
 import asyncio
