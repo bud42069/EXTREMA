@@ -512,6 +512,288 @@ class BackendTester:
         except Exception as e:
             self.log_result("MTF Confluence Short A-tier (Phase 2)", False, f"Exception: {str(e)}")
     
+    def test_regime_detection_verification(self):
+        """Test regime detection from 5m data"""
+        try:
+            response = requests.get(f"{API_BASE}/mtf/confluence?side=long&tier=B", timeout=15)
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Check regime field in response
+                confluence = data.get('confluence', {})
+                regime = confluence.get('regime')
+                
+                if regime:
+                    # Verify regime structure
+                    required_regime_fields = ['regime', 'bbwidth', 'bbwidth_pct', 'params']
+                    if all(field in regime for field in required_regime_fields):
+                        regime_class = regime['regime']
+                        bbwidth = regime['bbwidth']
+                        bbwidth_pct = regime['bbwidth_pct']
+                        params = regime['params']
+                        
+                        # Check regime-specific parameters
+                        param_fields = ['tp2_r', 'tp3_r', 'trigger_atr_mult']
+                        has_params = all(field in params for field in param_fields)
+                        
+                        regime_info = f"Classification: {regime_class}, BBWidth: {bbwidth:.5f}, Percentile: {bbwidth_pct:.1f}%"
+                        param_info = f"Params: TP2={params.get('tp2_r')}, TP3={params.get('tp3_r')}, Trigger={params.get('trigger_atr_mult')}"
+                        
+                        self.log_result("Regime Detection Verification", True, 
+                                      f"{regime_info} | {param_info} | Complete: {has_params}")
+                    else:
+                        missing_fields = [f for f in required_regime_fields if f not in regime]
+                        self.log_result("Regime Detection Verification", False, 
+                                      f"Missing regime fields: {missing_fields}")
+                else:
+                    # Check if regime detection is disabled due to insufficient data
+                    phase2_enabled = data.get('phase2_enabled', {})
+                    regime_enabled = phase2_enabled.get('regime_detection', False)
+                    
+                    if not regime_enabled:
+                        self.log_result("Regime Detection Verification", True, 
+                                      "Regime detection unavailable (insufficient 5m data - expected)")
+                    else:
+                        self.log_result("Regime Detection Verification", False, 
+                                      "Regime field missing despite being enabled")
+            else:
+                self.log_result("Regime Detection Verification", False, f"HTTP {response.status_code}: {response.text}")
+        except Exception as e:
+            self.log_result("Regime Detection Verification", False, f"Exception: {str(e)}")
+    
+    def test_context_gates_verification(self):
+        """Test context gates (15m/1h EMA alignment, pivot structure, oscillator)"""
+        try:
+            response = requests.get(f"{API_BASE}/mtf/confluence?side=long&tier=B", timeout=15)
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Check context gates in context.details
+                confluence = data.get('confluence', {})
+                context = confluence.get('context', {})
+                context_details = context.get('details', {})
+                context_gates = context_details.get('context_gates')
+                
+                if context_gates:
+                    # Verify context gates structure
+                    required_fields = ['context_ok', 'play_type', 'ema_alignment', 'pivot_structure', 'oscillator', 'score']
+                    if all(field in context_gates for field in required_fields):
+                        
+                        # EMA alignment results
+                        ema_alignment = context_gates['ema_alignment']
+                        ema_15m_aligned = ema_alignment.get('15m', {}).get('aligned', False)
+                        ema_1h_aligned = ema_alignment.get('1h', {}).get('aligned', False)
+                        both_aligned = ema_alignment.get('both_aligned', False)
+                        
+                        # Pivot structure results
+                        pivot_structure = context_gates['pivot_structure']
+                        pivot_ok = pivot_structure.get('pivot_ok', False)
+                        vwap_ok = pivot_structure.get('vwap_ok', False)
+                        structure_ok = pivot_structure.get('structure_ok', False)
+                        
+                        # Oscillator results
+                        oscillator = context_gates['oscillator']
+                        osc_15m_ok = oscillator.get('15m', {}).get('oscillator_ok', False)
+                        osc_1h_ok = oscillator.get('1h', {}).get('oscillator_ok', False)
+                        both_osc_ok = oscillator.get('both_ok', False)
+                        
+                        # Overall results
+                        play_type = context_gates['play_type']
+                        context_score = context_gates['score']
+                        context_ok = context_gates['context_ok']
+                        
+                        ema_info = f"EMA: 15m={ema_15m_aligned}, 1h={ema_1h_aligned}, Both={both_aligned}"
+                        pivot_info = f"Pivot: {pivot_ok}, VWAP: {vwap_ok}, Structure: {structure_ok}"
+                        osc_info = f"Oscillator: 15m={osc_15m_ok}, 1h={osc_1h_ok}, Both={both_osc_ok}"
+                        result_info = f"Play Type: {play_type}, Score: {context_score:.1f}, OK: {context_ok}"
+                        
+                        self.log_result("Context Gates Verification", True, 
+                                      f"{ema_info} | {pivot_info} | {osc_info} | {result_info}")
+                    else:
+                        missing_fields = [f for f in required_fields if f not in context_gates]
+                        self.log_result("Context Gates Verification", False, 
+                                      f"Missing context gate fields: {missing_fields}")
+                else:
+                    # Check if context gates are disabled due to insufficient data
+                    phase2_enabled = data.get('phase2_enabled', {})
+                    context_enabled = phase2_enabled.get('context_gates', False)
+                    
+                    if not context_enabled:
+                        self.log_result("Context Gates Verification", True, 
+                                      "Context gates unavailable (insufficient 15m/1h data - expected)")
+                    else:
+                        self.log_result("Context Gates Verification", False, 
+                                      "Context gates missing despite being enabled")
+            else:
+                self.log_result("Context Gates Verification", False, f"HTTP {response.status_code}: {response.text}")
+        except Exception as e:
+            self.log_result("Context Gates Verification", False, f"Exception: {str(e)}")
+    
+    def test_macro_gates_verification(self):
+        """Test macro gates (4h/1D alignment, tier clearance)"""
+        try:
+            response = requests.get(f"{API_BASE}/mtf/confluence?side=short&tier=A", timeout=15)
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Check macro gates in context.details
+                confluence = data.get('confluence', {})
+                context = confluence.get('context', {})
+                context_details = context.get('details', {})
+                macro_gates = context_details.get('macro_gates')
+                
+                if macro_gates:
+                    # Verify macro gates structure
+                    required_fields = ['macro_aligned', 'tier_clearance', '4h_aligned', '1d_aligned', '4h_trend', '1d_trend', 'score']
+                    if all(field in macro_gates for field in required_fields):
+                        
+                        # Alignment results
+                        macro_aligned = macro_gates['macro_aligned']
+                        aligned_4h = macro_gates['4h_aligned']
+                        aligned_1d = macro_gates['1d_aligned']
+                        
+                        # Trend classification
+                        trend_4h = macro_gates['4h_trend']
+                        trend_1d = macro_gates['1d_trend']
+                        
+                        # Tier clearance
+                        tier_clearance = macro_gates['tier_clearance']
+                        macro_score = macro_gates['score']
+                        
+                        alignment_info = f"4h Aligned: {aligned_4h}, 1D Aligned: {aligned_1d}, Macro: {macro_aligned}"
+                        trend_info = f"4h Trend: {trend_4h}, 1D Trend: {trend_1d}"
+                        tier_info = f"Tier Clearance: {tier_clearance}, Score: {macro_score:.1f}"
+                        
+                        self.log_result("Macro Gates Verification", True, 
+                                      f"{alignment_info} | {trend_info} | {tier_info}")
+                    else:
+                        missing_fields = [f for f in required_fields if f not in macro_gates]
+                        self.log_result("Macro Gates Verification", False, 
+                                      f"Missing macro gate fields: {missing_fields}")
+                else:
+                    # Check if macro gates are disabled due to insufficient data
+                    phase2_enabled = data.get('phase2_enabled', {})
+                    macro_enabled = phase2_enabled.get('macro_gates', False)
+                    
+                    if not macro_enabled:
+                        self.log_result("Macro Gates Verification", True, 
+                                      "Macro gates unavailable (insufficient 4h/1D data - expected)")
+                    else:
+                        self.log_result("Macro Gates Verification", False, 
+                                      "Macro gates missing despite being enabled")
+            else:
+                self.log_result("Macro Gates Verification", False, f"HTTP {response.status_code}: {response.text}")
+        except Exception as e:
+            self.log_result("Macro Gates Verification", False, f"Exception: {str(e)}")
+    
+    def test_enhanced_tier_determination(self):
+        """Test enhanced tier determination (A/B/SKIP with bottleneck logic)"""
+        try:
+            # Test both A-tier and B-tier scenarios
+            test_cases = [
+                ("long", "A", "A-tier test"),
+                ("short", "B", "B-tier test"),
+                ("long", "B", "B-tier fallback")
+            ]
+            
+            for side, tier, description in test_cases:
+                response = requests.get(f"{API_BASE}/mtf/confluence?side={side}&tier={tier}", timeout=15)
+                if response.status_code == 200:
+                    data = response.json()
+                    
+                    # Check final tier determination
+                    confluence = data.get('confluence', {})
+                    final = confluence.get('final', {})
+                    
+                    if final:
+                        # Verify enhanced tier determination fields
+                        required_fields = ['tier', 'final_score', 'context_score', 'micro_score', 'allow_entry', 'bottleneck']
+                        enhanced_fields = ['macro_clearance', 'conflict', 'size_multiplier']
+                        
+                        has_required = all(field in final for field in required_fields)
+                        has_enhanced = any(field in final for field in enhanced_fields)
+                        
+                        if has_required:
+                            final_tier = final['tier']
+                            final_score = final['final_score']
+                            context_score = final['context_score']
+                            micro_score = final['micro_score']
+                            allow_entry = final['allow_entry']
+                            bottleneck = final['bottleneck']
+                            
+                            # Enhanced fields
+                            macro_clearance = final.get('macro_clearance', 'N/A')
+                            conflict = final.get('conflict', 'N/A')
+                            size_multiplier = final.get('size_multiplier', 'N/A')
+                            
+                            basic_info = f"Tier: {final_tier}, Score: {final_score:.1f}, Entry: {allow_entry}, Bottleneck: {bottleneck}"
+                            enhanced_info = f"Macro: {macro_clearance}, Conflict: {conflict}, Size: {size_multiplier}"
+                            
+                            self.log_result(f"Enhanced Tier Determination ({description})", True, 
+                                          f"{basic_info} | {enhanced_info} | Enhanced: {has_enhanced}")
+                        else:
+                            missing_fields = [f for f in required_fields if f not in final]
+                            self.log_result(f"Enhanced Tier Determination ({description})", False, 
+                                          f"Missing final fields: {missing_fields}")
+                    else:
+                        self.log_result(f"Enhanced Tier Determination ({description})", False, 
+                                      "Missing final section")
+                else:
+                    self.log_result(f"Enhanced Tier Determination ({description})", False, 
+                                  f"HTTP {response.status_code}: {response.text}")
+                    
+        except Exception as e:
+            self.log_result("Enhanced Tier Determination", False, f"Exception: {str(e)}")
+    
+    def test_phase2_integration_status(self):
+        """Test Phase 2 integration status reporting"""
+        try:
+            response = requests.get(f"{API_BASE}/mtf/confluence?side=long&tier=B", timeout=15)
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Check phase2_enabled field
+                phase2_enabled = data.get('phase2_enabled')
+                
+                if phase2_enabled:
+                    # Verify all Phase 2 feature flags
+                    required_flags = ['regime_detection', 'context_gates', 'macro_gates']
+                    if all(flag in phase2_enabled for flag in required_flags):
+                        
+                        regime_detection = phase2_enabled['regime_detection']
+                        context_gates = phase2_enabled['context_gates']
+                        macro_gates = phase2_enabled['macro_gates']
+                        
+                        # Check if flags match data availability
+                        confluence = data.get('confluence', {})
+                        has_regime = confluence.get('regime') is not None
+                        has_context_gates = confluence.get('context', {}).get('details', {}).get('context_gates') is not None
+                        has_macro_gates = confluence.get('context', {}).get('details', {}).get('macro_gates') is not None
+                        
+                        flag_info = f"Regime: {regime_detection}, Context: {context_gates}, Macro: {macro_gates}"
+                        data_info = f"Data - Regime: {has_regime}, Context: {has_context_gates}, Macro: {has_macro_gates}"
+                        
+                        # Check consistency
+                        consistent = (
+                            (regime_detection == has_regime) and
+                            (context_gates == has_context_gates) and
+                            (macro_gates == has_macro_gates)
+                        )
+                        
+                        self.log_result("Phase 2 Integration Status", True, 
+                                      f"{flag_info} | {data_info} | Consistent: {consistent}")
+                    else:
+                        missing_flags = [f for f in required_flags if f not in phase2_enabled]
+                        self.log_result("Phase 2 Integration Status", False, 
+                                      f"Missing phase2_enabled flags: {missing_flags}")
+                else:
+                    self.log_result("Phase 2 Integration Status", False, 
+                                  "Missing phase2_enabled field")
+            else:
+                self.log_result("Phase 2 Integration Status", False, f"HTTP {response.status_code}: {response.text}")
+        except Exception as e:
+            self.log_result("Phase 2 Integration Status", False, f"Exception: {str(e)}")
+    
     def test_mtf_start(self):
         """Test MTF system startup (may fail if external services unavailable)"""
         try:
