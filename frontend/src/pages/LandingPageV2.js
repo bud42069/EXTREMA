@@ -283,7 +283,9 @@ export default function LandingPageV2() {
                   borderColor: `${stat.color}20`
                 }}
               >
-                <div className="text-4xl mb-3">{stat.icon}</div>
+                <div className="flex items-center justify-center mb-3" style={{ color: stat.color }}>
+                  {stat.icon}
+                </div>
                 <div className="text-3xl font-black mb-1" style={{ color: stat.color }}>
                   {stat.value}
                 </div>
