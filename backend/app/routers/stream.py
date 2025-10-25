@@ -33,7 +33,7 @@ async def start_stream(symbol: str = "SOLUSDT"):
         await start_mexc_worker(symbol)
         return JSONResponse({
             "success": True,
-            "message": f"MEXC stream started for {symbol}",
+            "message": f"Binance stream started for {symbol}",
             "symbol": symbol
         })
     except Exception as e:
