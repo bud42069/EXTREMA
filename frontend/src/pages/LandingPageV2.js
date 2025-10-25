@@ -315,37 +315,61 @@ export default function LandingPageV2() {
         <div className="grid md:grid-cols-3 gap-6">
           {[
             {
-              icon: '🎯',
+              icon: (
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              ),
               title: 'Two-Stage Detection',
               description: 'Candidate screening with local extrema + confirmation breakout. ATR/Volume/BBWidth filters ensure quality.',
               gradient: `linear-gradient(135deg, ${theme.colors.accent.cyan}15, transparent)`
             },
             {
-              icon: '📊',
+              icon: (
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+              ),
               title: 'Microstructure Gates',
               description: 'Real-time orderbook analysis: spread, depth, CVD, imbalance. OBV-cliff veto protection.',
               gradient: `linear-gradient(135deg, ${theme.colors.accent.emerald}15, transparent)`
             },
             {
-              icon: '🧠',
+              icon: (
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
+                </svg>
+              ),
               title: 'MTF Confluence Engine',
               description: 'Multi-timeframe state machine (15m/1h/4h/1D) + Helius on-chain data for context scoring.',
               gradient: `linear-gradient(135deg, ${theme.colors.accent.purple}15, transparent)`
             },
             {
-              icon: '🎴',
+              icon: (
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                </svg>
+              ),
               title: 'Scalp Cards',
               description: 'Complete trade specifications: entry, SL, TP ladder (3-tier), trail rules. 7 pre-flight checks.',
               gradient: `linear-gradient(135deg, ${theme.colors.accent.amber}15, transparent)`
             },
             {
-              icon: '📈',
+              icon: (
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                </svg>
+              ),
               title: 'Strategy Backtester',
               description: 'Performance testing with equity curves, Sharpe ratio, max drawdown. Risk-adjusted position sizing.',
               gradient: `linear-gradient(135deg, ${theme.colors.accent.cyan}15, transparent)`
             },
             {
-              icon: '⚡',
+              icon: (
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+              ),
               title: 'Real-Time Monitoring',
               description: 'Live SOL/USD feeds via Pyth Network. WebSocket streaming with auto-reconnect resilience.',
               gradient: `linear-gradient(135deg, ${theme.colors.accent.emerald}15, transparent)`
