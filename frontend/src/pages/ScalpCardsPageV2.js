@@ -357,7 +357,10 @@ function ParametersTab({ card, riskPercent, rewardPercent, rrRatio }) {
       {/* Left: Trade Setup */}
       <div className="space-y-4">
         <h3 className="text-sm font-bold text-cyan-400 uppercase tracking-wider mb-4 flex items-center gap-2">
-          <span>🎯</span> TRADE SETUP
+          <svg className="w-5 h-5 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          TRADE SETUP
         </h3>
         
         <ParamRow label="Entry (Limit, Post-Only)" value={card.entry.toFixed(4)} highlight="cyan" size="lg" />
