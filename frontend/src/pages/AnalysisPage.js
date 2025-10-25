@@ -128,38 +128,38 @@ const AnalysisPage = () => {
 
         {/* Stage 1: Candidate Detection */}
         <div className="mb-6">
-          <h3 className="text-lg font-semibold text-blue-400 mb-4">Stage 1: Candidate Detection</h3>
+          <h3 className="text-lg font-semibold text-emerald-400 mb-4">Stage 1: Candidate Detection</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label className="block text-gray-300 text-sm mb-2">ATR14 Threshold</label>
+              <label className="block text-slate-300 text-sm mb-2">ATR14 Threshold</label>
               <input
                 type="number"
                 step="0.1"
                 value={config.atr_threshold}
                 onChange={(e) => setConfig({...config, atr_threshold: parseFloat(e.target.value)})}
-                className="w-full bg-gray-800 text-white border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:border-blue-500"
+                className="w-full bg-slate-800 text-white border border-slate-700 rounded-lg px-4 py-2 focus:outline-none focus:border-emerald-500"
               />
             </div>
             
             <div>
-              <label className="block text-gray-300 text-sm mb-2">Volume Z-Score Threshold</label>
+              <label className="block text-slate-300 text-sm mb-2">Volume Z-Score Threshold</label>
               <input
                 type="number"
                 step="0.1"
                 value={config.vol_z_threshold}
                 onChange={(e) => setConfig({...config, vol_z_threshold: parseFloat(e.target.value)})}
-                className="w-full bg-gray-800 text-white border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:border-blue-500"
+                className="w-full bg-slate-800 text-white border border-slate-700 rounded-lg px-4 py-2 focus:outline-none focus:border-emerald-500"
               />
             </div>
             
             <div>
-              <label className="block text-gray-300 text-sm mb-2">BB Width Threshold</label>
+              <label className="block text-slate-300 text-sm mb-2">BB Width Threshold</label>
               <input
                 type="number"
                 step="0.001"
                 value={config.bb_width_threshold}
                 onChange={(e) => setConfig({...config, bb_width_threshold: parseFloat(e.target.value)})}
-                className="w-full bg-gray-800 text-white border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:border-blue-500"
+                className="w-full bg-slate-800 text-white border border-slate-700 rounded-lg px-4 py-2 focus:outline-none focus:border-emerald-500"
               />
             </div>
           </div>
@@ -167,7 +167,7 @@ const AnalysisPage = () => {
 
         {/* Stage 2: Micro Confirmation */}
         <div className="mb-6">
-          <h3 className="text-lg font-semibold text-blue-400 mb-4">Stage 2: Micro Confirmation</h3>
+          <h3 className="text-lg font-semibold text-emerald-400 mb-4">Stage 2: Micro Confirmation</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className="block text-gray-300 text-sm mb-2">Confirmation Window (bars)</label>
