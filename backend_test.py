@@ -979,6 +979,277 @@ class BackendTester:
         except Exception as e:
             self.log_result("MTF System Stop", False, f"Exception: {str(e)}")
 
+    # ============= KPI API ENDPOINTS TESTS =============
+    
+    def test_kpi_summary_endpoint(self):
+        """Test KPI Summary Endpoint - GET /api/kpis/summary"""
+        try:
+            response = requests.get(f"{API_BASE}/kpis/summary", timeout=10)
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Verify response structure
+                required_fields = ['win_rate', 'total_pnl', 'profit_factor', 'avg_r_multiple', 
+                                 'sharpe_ratio', 'max_drawdown', 'total_trades', 'has_data']
+                
+                if all(field in data for field in required_fields):
+                    # Check placeholder values when no trades exist
+                    if not data['has_data']:
+                        # Verify realistic placeholder values
+                        expected_win_rate = 58.3
+                        expected_avg_r = 1.8
+                        
+                        win_rate_correct = abs(data['win_rate'] - expected_win_rate) < 0.1
+                        avg_r_correct = abs(data['avg_r_multiple'] - expected_avg_r) < 0.1
+                        
+                        if win_rate_correct and avg_r_correct:
+                            self.log_result("KPI Summary Endpoint", True, 
+                                          f"Placeholder values correct: Win Rate {data['win_rate']}%, R-Multiple {data['avg_r_multiple']}R")
+                        else:
+                            self.log_result("KPI Summary Endpoint", False, 
+                                          f"Incorrect placeholder values: Win Rate {data['win_rate']}%, R-Multiple {data['avg_r_multiple']}R")
+                    else:
+                        # Has real data
+                        self.log_result("KPI Summary Endpoint", True, 
+                                      f"Real data: {data['total_trades']} trades, Win Rate {data['win_rate']}%")
+                else:
+                    missing_fields = [f for f in required_fields if f not in data]
+                    self.log_result("KPI Summary Endpoint", False, f"Missing fields: {missing_fields}")
+            else:
+                self.log_result("KPI Summary Endpoint", False, f"HTTP {response.status_code}: {response.text}")
+        except Exception as e:
+            self.log_result("KPI Summary Endpoint", False, f"Exception: {str(e)}")
+    
+    def test_kpi_full_endpoint(self):
+        """Test Full KPIs Endpoint - GET /api/kpis/full"""
+        try:
+            response = requests.get(f"{API_BASE}/kpis/full", timeout=10)
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Verify complete response structure
+                required_sections = ['summary', 'returns', 'risk', 'efficiency', 'breakdown', 'metadata']
+                
+                if all(section in data for section in required_sections):
+                    metadata = data.get('metadata', {})
+                    has_data = metadata.get('has_data', False)
+                    total_trades = metadata.get('total_trades', 0)
+                    
+                    if has_data:
+                        # Check if sections have content
+                        sections_with_data = [s for s in required_sections[:-1] if data[s]]
+                        self.log_result("Full KPIs Endpoint", True, 
+                                      f"Complete structure with {total_trades} trades, {len(sections_with_data)} sections populated")
+                    else:
+                        # Empty state handling
+                        empty_sections = [s for s in required_sections[:-1] if not data[s]]
+                        self.log_result("Full KPIs Endpoint", True, 
+                                      f"Empty state handled correctly: {len(empty_sections)} empty sections")
+                else:
+                    missing_sections = [s for s in required_sections if s not in data]
+                    self.log_result("Full KPIs Endpoint", False, f"Missing sections: {missing_sections}")
+            else:
+                self.log_result("Full KPIs Endpoint", False, f"HTTP {response.status_code}: {response.text}")
+        except Exception as e:
+            self.log_result("Full KPIs Endpoint", False, f"Exception: {str(e)}")
+    
+    def test_kpi_calculate_endpoint(self):
+        """Test KPI Calculation Endpoint - POST /api/kpis/calculate"""
+        try:
+            response = requests.post(f"{API_BASE}/kpis/calculate", timeout=10)
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Verify response structure
+                required_fields = ['success', 'message', 'total_trades']
+                
+                if all(field in data for field in required_fields):
+                    success = data['success']
+                    total_trades = data['total_trades']
+                    message = data['message']
+                    
+                    if success:
+                        # Has trades to calculate
+                        has_summary = 'summary' in data
+                        self.log_result("KPI Calculate Endpoint", True, 
+                                      f"Calculation successful: {total_trades} trades, Summary included: {has_summary}")
+                    else:
+                        # No trades available
+                        self.log_result("KPI Calculate Endpoint", True, 
+                                      f"No trades available (expected): {message}")
+                else:
+                    missing_fields = [f for f in required_fields if f not in data]
+                    self.log_result("KPI Calculate Endpoint", False, f"Missing fields: {missing_fields}")
+            else:
+                self.log_result("KPI Calculate Endpoint", False, f"HTTP {response.status_code}: {response.text}")
+        except Exception as e:
+            self.log_result("KPI Calculate Endpoint", False, f"Exception: {str(e)}")
+    
+    def test_kpi_breakdown_tier(self):
+        """Test Tier Breakdown Endpoint - GET /api/kpis/breakdown/tier"""
+        try:
+            response = requests.get(f"{API_BASE}/kpis/breakdown/tier", timeout=10)
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Verify A vs B tier structure
+                required_fields = ['A', 'B', 'has_data']
+                
+                if all(field in data for field in required_fields):
+                    has_data = data['has_data']
+                    a_tier = data['A']
+                    b_tier = data['B']
+                    
+                    # Check count fields exist
+                    a_count = a_tier.get('count', 0)
+                    b_count = b_tier.get('count', 0)
+                    
+                    if has_data:
+                        self.log_result("KPI Breakdown Tier", True, 
+                                      f"Tier breakdown: A-tier {a_count} trades, B-tier {b_count} trades")
+                    else:
+                        self.log_result("KPI Breakdown Tier", True, 
+                                      f"Empty state: A-tier {a_count}, B-tier {b_count} (expected)")
+                else:
+                    missing_fields = [f for f in required_fields if f not in data]
+                    self.log_result("KPI Breakdown Tier", False, f"Missing fields: {missing_fields}")
+            else:
+                self.log_result("KPI Breakdown Tier", False, f"HTTP {response.status_code}: {response.text}")
+        except Exception as e:
+            self.log_result("KPI Breakdown Tier", False, f"Exception: {str(e)}")
+    
+    def test_kpi_breakdown_regime(self):
+        """Test Regime Breakdown Endpoint - GET /api/kpis/breakdown/regime"""
+        try:
+            response = requests.get(f"{API_BASE}/kpis/breakdown/regime", timeout=10)
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Verify squeeze/normal/wide structure
+                required_fields = ['squeeze', 'normal', 'wide', 'has_data']
+                
+                if all(field in data for field in required_fields):
+                    has_data = data['has_data']
+                    squeeze_count = data['squeeze'].get('count', 0)
+                    normal_count = data['normal'].get('count', 0)
+                    wide_count = data['wide'].get('count', 0)
+                    
+                    if has_data:
+                        self.log_result("KPI Breakdown Regime", True, 
+                                      f"Regime breakdown: Squeeze {squeeze_count}, Normal {normal_count}, Wide {wide_count}")
+                    else:
+                        self.log_result("KPI Breakdown Regime", True, 
+                                      f"Empty state: All regimes 0 trades (expected)")
+                else:
+                    missing_fields = [f for f in required_fields if f not in data]
+                    self.log_result("KPI Breakdown Regime", False, f"Missing fields: {missing_fields}")
+            else:
+                self.log_result("KPI Breakdown Regime", False, f"HTTP {response.status_code}: {response.text}")
+        except Exception as e:
+            self.log_result("KPI Breakdown Regime", False, f"Exception: {str(e)}")
+    
+    def test_kpi_breakdown_side(self):
+        """Test Side Breakdown Endpoint - GET /api/kpis/breakdown/side"""
+        try:
+            response = requests.get(f"{API_BASE}/kpis/breakdown/side", timeout=10)
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Verify long vs short structure
+                required_fields = ['long', 'short', 'has_data']
+                
+                if all(field in data for field in required_fields):
+                    has_data = data['has_data']
+                    long_count = data['long'].get('count', 0)
+                    short_count = data['short'].get('count', 0)
+                    
+                    if has_data:
+                        self.log_result("KPI Breakdown Side", True, 
+                                      f"Side breakdown: Long {long_count} trades, Short {short_count} trades")
+                    else:
+                        self.log_result("KPI Breakdown Side", True, 
+                                      f"Empty state: Long {long_count}, Short {short_count} (expected)")
+                else:
+                    missing_fields = [f for f in required_fields if f not in data]
+                    self.log_result("KPI Breakdown Side", False, f"Missing fields: {missing_fields}")
+            else:
+                self.log_result("KPI Breakdown Side", False, f"HTTP {response.status_code}: {response.text}")
+        except Exception as e:
+            self.log_result("KPI Breakdown Side", False, f"Exception: {str(e)}")
+    
+    def test_kpi_health_check(self):
+        """Test KPI Health Check - GET /api/kpis/health"""
+        try:
+            response = requests.get(f"{API_BASE}/kpis/health", timeout=10)
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Verify health check structure
+                required_fields = ['status', 'service']
+                
+                if all(field in data for field in required_fields):
+                    status = data['status']
+                    service = data['service']
+                    total_trades = data.get('total_trades', 0)
+                    kpis_cached = data.get('kpis_cached', False)
+                    last_update = data.get('last_update')
+                    
+                    if status == 'healthy':
+                        self.log_result("KPI Health Check", True, 
+                                      f"Service healthy: {service}, {total_trades} trades, Cached: {kpis_cached}")
+                    else:
+                        error = data.get('error', 'Unknown error')
+                        self.log_result("KPI Health Check", False, f"Service unhealthy: {error}")
+                else:
+                    missing_fields = [f for f in required_fields if f not in data]
+                    self.log_result("KPI Health Check", False, f"Missing fields: {missing_fields}")
+            else:
+                self.log_result("KPI Health Check", False, f"HTTP {response.status_code}: {response.text}")
+        except Exception as e:
+            self.log_result("KPI Health Check", False, f"Exception: {str(e)}")
+    
+    def test_landing_page_kpi_integration(self):
+        """Test LandingPageV2 KPI integration"""
+        try:
+            # Test the same endpoint that LandingPageV2 uses
+            response = requests.get(f"{API_BASE}/kpis/summary", timeout=10)
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Check if the response matches what LandingPageV2 expects
+                if 'win_rate' in data and 'avg_r_multiple' in data and 'total_trades' in data:
+                    win_rate = data['win_rate']
+                    avg_r_multiple = data['avg_r_multiple']
+                    total_trades = data['total_trades']
+                    
+                    # Verify realistic placeholder values match LandingPageV2 expectations
+                    if not data.get('has_data', False):
+                        # Should match the placeholder values in LandingPageV2
+                        expected_win_rate = 58.3
+                        expected_avg_r = 1.8
+                        expected_signals = 5  # Default in LandingPageV2
+                        
+                        win_rate_match = abs(win_rate - expected_win_rate) < 0.1
+                        avg_r_match = abs(avg_r_multiple - expected_avg_r) < 0.1
+                        
+                        if win_rate_match and avg_r_match:
+                            self.log_result("Landing Page KPI Integration", True, 
+                                          f"Placeholder values match LandingPageV2: Win Rate {win_rate}%, R-Multiple {avg_r_multiple}R, Signals {total_trades}")
+                        else:
+                            self.log_result("Landing Page KPI Integration", False, 
+                                          f"Placeholder mismatch: Got Win Rate {win_rate}%, R-Multiple {avg_r_multiple}R")
+                    else:
+                        # Has real data
+                        self.log_result("Landing Page KPI Integration", True, 
+                                      f"Real data available: Win Rate {win_rate}%, R-Multiple {avg_r_multiple}R, Trades {total_trades}")
+                else:
+                    self.log_result("Landing Page KPI Integration", False, 
+                                  f"Missing expected fields for LandingPageV2: {list(data.keys())}")
+            else:
+                self.log_result("Landing Page KPI Integration", False, f"HTTP {response.status_code}: {response.text}")
+        except Exception as e:
+            self.log_result("Landing Page KPI Integration", False, f"Exception: {str(e)}")
+
     # ============= PHASE 4: CONFIG & LOGGING TESTS =============
     
     def test_phase4_imports(self):
