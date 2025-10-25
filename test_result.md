@@ -654,11 +654,11 @@ backend:
 
   - task: "Phase 3: Risk Manager (Liq-gap Guards)"
     implemented: true
-    working: "NA"
+    working: true
     file: "app/services/risk_manager.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
@@ -672,6 +672,35 @@ backend:
           - Position sizing with risk limits (max 2% per trade)
           - Margin calculations and availability checks
           Needs backend testing with leverage scenarios.
+      - working: true
+        agent: "testing"
+        comment: |
+          ✅ COMPREHENSIVE BACKEND TESTING COMPLETE: Risk Manager working excellently.
+          
+          **Initialization Testing (1/1 PASS)**:
+          - ✅ RiskManager initialization: All default parameters correct (base_size=$1000, max_leverage=5×, min_liq_gap=3×, account=$10000, max_risk=2%)
+          
+          **Liquidation Price Calculations (1/1 PASS)**:
+          - ✅ Long positions: Liq price below entry (3×: 67.17, 5×: 80.50, 10×: 90.50)
+          - ✅ Short positions: Liq price above entry (3×: 132.83)
+          - ✅ Higher leverage = closer liquidation (correct risk scaling)
+          
+          **Liq-Gap Guards (1/1 PASS)**:
+          - ✅ 3× multiplier requirement: 6.57× passes, 1.90× fails (high leverage rejected)
+          - ✅ Guard logic: Prevents risky trades with insufficient margin safety
+          - ✅ Structure: All required fields present (liq_price, distances, multipliers)
+          
+          **Position Sizing (1/1 PASS)**:
+          - ✅ Tier-based sizing: A-tier=$1000 (1.0×), B-tier=$500 (0.5×), ratio=0.5
+          - ✅ Risk calculations: 5% stop distance correctly calculated
+          - ✅ Risk limits: Position sizing respects max 2% account risk
+          
+          **Comprehensive Risk Check (1/1 PASS)**:
+          - ✅ Good trade (3× leverage): PASS with liq_gap=6.6×
+          - ✅ Bad trade (10× leverage): FAIL with "Liq-gap insufficient: 1.90× < 3.0×"
+          - ✅ Integration: All risk factors (liq-gap, position sizing, margin) combined correctly
+          
+          **CONCLUSION**: RiskManager is production-ready. All calculations accurate, 3× liq-gap guard working, tier-based position sizing operational. Critical risk protection in place.
 
   - task: "Phase 3: TP/SL Manager (3-Tier Ladder, Trailing)"
     implemented: true
