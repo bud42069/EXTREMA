@@ -142,7 +142,6 @@ export default function OverviewPageV2() {
             subValue={stats.monitor.running ? 'Live from Pyth' : 'Monitor offline'}
             color="cyan"
             size="md"
-            icon="💰"
           />
         </motion.div>
 
@@ -157,7 +156,6 @@ export default function OverviewPageV2() {
             subValue={`${stats.swings.swings_24h || 0} swings detected`}
             color="emerald"
             size="md"
-            icon="📈"
           />
         </motion.div>
 
@@ -172,7 +170,6 @@ export default function OverviewPageV2() {
             subValue={`${systemHealth.filter(s => s.status).length}/${systemHealth.length} services`}
             color={allSystemsOnline ? 'emerald' : stats.monitor.running ? 'amber' : 'default'}
             size="md"
-            icon="⚡"
           />
         </motion.div>
 
@@ -187,7 +184,6 @@ export default function OverviewPageV2() {
             subValue={stats.mtf.running ? 'Multi-timeframe' : 'Single timeframe'}
             color={stats.mtf.running ? 'cyan' : 'default'}
             size="md"
-            icon="🧠"
           />
         </motion.div>
       </div>
