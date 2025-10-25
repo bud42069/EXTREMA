@@ -727,12 +727,17 @@ class MTFConfluenceEngine:
         micro_snapshot: Optional[dict] = None,
         df_1m: Optional[pd.DataFrame] = None,
         df_tape: Optional[pd.DataFrame] = None,
+        df_5m: Optional[pd.DataFrame] = None,
+        df_15m: Optional[pd.DataFrame] = None,
+        df_1h: Optional[pd.DataFrame] = None,
+        df_4h: Optional[pd.DataFrame] = None,
+        df_1d: Optional[pd.DataFrame] = None,
         side: Optional[str] = None,
         tier: str = 'B',
         atr_5m: Optional[float] = None
     ) -> dict:
         """
-        Main evaluation method - computes full MTF confluence with Phase 1 integration.
+        Main evaluation method - computes full MTF confluence with Phase 1 & Phase 2 integration.
         
         Phase 1 Enhancements:
         - Accepts DataFrames (df_1m, df_tape) for detailed impulse and tape analysis
@@ -740,12 +745,26 @@ class MTFConfluenceEngine:
         - Uses tier parameter for volume threshold adjustment
         - Uses atr_5m for VWAP proximity checks
         
+        Phase 2 Enhancements:
+        - Accepts additional DataFrames (df_5m, df_15m, df_1h, df_4h, df_1d) for regime and gates
+        - Computes regime features from 5m data
+        - Uses context_gates for 15m/1h EMA alignment
+        - Uses macro_gates for 4h/1D alignment and tier determination
+        - Enhanced bottleneck logic with conflict detection
+        
         Returns:
-            Dict with complete confluence breakdown
+            Dict with complete confluence breakdown including regime
         """
-        # Context confluence
+        # Phase 2: Compute regime features
+        regime = None
+        if df_5m is not None:
+            regime = self.compute_regime_features(df_5m)
+        
+        # Context confluence with Phase 2 integration
         context = self.compute_context_confluence(
-            features_15m, features_1h, features_4h, features_1d
+            features_15m, features_1h, features_4h, features_1d,
+            df_15m=df_15m, df_1h=df_1h, df_4h=df_4h, df_1d=df_1d,
+            side=side
         )
         
         # Micro confluence with Phase 1 integration
@@ -754,18 +773,38 @@ class MTFConfluenceEngine:
             df_1m=df_1m, df_tape=df_tape, side=side, tier=tier, atr_5m=atr_5m
         )
         
-        # Final score
+        # Extract macro result from context details
+        macro_result = context.get('details', {}).get('macro_gates')
+        
+        # Final score with Phase 2 tier determination
         final = self.compute_final_confluence(
             context['total'],
-            micro['total']
+            micro['total'],
+            macro_result=macro_result,
+            context_result=context.get('details', {}).get('context_gates')
         )
         
-        return {
+        result = {
             'context': context,
             'micro': micro,
             'final': final,
-            'timestamp': pd.Timestamp.now()
+            'regime': regime,
+            'timestamp': pd.Timestamp.now(),
+            'phase2_enabled': {
+                'regime_detection': regime is not None and regime.get('available', False),
+                'context_gates': df_15m is not None and df_1h is not None,
+                'macro_gates': df_4h is not None and df_1d is not None
+            }
         }
+        
+        logger.info(
+            f"MTF Evaluation (Phase 1+2): "
+            f"Context={context['total']:.1f}, Micro={micro['total']:.1f}, "
+            f"Final={final['final_score']:.1f}, Tier={final['tier']}, "
+            f"Regime={regime['regime'] if regime else 'unknown'}"
+        )
+        
+        return result
 
 
 # Global instance - initialize with Helius API key from config
