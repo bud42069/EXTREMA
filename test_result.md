@@ -689,11 +689,7 @@ metadata:
   run_ui: true
 
 test_plan:
-  current_focus:
-    - "Phase 1: 1m Impulse Detection (RSI-12, BOS, Volume)"
-    - "Phase 1: Tape Filters (CVD z-score, OBI, VWAP Proximity)"
-    - "Phase 1: Comprehensive Veto System"
-    - "Phase 1: MTF Confluence Enhancement"
+  current_focus: []
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
@@ -703,6 +699,11 @@ test_plan:
     - "Prometheus Metrics Integration - Metrics endpoint verified"
     - "Signal Engine Microstructure Gates - Veto transparency confirmed"
     - "MEXC WebSocket Worker - Start/stop functionality verified"
+    - "Phase 1: Enhanced Detection Engine - COMPREHENSIVE BACKEND TESTING COMPLETE ✅"
+    - "Phase 1: 1m Impulse Detection - Backend API integration verified ✅"
+    - "Phase 1: Tape Filters - Backend API integration verified ✅"
+    - "Phase 1: Comprehensive Veto System - Backend API integration verified ✅"
+    - "Phase 1: MTF Confluence Enhancement - Backend API integration verified ✅"
 
 agent_communication:
   - agent: "main"
