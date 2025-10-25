@@ -84,6 +84,12 @@ def scalp_card(
             enable_micro_gate=enable_micro_gate
         )
 
+        # Force mode: generate card even without confirmation
+        if j is None and force:
+            # Use candidate bar itself as "confirmation"
+            j = min(i + 1, len(df2) - 1)
+            veto["forced"] = "Demo mode - bypassed confirmation"
+        
         if j is None:
             # Not confirmed - show why if we have veto
             return {"message": "no confirmed signal", "veto": veto or {}}
