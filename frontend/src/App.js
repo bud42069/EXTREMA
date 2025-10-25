@@ -135,7 +135,7 @@ function App() {
         <Layout>
           <Routes>
             <Route path="/" element={<LandingPage />} />
-            <Route path="/dashboard" element={<OverviewPage />} />
+            <Route path="/dashboard" element={<OverviewPageV2 />} />
             <Route path="/live" element={<LiveSignalsDashboardV2 />} />
             <Route path="/live-old" element={<LiveSignalsPageNew />} />
             <Route path="/scalp-cards" element={<ScalpCardsPageV2 />} />
