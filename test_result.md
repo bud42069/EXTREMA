@@ -1433,6 +1433,122 @@ agent_communication:
       
       **Status**: ✅ Phase 2 implementation complete. Ready for backend testing.
 
+  - agent: "main"
+    message: |
+      **🚀 PHASE 3: ORDER MANAGEMENT & TP/SL - IMPLEMENTATION COMPLETE**
+      
+      **Implementation Summary**:
+      Successfully implemented Phase 3 components from SOLUSDT Swing-Capture Playbook v1.0. Phase 3 focuses on execution layer: order placement, risk management, and take-profit/stop-loss management.
+      
+      **Phase 3 Services Created:**
+      
+      1. **order_manager.py (Order Placement & Unfilled Protocol)**:
+         - ✅ Order and OrderStatus tracking system (PENDING, OPEN, FILLED, CANCELLED, REJECTED)
+         - ✅ OrderManager class with comprehensive order management
+         - ✅ calculate_post_only_price(): Limit orders at best bid (long) / best ask (short)
+         - ✅ place_post_only_order(): Post-only placement for maker fees
+         - ✅ check_order_fill(): Monitor fill status
+         - ✅ cancel_order(): Cancel unfilled orders with reason tracking
+         - ✅ unfilled_protocol(): 2s wait, cancel+repost with +1 tick slip
+         - ✅ Slip cap: Max 3 attempts, max 0.05% total slippage
+         - ✅ Market fallback: If urgent (near stop), use market order
+         - ✅ Order history and active order tracking
+      
+      2. **risk_manager.py (Liq-Gap Guards & Position Sizing)**:
+         - ✅ RiskManager class with comprehensive risk controls
+         - ✅ calculate_liquidation_price(): Liq price based on leverage and maintenance margin
+         - ✅ calculate_liq_gap(): Checks liq-gap ≥ 3× stop distance
+         - ✅ calculate_position_size(): Tier-based sizing (A: 1.0×base, B: 0.5×base)
+         - ✅ check_entry_risk(): Pre-entry comprehensive risk assessment
+         - ✅ check_ongoing_risk(): Continuous position risk monitoring
+         - ✅ Position sizing with risk limits (max 2% account per trade)
+         - ✅ Margin calculations and availability checks
+         - ✅ Liq-gap guard: Minimum 3× stop distance to liquidation
+      
+      3. **tp_sl_manager.py (3-Tier TP Ladder & Trailing Stops)**:
+         - ✅ TPSLManager class with 3-tier TP/SL management
+         - ✅ calculate_tp_sl_levels(): TP1/TP2/TP3 calculation with regime adjustments
+         - ✅ create_position(): Position creation with full TP/SL tracking
+         - ✅ check_tp_hits(): Monitor TP hits and trigger reductions
+         - ✅ update_trailing_stop(): Activate after TP1, trail by 0.5×ATR
+         - ✅ check_time_stop(): 24h normal/wide, 12h squeeze max hold
+         - ✅ check_early_reduce(): 50% cut on reversal, full exit on second signal
+         - ✅ TP Ladder: TP1 @ 1.0R (50%), TP2 @ 2.0R-2.5R (30%), TP3 @ 3.0R-4.0R (20%)
+         - ✅ Trailing: Breakeven first, then 0.5×ATR trail distance
+         - ✅ Regime adjustments: Squeeze TP2/TP3 extended (2.5R/4.0R)
+      
+      **Key Features Implemented:**
+      
+      **Order Placement:**
+      - Post-only limit orders at best bid/ask for maker fees
+      - Unfilled protocol: Wait 2s, cancel and repost with incremental slip
+      - Slip cap: Max 3 attempts, max 0.05% total slippage
+      - Market fallback for urgent execution (near stop)
+      - Order tracking with detailed status history
+      
+      **Liq-Gap Guards:**
+      - Minimum liq-gap: 3× stop distance
+      - Pre-entry check: Rejects trades with insufficient liq-gap
+      - Continuous monitoring during position hold
+      - Leverage-aware liquidation price calculation
+      - Maintenance margin consideration (0.5% default)
+      
+      **3-Tier TP/SL Ladder:**
+      - **TP1** (1.0R): Take 50% off, activate trailing stop
+      - **TP2** (2.0R normal, 2.5R squeeze): Take 30% off
+      - **TP3** (3.0R normal, 4.0R squeeze): Take 20% off
+      - Stop Loss: ATR-based from signal detection
+      
+      **Trailing Stop Logic:**
+      1. Activate after TP1 hit
+      2. Move to breakeven first (risk-free)
+      3. Trail by 0.5× ATR(14, 5m)
+      4. Only move in favorable direction (up for long, down for short)
+      
+      **Time Stops:**
+      - Normal/Wide regime: 24h max hold
+      - Squeeze regime: 12h max hold (expecting faster moves)
+      - Automatic exit on time expiry
+      
+      **Early Reduce Protocol:**
+      - First reversal signal: Cut 50%, move stop to breakeven
+      - Second reversal signal: Full exit
+      - Protects against adverse moves
+      
+      **Position Sizing:**
+      - A-tier: Full size (1.0× base, typically $1000)
+      - B-tier: Half size (0.5× base, typically $500)
+      - Risk-based adjustment: Max 2% account risk per trade
+      - Leverage consideration: Default 3×, max 5×
+      
+      **Files Created (Phase 3)**:
+      1. backend/app/services/order_manager.py
+      2. backend/app/services/risk_manager.py
+      3. backend/app/services/tp_sl_manager.py
+      
+      **Testing Requirements**:
+      - Unit testing for order placement logic
+      - Unfilled protocol simulation (timeout scenarios)
+      - Liq-gap calculation verification (various leverage)
+      - Position sizing tests (A-tier vs B-tier)
+      - TP hit detection and reduction logic
+      - Trailing stop update logic (price movement scenarios)
+      - Time stop expiry checks
+      - Early reduce triggering
+      - Integration testing with Phase 1+2 confluence signals
+      
+      **Integration Points:**
+      - Order Manager: Integrates with exchange API (simulated for now)
+      - Risk Manager: Uses tier from MTF confluence (Phase 2)
+      - TP/SL Manager: Uses regime from Phase 2, entry/SL from signal detection
+      
+      **Next Steps (Phase 4)**:
+      - Config & Logging system (JSON config, trade logging, KPI tracking)
+      - State Machine enhancement (integrate Phase 3 execution)
+      - Full E2E integration (signal → risk check → order → TP/SL management)
+      
+      **Status**: ✅ Phase 3 implementation complete. Ready for backend testing and integration.
+
   - agent: "testing"
     message: |
       **🚀 PHASE 1: ENHANCED DETECTION ENGINE - COMPREHENSIVE BACKEND TESTING COMPLETE**
