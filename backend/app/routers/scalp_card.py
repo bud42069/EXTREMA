@@ -21,6 +21,7 @@ def scalp_card(
     vol_mult: float = Query(default=None),
     confirm_window: int = Query(default=None),
     enable_micro_gate: bool = Query(default=True),
+    force: bool = Query(default=False),
     symbol: str = Query(default="SOLUSDT"),
 ):
     """
