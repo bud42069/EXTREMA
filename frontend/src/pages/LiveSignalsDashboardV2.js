@@ -110,9 +110,6 @@ const CommandPalette = ({ isOpen, onClose, onCommand }) => {
 
 // CVD Slope Chart Component (Enhanced with Recharts)
 const CVDSlopeChart = ({ data }) => {
-  // Debug: Log what data we're receiving
-  console.log('[CVDSlopeChart] Received data:', data, 'Length:', data?.length);
-  
   // Always show the chart container with proper dimensions
   if (!data || data.length === 0) {
     return (
@@ -131,8 +128,6 @@ const CVDSlopeChart = ({ data }) => {
     index,
     value: value || 0
   }));
-  
-  console.log('[CVDSlopeChart] Rendering chart with', chartData.length, 'points');
   
   return (
     <div className="w-full h-full min-h-[128px]">
