@@ -111,11 +111,13 @@ export default function OverviewPageV2() {
           >
             <div className="flex items-center gap-3">
               <motion.div
-                animate={{ scale: [1, 1.2, 1] }}
+                animate={{ scale: [1, 1.1, 1] }}
                 transition={{ duration: 2, repeat: Infinity }}
-                className="text-2xl"
+                className="text-emerald-400"
               >
-                ⚡
+                <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
               </motion.div>
               <div>
                 <div className="text-emerald-400 font-bold">Live Detection Active</div>
