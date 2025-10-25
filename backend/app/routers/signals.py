@@ -2,9 +2,10 @@ from fastapi import APIRouter, HTTPException, WebSocket, WebSocketDisconnect
 
 from ..services.signal_engine import mark_candidates, micro_confirm
 from ..utils.store import get_df
-from ..utils.logging import logger
+from ..utils.logging import get_logger
 
 router = APIRouter()
+logger = get_logger(__name__)
 
 # WebSocket client management
 websocket_clients: list[WebSocket] = []
