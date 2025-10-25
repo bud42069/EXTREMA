@@ -761,22 +761,24 @@ export default function LiveSignalsDashboardV2() {
                   animate={{ opacity: 1 }}
                   className="text-center py-16"
                 >
-                  <motion.div
-                    animate={{ 
-                      rotate: [0, 10, -10, 0],
-                      scale: [1, 1.1, 1]
-                    }}
-                    transition={{ 
-                      duration: 2,
-                      repeat: Infinity,
-                      repeatDelay: 1
-                    }}
-                    className="text-gray-600 mb-4"
-                  >
-                    <svg className="w-16 h-16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5.636 18.364a9 9 0 010-12.728m12.728 0a9 9 0 010 12.728m-9.9-2.829a5 5 0 010-7.07m7.072 0a5 5 0 010 7.07M13 12a1 1 0 11-2 0 1 1 0 012 0z" />
-                    </svg>
-                  </motion.div>
+                  <div className="flex justify-center items-center mb-4">
+                    <motion.div
+                      animate={{ 
+                        rotate: [0, 10, -10, 0],
+                        scale: [1, 1.1, 1]
+                      }}
+                      transition={{ 
+                        duration: 2,
+                        repeat: Infinity,
+                        repeatDelay: 1
+                      }}
+                      className="text-gray-600"
+                    >
+                      <svg className="w-16 h-16 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5.636 18.364a9 9 0 010-12.728m12.728 0a9 9 0 010 12.728m-9.9-2.829a5 5 0 010-7.07m7.072 0a5 5 0 010 7.07M13 12a1 1 0 11-2 0 1 1 0 012 0z" />
+                      </svg>
+                    </motion.div>
+                  </div>
                   <div className="text-gray-500 text-sm font-medium">Awaiting signals...</div>
                   <div className="text-gray-600 text-xs mt-2 font-mono">
                     <span className="text-cyan-400">{monitorStatus.candles_count}</span> candles processed • {monitorStatus.running ? (
