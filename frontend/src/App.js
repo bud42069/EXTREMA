@@ -39,6 +39,16 @@ const Sidebar = () => {
         </Link>
         
         <Link
+          to="/scalp-cards"
+          className="block px-4 py-3 rounded-lg hover:bg-green-500/10 transition-colors border border-transparent hover:border-green-500/50"
+        >
+          <div className="flex items-center space-x-3">
+            <span className="text-xl">🎯</span>
+            <span className="font-mono">Scalp Cards</span>
+          </div>
+        </Link>
+        
+        <Link
           to="/"
           className="block px-4 py-3 rounded-lg hover:bg-gray-800 transition-colors"
         >
