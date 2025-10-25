@@ -102,25 +102,50 @@ export default function LiveSignalsPage() {
 
   const handleStopMonitor = async () => {
     try {
-      const [liveRes, mtfRes, streamRes] = await Promise.all([
-        axios.post(`${API}/live/stop`),
-        axios.post(`${API}/mtf/stop`),
-        axios.post(`${API}/stream/stop`)
-      ]);
+      // Stop each system independently (don't use Promise.all to avoid stopping on first error)
+      const results = {
+        live: { success: false },
+        mtf: { success: false },
+        stream: { success: false }
+      };
       
-      // Check each response individually and provide feedback
+      try {
+        const liveRes = await axios.post(`${API}/live/stop`);
+        results.live = liveRes.data;
+      } catch (e) {
+        console.error('Error stopping live monitor:', e);
+      }
+      
+      try {
+        const mtfRes = await axios.post(`${API}/mtf/stop`);
+        results.mtf = mtfRes.data;
+      } catch (e) {
+        console.error('Error stopping MTF:', e);
+      }
+      
+      try {
+        const streamRes = await axios.post(`${API}/stream/stop`);
+        results.stream = streamRes.data;
+      } catch (e) {
+        console.error('Error stopping stream:', e);
+      }
+      
+      // Check what was stopped
       const stopped = [];
-      if (liveRes.data.success) stopped.push('Live Monitor');
-      if (mtfRes.data.success) stopped.push('MTF System');
-      if (streamRes.data.success) stopped.push('Microstructure Stream');
+      if (results.live.success) stopped.push('Live Monitor');
+      if (results.mtf.success) stopped.push('MTF System');
+      if (results.stream.success) stopped.push('Microstructure Stream');
       
       if (stopped.length > 0) {
         toast.info(`⏸️ Stopped: ${stopped.join(', ')}`, { position: 'top-right' });
-        fetchMonitorStatus();
-        fetchMtfData();
       } else {
         toast.warning('Nothing was running to stop', { position: 'top-right' });
       }
+      
+      // Always refresh status
+      fetchMonitorStatus();
+      fetchMtfData();
+      
     } catch (error) {
       console.error('Error stopping monitor:', error);
     }
