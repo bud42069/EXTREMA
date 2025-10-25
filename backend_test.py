@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """
-Phase 1 Enhanced Detection Engine - Backend Testing
-Tests the newly integrated Phase 1 MTF Confluence Engine with:
-- 1m Impulse Detection (RSI-12, BOS, Volume)
-- Tape Filters (CVD z-score, OBI, VWAP Proximity)  
-- Comprehensive Veto System
-- Enhanced MTF Confluence Endpoint
+Phase 2: Context & Macro Gates - Backend Testing
+Tests the newly integrated Phase 2 MTF Confluence Engine with:
+- Regime Detection (Squeeze/Normal/Wide) from 5m BBWidth percentiles
+- Context Gates (15m/1h EMA alignment, pivot structure, oscillator agreement)
+- Macro Gates (4h/1D alignment for A/B tier determination)
+- Enhanced Tier Determination with bottleneck logic
+- Phase 2 Integration Status verification
 """
 
 import asyncio
