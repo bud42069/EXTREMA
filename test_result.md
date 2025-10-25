@@ -568,11 +568,11 @@ backend:
 
   - task: "Phase 2: MTF Confluence Enhancement (Context & Macro)"
     implemented: true
-    working: "NA"
+    working: false
     file: "app/services/mtf_confluence.py"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
@@ -588,6 +588,33 @@ backend:
           - Returns regime, phase2_enabled status, bottleneck identification
           - Enhanced /api/mtf/confluence endpoint with Phase 2 DataFrame passing
           Needs comprehensive backend testing.
+      - working: false
+        agent: "testing"
+        comment: |
+          ❌ CRITICAL INTEGRATION BUG: DataFrame Boolean Context Error
+          
+          **Error Details**:
+          - Endpoint: GET /api/mtf/confluence
+          - HTTP Status: 500 Internal Server Error
+          - Error: "The truth value of a DataFrame is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all()"
+          
+          **Root Cause Analysis**:
+          The error occurs in the Phase 2 integration code where a pandas DataFrame is being used in a boolean context (e.g., `if df:` instead of `if df is not None` or `if not df.empty`).
+          
+          **Likely Locations**:
+          1. mtf_confluence.py evaluate() method - DataFrame checks
+          2. context_gates.py or macro_gates.py - DataFrame validation
+          3. regime_detector.py - DataFrame processing
+          
+          **Impact**: 
+          - Complete Phase 2 functionality blocked
+          - Cannot test any Phase 2 features
+          - MTF confluence endpoint non-functional
+          
+          **MTF System Status**: ✅ Working (start/stop/status endpoints functional)
+          **Data Availability**: Partial (15m/1h/4h sufficient, 5m/1D insufficient)
+          
+          **Recommendation**: Fix DataFrame boolean context usage in Phase 2 integration code.
 
   - task: "MEXC WebSocket Worker"
     implemented: true
