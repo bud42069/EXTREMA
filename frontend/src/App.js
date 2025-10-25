@@ -134,7 +134,8 @@ function App() {
           <Routes>
             <Route path="/" element={<LandingPage />} />
             <Route path="/dashboard" element={<OverviewPage />} />
-            <Route path="/live" element={<LiveSignalsPageNew />} />
+            <Route path="/live" element={<LiveSignalsDashboardV2 />} />
+            <Route path="/live-old" element={<LiveSignalsPageNew />} />
             <Route path="/scalp-cards" element={<ScalpCardsPage />} />
             <Route path="/upload" element={<UploadPage />} />
             <Route path="/analysis" element={<AnalysisPage />} />
