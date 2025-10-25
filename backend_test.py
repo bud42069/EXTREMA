@@ -387,6 +387,14 @@ class BackendTester:
                         self.log_result("MTF Confluence Baseline", False, "Missing confluence structure")
                 else:
                     self.log_result("MTF Confluence Baseline", False, f"Missing required fields: {data}")
+            elif response.status_code == 500:
+                # Known issue with DataFrame boolean context in Phase 2 code
+                error_detail = response.json().get('detail', 'Unknown error')
+                if 'DataFrame is ambiguous' in error_detail:
+                    self.log_result("MTF Confluence Baseline", False, 
+                                  f"KNOWN ISSUE: DataFrame boolean context error in Phase 2 code - {error_detail}")
+                else:
+                    self.log_result("MTF Confluence Baseline", False, f"HTTP 500: {error_detail}")
             else:
                 self.log_result("MTF Confluence Baseline", False, f"HTTP {response.status_code}: {response.text}")
         except Exception as e:
