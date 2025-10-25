@@ -141,7 +141,7 @@ function App() {
             <Route path="/live-old" element={<LiveSignalsPageNew />} />
             <Route path="/scalp-cards" element={<ScalpCardsPageV2 />} />
             <Route path="/upload" element={<UploadPage />} />
-            <Route path="/analysis" element={<AnalysisPage />} />
+            <Route path="/analysis" element={<AnalysisPageV2 />} />
             <Route path="/backtest" element={<BacktestPage />} />
           </Routes>
         </Layout>
