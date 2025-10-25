@@ -15,6 +15,8 @@ from dataclasses import dataclass, asdict
 from indicators import calculate_atr, calculate_rsi, calculate_bollinger_bands, calculate_ema, calculate_volume_zscore
 from extrema_detection import detect_local_extrema
 from signal_detection import TwoStageDetector
+from mtf_confirmation import MultiTimeframeAnalyzer
+from onchain_monitor import HeliusOnChainMonitor
 
 logger = logging.getLogger(__name__)
 
