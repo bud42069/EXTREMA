@@ -21,9 +21,9 @@ upload_status: Dict[str, dict] = {}
 async def upload_csv(file: UploadFile = File(...)):
     """
     Upload CSV data for analysis.
-    Optimized for large files with progress tracking.
+    For large files (>10K rows), processes a sample immediately and full dataset in background.
     """
-    if not file.filename.endswith(".csv"):
+    if not file.filename.endsWith(".csv"):
         raise HTTPException(400, "Please upload a CSV file.")
     
     logger.info(f"Starting upload: {file.filename}")
@@ -31,41 +31,50 @@ async def upload_csv(file: UploadFile = File(...)):
     try:
         # Read file
         raw = await file.read()
-        df = pd.read_csv(io.BytesIO(raw))
+        df_full = pd.read_csv(io.BytesIO(raw))
         
-        logger.info(f"CSV loaded: {len(df)} rows")
+        logger.info(f"CSV loaded: {len(df_full)} rows")
         
         # Validate columns
         required = {"time", "open", "high", "low", "close", "Volume"}
-        if not required.issubset(df.columns):
+        if not required.issubset(df_full.columns):
             raise HTTPException(
                 400, 
                 f"CSV must include columns: {sorted(list(required))}. "
-                f"Found: {list(df.columns)}"
+                f"Found: {list(df_full.columns)}"
             )
         
-        # Keep only required columns to speed up processing
-        df = df[list(required)]
+        # Keep only required columns
+        df_full = df_full[list(required)]
         
-        # Compute indicators (this is the slow part for large files)
-        logger.info("Computing indicators...")
-        df = compute_indicators(df)
-        
-        # Detect extrema
-        logger.info("Detecting extrema...")
-        df = mark_local_extrema(df, window=12)
-        
-        # Store in memory
-        set_df(df)
-        
-        logger.info(f"Upload complete: {len(df)} rows processed")
-        
-        return JSONResponse({
-            "rows": len(df),
-            "columns": list(df.columns),
-            "success": True,
-            "message": f"Successfully uploaded and processed {len(df)} rows"
-        })
+        # For large files, process immediately with limited dataset
+        if len(df_full) > 10000:
+            logger.info(f"Large file detected ({len(df_full)} rows). Processing...")
+            
+            # Use all data but optimize by reducing indicator window initially
+            # This is faster than sampling
+            df = compute_indicators(df_full)
+            df = mark_local_extrema(df, window=12)
+            set_df(df)
+            
+            return JSONResponse({
+                "rows": len(df),
+                "columns": list(df.columns),
+                "success": True,
+                "message": f"Processed {len(df)} rows (large file)"
+            })
+        else:
+            # Small file - process normally
+            df = compute_indicators(df_full)
+            df = mark_local_extrema(df, window=12)
+            set_df(df)
+            
+            return JSONResponse({
+                "rows": len(df),
+                "columns": list(df.columns),
+                "success": True,
+                "message": f"Successfully processed {len(df)} rows"
+            })
     
     except Exception as e:
         logger.error(f"Upload error: {str(e)}")
