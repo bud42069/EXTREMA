@@ -178,8 +178,8 @@ const LiveSignalsPage = () => {
   const fetchInitialData = async () => {
     try {
       const [statusRes, signalsRes] = await Promise.all([
-        axios.get(`${API}/live-monitor/status`),
-        axios.get(`${API}/live-signals`)
+        axios.get(`${API}/live/status`),
+        axios.get(`${API}/live/signals`)
       ]);
       
       setMonitorStatus(statusRes.data);
@@ -194,7 +194,7 @@ const LiveSignalsPage = () => {
 
   const fetchMonitorStatus = async () => {
     try {
-      const response = await axios.get(`${API}/live-monitor/status`);
+      const response = await axios.get(`${API}/live/status`);
       setMonitorStatus(response.data);
     } catch (error) {
       console.error('Error fetching status:', error);
