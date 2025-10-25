@@ -74,23 +74,50 @@ const AnalysisPage = () => {
   };
 
   return (
-    <div className="max-w-7xl">
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold text-white mb-2">Signal Analysis</h1>
-        <p className="text-gray-400">Run two-stage detection to identify swing trading signals</p>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-emerald-950/20 p-8">
+      <div className="max-w-7xl mx-auto">
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-white to-emerald-400 bg-clip-text text-transparent mb-2">
+            Signal Analysis
+          </h1>
+          <p className="text-slate-400 text-lg">Run two-stage detection to identify swing trading signals</p>
+        </div>
 
-      {/* Configuration Panel */}
-      <div className="bg-gray-900 rounded-lg p-8 mb-6">
-        <h2 className="text-2xl font-bold text-white mb-6">Analysis Configuration</h2>
-        
-        {/* Dataset Selection */}
-        <div className="mb-6">
-          <label className="block text-gray-300 mb-2">Select Dataset</label>
-          <select
-            value={selectedDataset}
-            onChange={(e) => setSelectedDataset(e.target.value)}
-            className="w-full bg-gray-800 text-white border border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:border-blue-500"
+        {/* Data Status Card */}
+        <div className="relative overflow-hidden rounded-2xl mb-6">
+          <div className="absolute inset-0 bg-gradient-to-br from-slate-800/60 to-slate-900/60 backdrop-blur-xl"></div>
+          <div className="absolute inset-0 border border-slate-700/50 rounded-2xl"></div>
+          <div className="relative p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-sm text-slate-400 mb-1">Current Dataset</div>
+                {dataLoaded ? (
+                  <div>
+                    <div className="text-2xl font-bold text-white mb-1">
+                      {dataInfo?.rows?.toLocaleString() || 0} Candles Loaded
+                    </div>
+                    <div className="text-sm text-emerald-400">
+                      {dataInfo?.swings_24h || 0} swings detected • Ready for analysis
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    <div className="text-2xl font-bold text-slate-500 mb-1">No Data Loaded</div>
+                    <div className="text-sm text-slate-500">Upload CSV data first</div>
+                  </div>
+                )}
+              </div>
+              {!dataLoaded && (
+                <button
+                  onClick={() => navigate('/upload')}
+                  className="px-6 py-3 bg-emerald-500 hover:bg-emerald-600 rounded-lg text-white font-medium transition-all"
+                >
+                  Upload Data
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
           >
             <option value="">Choose a dataset...</option>
             {datasets.map((dataset) => (
