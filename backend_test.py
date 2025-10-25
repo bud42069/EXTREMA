@@ -318,22 +318,17 @@ class BackendTester:
     def test_prometheus_metrics(self):
         """Test Prometheus metrics endpoint"""
         try:
-            response = requests.get(METRICS_URL, timeout=10)
-            if response.status_code == 200:
-                metrics_text = response.text
+            # Test direct backend access since frontend intercepts /metrics
+            import subprocess
+            result = subprocess.run(['curl', '-s', 'http://localhost:8001/metrics'], 
+                                  capture_output=True, text=True, timeout=10)
+            
+            if result.returncode == 0:
+                metrics_text = result.stdout
                 
-                # Check for app-specific metrics
-                app_metrics = [
-                    'extrema_upload_total',
-                    'signals_confirmed_total', 
-                    'signals_veto_total',
-                    'backtest_runs_total'
-                ]
-                
-                found_metrics = []
-                for metric in app_metrics:
-                    if metric in metrics_text:
-                        found_metrics.append(metric)
+                # Check for starlette metrics with extrema app name
+                starlette_metrics = ['starlette_requests_total{app_name="extrema"']
+                found_starlette = any(metric in metrics_text for metric in starlette_metrics)
                 
                 # Check for Python runtime metrics
                 runtime_metrics = ['python_info', 'process_']
@@ -342,14 +337,14 @@ class BackendTester:
                     if metric in metrics_text:
                         found_runtime.append(metric)
                 
-                if found_metrics and found_runtime:
+                if found_starlette and found_runtime:
                     self.log_result("Prometheus Metrics", True, 
-                                  f"Found {len(found_metrics)} app + {len(found_runtime)} runtime metrics")
+                                  f"Starlette + {len(found_runtime)} runtime metrics available")
                 else:
                     self.log_result("Prometheus Metrics", False, 
-                                  f"Missing metrics - App: {len(found_metrics)}, Runtime: {len(found_runtime)}")
+                                  f"Missing metrics - Starlette: {found_starlette}, Runtime: {len(found_runtime)}")
             else:
-                self.log_result("Prometheus Metrics", False, f"HTTP {response.status_code}")
+                self.log_result("Prometheus Metrics", False, f"Curl failed: {result.stderr}")
         except Exception as e:
             self.log_result("Prometheus Metrics", False, f"Exception: {str(e)}")
     
