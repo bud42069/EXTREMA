@@ -24,6 +24,12 @@ class Settings(BaseSettings):
     VOL_MULT: float = 1.5
     CONFIRM_WINDOW: int = 6
     
+    # Microstructure thresholds
+    MICRO_IMB: float = 0.15  # Ladder imbalance threshold
+    SPREAD_BPS_MAX: float = 10.0  # Max spread in basis points
+    OBV_Z_VETO: float = 2.0  # OBV z-score veto threshold
+    ENABLE_MICRO_GATE: bool = True  # Enable microstructure gating
+    
     # CORS
     CORS_ORIGINS: str = "*"
 
