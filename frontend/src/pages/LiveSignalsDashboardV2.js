@@ -113,7 +113,7 @@ const CVDSlopeChart = ({ data }) => {
   // Always show the chart container with proper dimensions
   if (!data || data.length === 0) {
     return (
-      <div className="w-full h-full flex flex-col items-center justify-center text-gray-600 text-xs px-4">
+      <div className="w-full h-32 flex flex-col items-center justify-center text-gray-600 text-xs px-4">
         <svg className="w-10 h-10 mb-2 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
         </svg>
@@ -130,26 +130,28 @@ const CVDSlopeChart = ({ data }) => {
   }));
   
   return (
-    <ResponsiveContainer width="100%" height={128}>
-      <AreaChart data={chartData} margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
-        <defs>
-          <linearGradient id="cvdSlopeGradient" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#06b6d4" stopOpacity={0.6} />
-            <stop offset="100%" stopColor="#06b6d4" stopOpacity={0.05} />
-          </linearGradient>
-        </defs>
-        <YAxis hide domain={['dataMin', 'dataMax']} />
-        <Area
-          type="monotone"
-          dataKey="value"
-          stroke="#06b6d4"
-          strokeWidth={2.5}
-          fill="url(#cvdSlopeGradient)"
-          animationDuration={300}
-          isAnimationActive={true}
-        />
-      </AreaChart>
-    </ResponsiveContainer>
+    <div className="w-full h-32">
+      <ResponsiveContainer width="100%" height="100%">
+        <AreaChart data={chartData} margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
+          <defs>
+            <linearGradient id="cvdSlopeGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#06b6d4" stopOpacity={0.6} />
+              <stop offset="100%" stopColor="#06b6d4" stopOpacity={0.05} />
+            </linearGradient>
+          </defs>
+          <YAxis hide domain={['dataMin', 'dataMax']} />
+          <Area
+            type="monotone"
+            dataKey="value"
+            stroke="#06b6d4"
+            strokeWidth={2.5}
+            fill="url(#cvdSlopeGradient)"
+            animationDuration={300}
+            isAnimationActive={true}
+          />
+        </AreaChart>
+      </ResponsiveContainer>
+    </div>
   );
 };
 
