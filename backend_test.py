@@ -899,8 +899,8 @@ class BackendTester:
             self.log_result("MTF System Stop", False, f"Exception: {str(e)}")
 
     async def run_all_tests(self):
-        """Run Phase 1 Enhanced Detection Engine tests"""
-        print("🚀 Phase 1: Enhanced Detection Engine - Backend Testing")
+        """Run Phase 2 Context & Macro Gates tests"""
+        print("🚀 Phase 2: Context & Macro Gates - Backend Testing")
         print(f"📡 Backend URL: {BACKEND_URL}")
         print("=" * 80)
         
@@ -908,18 +908,29 @@ class BackendTester:
         print("\n🏥 HEALTH CHECK")
         self.test_health_endpoint()
         
-        # Phase 1 - MTF Confluence Engine Testing
-        print("\n🧠 PHASE 1: MTF CONFLUENCE ENGINE")
-        print("Testing newly integrated detection services:")
-        print("  • 1m Impulse Detection (RSI-12, BOS, Volume)")
-        print("  • Tape Filters (CVD z-score, OBI, VWAP Proximity)")
-        print("  • Comprehensive Veto System")
-        print("  • Enhanced MTF Confluence Endpoint")
+        # Phase 2 - MTF Confluence Engine Testing
+        print("\n🧠 PHASE 2: MTF CONFLUENCE ENGINE")
+        print("Testing newly integrated Phase 2 services:")
+        print("  • Regime Detection (Squeeze/Normal/Wide) from 5m BBWidth percentiles")
+        print("  • Context Gates (15m/1h EMA alignment, pivot structure, oscillator)")
+        print("  • Macro Gates (4h/1D alignment for A/B tier determination)")
+        print("  • Enhanced Tier Determination with bottleneck logic")
         
-        self.test_mtf_confluence_general()
-        self.test_mtf_confluence_long_tier_b()
-        self.test_mtf_confluence_short_tier_a()
+        # 1. MTF Confluence Endpoint Testing
+        print("\n📊 MTF CONFLUENCE ENDPOINT TESTING")
+        self.test_mtf_confluence_baseline()
+        self.test_mtf_confluence_long_tier_b_phase2()
+        self.test_mtf_confluence_short_tier_a_phase2()
         
+        # 2. Phase 2 Feature Verification
+        print("\n🔍 PHASE 2 FEATURE VERIFICATION")
+        self.test_regime_detection_verification()
+        self.test_context_gates_verification()
+        self.test_macro_gates_verification()
+        self.test_enhanced_tier_determination()
+        self.test_phase2_integration_status()
+        
+        # 3. MTF System Control
         print("\n🔧 MTF SYSTEM CONTROL")
         self.test_mtf_start()
         time.sleep(2)  # Give system time to initialize
@@ -930,13 +941,13 @@ class BackendTester:
         self.test_mtf_run_cycle()
         self.test_mtf_stop()
         
-        # Regression testing for existing endpoints
+        # 4. Regression Testing
         print("\n🔄 REGRESSION TESTING")
-        self.test_signals_latest()
+        self.test_health_endpoint()
         
         # Summary
         print("\n" + "=" * 80)
-        print("📊 PHASE 1 TEST SUMMARY")
+        print("📊 PHASE 2 TEST SUMMARY")
         print("=" * 80)
         
         total_tests = len(self.test_results)
@@ -952,18 +963,31 @@ class BackendTester:
             for test in self.failed_tests:
                 print(f"  - {test}")
         
-        # Phase 1 specific analysis
-        phase1_tests = [r for r in self.test_results if 'MTF' in r['test'] or 'Confluence' in r['test']]
-        phase1_passed = sum(1 for r in phase1_tests if r['success'])
+        # Phase 2 specific analysis
+        phase2_tests = [r for r in self.test_results if any(keyword in r['test'] for keyword in 
+                       ['Phase 2', 'Regime', 'Context Gates', 'Macro Gates', 'Enhanced Tier', 'Integration Status'])]
+        phase2_passed = sum(1 for r in phase2_tests if r['success'])
         
-        print(f"\n🧠 Phase 1 Specific Results:")
-        print(f"Phase 1 Tests: {len(phase1_tests)}")
-        print(f"Phase 1 Passed: {phase1_passed}")
+        print(f"\n🧠 Phase 2 Specific Results:")
+        print(f"Phase 2 Tests: {len(phase2_tests)}")
+        print(f"Phase 2 Passed: {phase2_passed}")
+        
+        # Feature breakdown
+        regime_tests = [r for r in self.test_results if 'Regime' in r['test']]
+        context_tests = [r for r in self.test_results if 'Context' in r['test']]
+        macro_tests = [r for r in self.test_results if 'Macro' in r['test']]
+        tier_tests = [r for r in self.test_results if 'Tier' in r['test']]
+        
+        print(f"\n📈 Feature Breakdown:")
+        print(f"  • Regime Detection: {sum(1 for r in regime_tests if r['success'])}/{len(regime_tests)}")
+        print(f"  • Context Gates: {sum(1 for r in context_tests if r['success'])}/{len(context_tests)}")
+        print(f"  • Macro Gates: {sum(1 for r in macro_tests if r['success'])}/{len(macro_tests)}")
+        print(f"  • Enhanced Tier Logic: {sum(1 for r in tier_tests if r['success'])}/{len(tier_tests)}")
         
         if failed_tests == 0:
-            print("\n🎉 ALL TESTS PASSED - PHASE 1 INTEGRATION SUCCESSFUL!")
-        elif len(phase1_tests) > 0 and phase1_passed == len(phase1_tests):
-            print("\n✅ PHASE 1 TESTS PASSED - Core functionality working!")
+            print("\n🎉 ALL TESTS PASSED - PHASE 2 INTEGRATION SUCCESSFUL!")
+        elif len(phase2_tests) > 0 and phase2_passed == len(phase2_tests):
+            print("\n✅ PHASE 2 TESTS PASSED - Core functionality working!")
         else:
             print(f"\n⚠️  {failed_tests} test(s) failed - see details above")
         
