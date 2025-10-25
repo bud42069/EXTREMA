@@ -760,7 +760,7 @@ class BackendTester:
     def test_phase2_integration_status(self):
         """Test Phase 2 integration status reporting"""
         try:
-            response = requests.get(f"{API_BASE}/mtf/confluence?side=long&tier=B", timeout=15)
+            response = requests.get(f"{API_BASE}/mtf/confluence", timeout=15)
             if response.status_code == 200:
                 data = response.json()
                 
