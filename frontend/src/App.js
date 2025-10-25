@@ -9,6 +9,7 @@ import OverviewPage from './pages/OverviewPage';
 import LiveSignalsPageNew from './pages/LiveSignalsPageNew';
 import LiveSignalsDashboardV2 from './pages/LiveSignalsDashboardV2';
 import ScalpCardsPage from './pages/ScalpCardsPage';
+import ScalpCardsPageV2 from './pages/ScalpCardsPageV2';
 import UploadPage from './pages/UploadPage';
 import AnalysisPage from './pages/AnalysisPage';
 import BacktestPage from './pages/BacktestPage';
