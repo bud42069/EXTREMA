@@ -68,7 +68,7 @@ export default function ScalpCardsPageV2() {
       setResp(js);
       
       if (js.card) {
-        toast.success('✅ Scalp Card Generated', { position: 'top-right', autoClose: 2000 });
+        toast.success('Scalp Card Generated', { position: 'top-right', autoClose: 2000 });
       } else {
         toast.info(`${js.message || 'No signal available'}`, { position: 'top-right', autoClose: 3000 });
       }
