@@ -118,15 +118,13 @@ const AnalysisPage = () => {
             </div>
           </div>
         </div>
-          >
-            <option value="">Choose a dataset...</option>
-            {datasets.map((dataset) => (
-              <option key={dataset.id} value={dataset.id}>
-                {dataset.filename} ({dataset.total_bars} bars)
-              </option>
-            ))}
-          </select>
-        </div>
+
+        {/* Configuration Panel */}
+        <div className="relative overflow-hidden rounded-2xl mb-6">
+          <div className="absolute inset-0 bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-xl"></div>
+          <div className="absolute inset-0 border border-slate-700/50 rounded-2xl"></div>
+          <div className="relative p-8">
+            <h2 className="text-2xl font-bold text-white mb-6">Analysis Configuration</h2>
 
         {/* Stage 1: Candidate Detection */}
         <div className="mb-6">
