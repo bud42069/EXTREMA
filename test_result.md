@@ -312,13 +312,13 @@ metadata:
 
 test_plan:
   current_focus:
+    - "WebSocket Signal Streaming - /api/signals/stream endpoint"
+    - "Live Monitoring API - start/stop/status/signals endpoints"
+    - "Modular Backend Architecture - all /api/* routes"
     - "Full E2E workflow: Upload CSV → Analyze → Backtest"
-    - "Upload Page - file selection and upload"
-    - "Analysis Page - run analysis and view results"
-    - "Backtest Page - run backtest and view performance"
   stuck_tasks: []
-  test_all: true
-  test_priority: "sequential"
+  test_all: false
+  test_priority: "high_first"
 
 agent_communication:
   - agent: "main"
