@@ -291,3 +291,9 @@ def stop_mexc_worker():
         _worker.stop()
         _worker = None
         logger.info("MEXC stream worker stopped")
+
+
+def is_worker_running() -> bool:
+    """Check if the worker is currently running."""
+    global _worker
+    return _worker is not None and _worker.running
