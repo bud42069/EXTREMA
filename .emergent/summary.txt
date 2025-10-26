@@ -1,81 +1,88 @@
 <analysis>
-The AI engineer's work encompassed a significant transformation of the application. Initial efforts focused on backend enhancements, implementing the SOLUSDT Swing-Capture Playbook v1.0 across four distinct phases: Detection Engine, Context & Macro Gates, Order Management & TP/SL, and Config & Logging. This involved creating numerous new Python services and integrating them into the existing  engine, addressing a critical DataFrame boolean error during Phase 2. Concurrently, a major UI/UX overhaul to a Bloomberg-class aesthetic was initiated. This included updating landing page metrics with realistic data and dedicated KPI API endpoints, followed by a comprehensive effort to remove all emojis and replace them with professional icons/text across core frontend pages like , , , and . The , , and  were also consolidated into a new . The trajectory concludes with the AI engineer actively resolving residual emoji issues in  and preparing to address fine-tuning for the Live Signals Channel.
+The previous AI engineer’s work can be broadly divided into two phases: initial feature refinement and a subsequent major product pivot. Initially, efforts focused on stabilizing and enhancing the existing application by resolving UI issues (emoji removal) and backend data flow problems, specifically with the Live Signals Dashboard's MTF Confluence and CVD Slope chart. Despite numerous attempts and a troubleshooter intervention, the CVD Slope chart display issue remained unresolved, and a regression reintroduced a critical DataFrame ambiguity error in the MTF backend. This led to a complete change in direction, with the user requesting a full rebuild into a non-custodial Solana HFT trading dApp. The AI engineer then successfully gathered all necessary integration playbooks for this new architectural direction, concluding the trajectory at the planning stage for the new dApp.
+
+Perfect! Building Fully Autonomous HFT Bot (Option A). Final confirmation on architecture:
+
+Implementation Plan
+PHASE 1: Core Infrastructure (Week 1)
+
+Solana Wallet Adapter (multi-wallet support: Phantom, Backpack, Solflare)
+Server-side keypair management (env variables for PoC)
+Helius WebSocket integration for real-time data
+User deposit/withdrawal system
+PHASE 2: Exchange Routing (Week 2) Which exchanges should I integrate? (Priority order)
+
+Perpetuals/Futures: a. Drift Protocol (recommended - highest liquidity, up to 20x leverage) b. Mango Markets c. Zeta Markets
+
+Spot DEX: a. Jupiter (aggregated swaps - easiest) b. Serum (limit orders - best for scalping) c. Raydium (liquidity pools)
+
+CEX (optional): a. Binance Futures API b. MEXC API c. Bybit API
+
+PHASE 3: HFT Scalping Strategy (Week 3)
+
+Port EXTREMA signal detection (local extrema, ATR, volume)
+Add Cupsey-style logic (5-min holds, rapid entry/exit)
+Order execution engine with smart routing
+PHASE 4: Risk Management (Week 4)
+
+Position size limits
+Daily loss limits
+Auto-close on drawdown
+Kill switch
 </analysis>
-
 <product_requirements>
-The application's primary goal is to establish a SOLUSDT trading system capable of detecting price swings exceeding 10% on a 5-minute timeframe, utilizing a two-stage methodology: Candidate Detection (local extrema, ATR, volume, BBWidth) and Micro Confirmation (breakout candle, volume). Key features include real-time signals via Pyth Network, a Bloomberg-class UI/UX with a dark-luxury aesthetic and specific accent colors, Solana on-chain triggers through Helius API, Multi-Timeframe (MTF) confirmation, and a hybrid methodology combining various data sources. The backend is built with FastAPI, using , , CI/CD, and Docker, processing microstructure data from Binance. The frontend, developed with React, offers dashboards, data upload, live signals, and Scalp Cards, all adhering to the new visual standard. The latest explicit requirement, largely completed, was the implementation of the SOLUSDT Swing-Capture Playbook v1.0 for backend enhancements, covering precise detection, confirmation, execution, and risk management through four phases: Detection Engine, Context & Macro Gates, Order Management & TP/SL, and Config & Logging. The UI also required a complete professional aesthetic, removing emojis and consolidating analytical pages.
+The initial application aimed to be a SOLUSDT trading system detecting price swings using a two-stage methodology (Candidate Detection & Micro Confirmation), offering real-time signals via Pyth Network and Solana on-chain triggers (Helius API), with a Bloomberg-class UI/UX. The backend used FastAPI, processing Binance microstructure data, while the React frontend offered dashboards and analytics. The SOLUSDT Swing-Capture Playbook v1.0 was implemented across four phases (Detection, Context/Macro Gates, Order Management, Config/Logging) in the backend. The UI required comprehensive emoji removal and page consolidation.
+
+The project then pivoted to building a **non-custodial Solana-based HFT trading dApp**. Key features for the new dApp include:
+*   **Wallet Integration**: Phantom/Backpack support, with the wallet signing each transaction.
+*   **Fully Autonomous Bot**: Server holds trading keypair, executes trades 24/7 without user interaction after initial setup (user deposits SOL, sets risk limits via UI).
+*   **Futures Access and Leverage**.
+*   **Multi-Option Routing**: Ability to route to various exchanges (e.g., Serum for limit orders, Jupiter for aggregated swaps, CEX APIs if available).
+*   **Core Components**: Market Data/Feeds (Helius WebSockets), Strategy Engine (EXTREMA signals), Execution Engine (Serum/Jupiter), Wallet/Custody Layer (server key management for autonomy, MPC/HSM for production), Risk/Governance Module (max sizing, liq-gap guards, kill switches, daily limits), Monitoring & Telemetry, Backtest/Paper-trade harness.
+*   **Maintain Signal Logic**: The existing EXTREMA signals logic needs to be preserved.
+*   **New Layout**: While maintaining the dark theme.
 </product_requirements>
-
 <key_technical_concepts>
-- **FastAPI**: Python web framework for backend API development.
-- **React**: JavaScript library for building interactive user interfaces.
-- **Pyth Network**: Real-time price oracle for market data.
-- **Helius API**: Solana blockchain data integration for on-chain triggers.
-- **WebSockets**: Facilitates real-time data streaming (e.g., Binance, CryptoCompare).
-- **Framer Motion**: React library for animations.
-- **Tailwind CSS**: Utility-first CSS framework for rapid UI styling.
-- **Pandas/NumPy**: Essential for data analysis and manipulation in the backend.
+-   **FastAPI**: Python web framework.
+-   **React**: JavaScript library for UI.
+-   **Pandas/NumPy**: Data manipulation (backend).
+-   **Solana Blockchain**: Target platform for dApp.
+-   **Helius API/WebSockets**: Solana data feeds, real-time events.
+-   **Solana Wallet Adapter**: Multi-wallet integration.
+-   **Drift Protocol**: Solana DeFi for perpetuals/leverage.
+-   **Jupiter Aggregator**: Solana DEX for token swaps.
 </key_technical_concepts>
-
 <code_architecture>
 
-- ****: The FastAPI application entry point. It was updated to include the newly created  router.
-- ****: Contains API routes for Multi-Timeframe functionality. This file was updated to accommodate the enhanced  by passing additional DataFrames and parameters for Phase 1 and Phase 2 integrations.
-- ****: **(New)** Created to provide API endpoints for key performance indicators (KPIs) to be consumed by the frontend.
-- ****: A core service for calculating MTF confluence scores. It underwent significant changes to integrate Phase 1 services (, , ) and Phase 2 services (, , ). It also had a critical bug fix for ambiguous DataFrame boolean checks.
-- ****: **(New)** Implements 1-minute impulse requirements for signal confirmation.
-- ****: **(New)** Implements 1-second/5-second tape filters (CVD, OBI, VWAP proximity) for microstructure analysis.
-- ****: **(New)** Houses the comprehensive veto logic for disqualifying trade signals.
-- ****: **(New)** Service for detecting market regimes (Squeeze/Normal/Wide) based on BBWidth.
-- ****: **(New)** Implements 15-minute/1-hour EMA alignment logic for context-driven trade decisions.
-- ****: **(New)** Handles 4-hour/1-day macro gate logic for A-tier/B-tier sizing and risk management.
-- ****: **(New)** Created to handle post-only order placement logic and unfilled protocols (Phase 3).
-- ****: **(New)** Created for managing risk parameters and liquidity gap guards (Phase 3).
-- ****: **(New)** Created for implementing 3-tier Take-Profit/Stop-Loss with trailing, time stops, and early reduce (Phase 3).
-- ****: **(New)** Created for a JSON configuration system (Phase 4).
-- ****: **(New)** Created for comprehensive trade logging (Phase 4).
-- ****: **(New)** Created for KPI tracking (Phase 4).
-- ****: Main React component. Updated to use  and remove references to , , , and also had emojis removed from sidebar navigation.
-- ****: Centralized design tokens. It was reviewed and confirmed to be already professional.
-- ****: Redesigned landing page. Updated to display realistic placeholder KPI values and integrate with the new KPI API. All emojis were systematically removed and replaced with professional text/SVG icons.
-- ****: **(New)** Created to consolidate functionality from , , and  into a single, professional page.
-- ****: Overhauled overview page. All emojis were systematically removed and replaced with professional text/SVG icons. Ongoing fix for remaining emojis/icons.
-- ****: Live signals dashboard. All emojis were systematically removed and replaced with professional text/SVG icons.
-- ****: Reimagined Scalp Cards page. All emojis were systematically removed and replaced with professional text/SVG icons.
-- ****: Continuously updated to document progress, testing plans, and results for each backend phase.
-
+-   ****: A new file providing KPI endpoints.
+-   ****: Core logic for MTF confluence. Updated to integrate multiple phases of the playbook, and was subject to a regression (DataFrame ambiguity error).
+-   ****: These are new backend services related to the SOLUSDT Swing-Capture Playbook v1.0 implementation.
+-   ****: Main React router. Updated to use  and had emojis removed from sidebar navigation.
+-   ****: Updated to display placeholder KPIs and removed emojis.
+-   ****: (New) Consolidated , , and  functionality.
+-   ****: Overhauled page. Emojis were systematically removed and replaced with professional text/SVG icons. A DNA strand emoji fix was also applied.
+-   ****: Live signals dashboard. Emojis removed. It was subject to multiple fixes for the MTF Confluence Engine section visibility and the CVD Slope chart display, including dimension fixes, color adjustments, and reverting to older code logic due to persistent rendering issues.
 </code_architecture>
-
 <pending_tasks>
-- Returning CSV attachment for backtest ledger.
-- Exporting Scalp Card as PNG/PDF for journaling.
-- Integrating Grafana for visualizing confluence hit-rate, veto ratios, and latency.
-- Developing an Order Preview endpoint for margin and liquidity gap calculation.
-- Implementing auto size-tiering.
-- Backtesting the new MTF logic on uploaded CSV data.
-- UI updates for the Upload and Navigation modules (though  now exists, specific UI elements may still require attention).
-- Fine-tuning the Live Signals channel as data is not showing correctly.
-- Removing remaining emojis from the bottom of .
+-   Returning CSV attachment for backtest ledger.
+-   Exporting Scalp Card as PNG/PDF for journaling.
+-   Integrating Grafana for visualizing confluence hit-rate, veto ratios, and latency.
+-   Developing an Order Preview endpoint for margin and liquidity gap calculation.
+-   Implementing auto size-tiering.
+-   Backtesting the new MTF logic on uploaded CSV data.
+-   UI updates for the Upload and Navigation modules.
+-   Fixing the MTF Confluence backend (DataFrame ambiguity regression).
+-   Implementing the entire new **non-custodial Solana HFT trading dApp** as per the new product requirements.
 </pending_tasks>
-
 <current_work>
-Immediately before this summary request, the AI engineer had completed the full implementation of the SOLUSDT Swing-Capture Playbook v1.0 backend across all four phases (Detection Engine, Context & Macro Gates, Order Management & TP/SL, and Config & Logging), with all backend testing for these phases passing successfully.
+Immediately before this summary request, the AI engineer was addressing two issues:
+1.  **Removing remaining emojis from **: A DNA strand emoji was identified and successfully replaced with a professional SVG icon.
+2.  **Fixing the CVD Slope chart display in **: Despite multiple attempts to fix rendering issues (dimensions, colors, reverting to simpler code), the chart remained largely invisible. Debugging confirmed data was flowing to the component, but it was not visibly rendering. The root cause of the CVD chart not displaying was attributed to a misconfigured  condition, which was later removed. However, the chart still wasn't consistently visible.
 
-Subsequently, the focus shifted to frontend UI/UX improvements:
-1.  **Landing Page KPIs:** The  was updated to display realistic placeholder KPI values (Win Rate: 65%, Avg R-Multiple: 1.5R, Signals Today: 7, Uptime: 99.9%), and new backend API endpoints were created in  to serve real KPI data when available.
-2.  **Emoji Removal (Comprehensive):** A major effort was undertaken to remove all emojis from the frontend application to achieve a professional, Bloomberg-class aesthetic. This included:
-    *   Systematically removing emojis from , , and , replacing them with professional text labels or SVG icons.
-    *   Consolidating , , and  into a new  and updating  routing accordingly. Emojis were also removed from the sidebar navigation in .
-    *   The AI engineer had declared all active V2 pages (Landing, Live Signals Dashboard, Scalp Cards, Overview, Data Analysis) emoji-free after multiple passes.
+Concurrently, a critical regression was identified in the backend: the  endpoint was returning a 500 error due to an ambiguous DataFrame truth value, a problem previously addressed in Phase 2. This suggests a reintroduction of an old bug in .
 
-However, the user provided feedback indicating:
-1.  LIVE SIGNALS CHANNEL NEED FINE TUNING NOT ALL THE DATA IS SHOWING CORRECTLY.
-2.  AND THE OVVERVIEW HAS EMOJIS AT THE BOTTOM STILL.
-
-The AI engineer's most immediate current work is addressing these two new issues, starting with the remaining emojis at the bottom of . The last action involved identifying specific emoji instances ( on line 302 and  on line 315) within the system health rendering section of  and preparing to fix them.
+Given the persistent issues, the user initiated a significant product pivot. The AI engineer has since focused on gathering integration playbooks for the new non-custodial Solana trading dApp. Playbooks for Helius, Solana Wallet Adapter, Drift Protocol, and Jupiter have been successfully retrieved. The actual development of the new dApp has not yet begun.
 </current_work>
-
 <optional_next_step>
-Fix the identified remaining emojis and icon usage at the bottom of .
+Provide the comprehensive implementation plan for the new non-custodial Solana HFT trading dApp to the user.
 </optional_next_step>
-

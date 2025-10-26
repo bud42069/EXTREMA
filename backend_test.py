@@ -37,7 +37,7 @@ except ImportError as e:
     PHASE3_IMPORTS_OK = False
 
 # Backend URL from frontend environment
-BACKEND_URL = "https://bloomberg-sol.preview.emergentagent.com"
+BACKEND_URL = "https://solscalper.preview.emergentagent.com"
 API_BASE = f"{BACKEND_URL}/api"
 METRICS_URL = f"{BACKEND_URL}/metrics"
 
