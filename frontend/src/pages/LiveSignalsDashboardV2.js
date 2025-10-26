@@ -895,7 +895,7 @@ export default function LiveSignalsDashboardV2() {
               <h4 className="text-sm font-bold text-gray-300 uppercase tracking-wider">CVD Slope</h4>
               <span className="text-xs text-gray-600 font-mono bg-gray-800/50 px-2 py-1 rounded">30s Rolling</span>
             </div>
-            <div className="w-full h-32 rounded-xl border border-cyan-900/30 bg-gradient-to-b from-cyan-950/20 to-gray-950/40 overflow-hidden">
+            <div className="h-32 bg-black/40 rounded-xl overflow-hidden border border-gray-800/30">
               <CVDSlopeChart data={cvdHistory} />
             </div>
           </motion.div>
