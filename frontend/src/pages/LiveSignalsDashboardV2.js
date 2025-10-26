@@ -110,16 +110,10 @@ const CommandPalette = ({ isOpen, onClose, onCommand }) => {
 
 // CVD Slope Chart Component (Enhanced with Recharts)
 const CVDSlopeChart = ({ data }) => {
-  // Always show the chart container with proper dimensions
   if (!data || data.length === 0) {
     return (
-      <div className="w-full h-32 flex flex-col items-center justify-center text-gray-600 text-xs px-4">
-        <svg className="w-10 h-10 mb-2 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
-        </svg>
-        <span className="text-gray-500 font-medium">Awaiting CVD data...</span>
-        <span className="text-gray-700 text-[10px] mt-1">Stream must be active • Collecting history</span>
-        <span className="text-gray-800 text-[10px] mt-1">({data?.length || 0} / 30 data points)</span>
+      <div className="w-full h-32 flex items-center justify-center text-gray-600 text-xs">
+        Awaiting data...
       </div>
     );
   }
@@ -129,36 +123,26 @@ const CVDSlopeChart = ({ data }) => {
     value: value || 0
   }));
   
-  // Calculate domain with padding for better visibility
-  const values = chartData.map(d => d.value);
-  const minVal = Math.min(...values);
-  const maxVal = Math.max(...values);
-  const padding = Math.abs(maxVal - minVal) * 0.2 || 0.1;
-  
   return (
-    <div className="w-full" style={{ height: '128px' }}>
-      <ResponsiveContainer width="100%" height={128}>
-        <AreaChart data={chartData} margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
-          <defs>
-            <linearGradient id="cvdSlopeGradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#06b6d4" stopOpacity={0.8} />
-              <stop offset="100%" stopColor="#06b6d4" stopOpacity={0.1} />
-            </linearGradient>
-          </defs>
-          <XAxis dataKey="index" hide />
-          <YAxis hide domain={[minVal - padding, maxVal + padding]} />
-          <Area
-            type="monotone"
-            dataKey="value"
-            stroke="#06b6d4"
-            strokeWidth={5}
-            fill="url(#cvdSlopeGradient)"
-            animationDuration={300}
-            isAnimationActive={true}
-          />
-        </AreaChart>
-      </ResponsiveContainer>
-    </div>
+    <ResponsiveContainer width="100%" height={128}>
+      <AreaChart data={chartData} margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
+        <defs>
+          <linearGradient id="cvdGradient" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#06b6d4" stopOpacity={0.4} />
+            <stop offset="100%" stopColor="#06b6d4" stopOpacity={0} />
+          </linearGradient>
+        </defs>
+        <YAxis hide domain={['auto', 'auto']} />
+        <Area
+          type="monotone"
+          dataKey="value"
+          stroke="#06b6d4"
+          strokeWidth={2}
+          fill="url(#cvdGradient)"
+          animationDuration={300}
+        />
+      </AreaChart>
+    </ResponsiveContainer>
   );
 };
 
