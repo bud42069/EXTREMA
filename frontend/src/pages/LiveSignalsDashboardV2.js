@@ -360,7 +360,7 @@ export default function LiveSignalsDashboardV2() {
 
   // Update CVD history for chart
   useEffect(() => {
-    if (microSnap?.cvd_slope !== undefined && microSnap?.available) {
+    if (microSnap?.cvd_slope !== undefined) {
       setCvdHistory(prev => {
         const newHistory = [...prev, microSnap.cvd_slope];
         return newHistory.slice(-30); // Keep last 30 data points (60 seconds)
